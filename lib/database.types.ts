@@ -40,6 +40,7 @@ export type Database = {
           club_entry_id: string
           created_at: string
           date_of_birth: string | null
+          disciplines: string[]
           full_name: string
           gender: string | null
           id: string
@@ -50,6 +51,7 @@ export type Database = {
           club_entry_id: string
           created_at?: string
           date_of_birth?: string | null
+          disciplines?: string[]
           full_name: string
           gender?: string | null
           id?: string
@@ -60,6 +62,7 @@ export type Database = {
           club_entry_id?: string
           created_at?: string
           date_of_birth?: string | null
+          disciplines?: string[]
           full_name?: string
           gender?: string | null
           id?: string
@@ -349,6 +352,7 @@ export type Database = {
       }
       events: {
         Row: {
+          belts: string[]
           completed_at: string | null
           created_at: string
           end_date: string | null
@@ -368,6 +372,7 @@ export type Database = {
           venue: string | null
         }
         Insert: {
+          belts?: string[]
           completed_at?: string | null
           created_at?: string
           end_date?: string | null
@@ -387,6 +392,7 @@ export type Database = {
           venue?: string | null
         }
         Update: {
+          belts?: string[]
           completed_at?: string | null
           created_at?: string
           end_date?: string | null
@@ -827,7 +833,10 @@ export type Database = {
         Args: { p_category_id: string; p_tatami_id?: string }
         Returns: undefined
       }
-      belt_rank: { Args: { p_belt: string }; Returns: number }
+      belt_rank: {
+        Args: { p_belt: string; p_event_id: string }
+        Returns: number
+      }
       bracket_complete_match: {
         Args: { p_match_id: string; p_winner_id: string }
         Returns: undefined
@@ -879,6 +888,14 @@ export type Database = {
         Args: { p_category_id: string; p_format?: string }
         Returns: string
       }
+      import_athletes: {
+        Args: { p_athletes: Json; p_event_id: string }
+        Returns: Json
+      }
+      import_categories: {
+        Args: { p_categories: Json; p_event_id: string }
+        Returns: Json
+      }
       is_event_member: {
         Args: { p_event_id: string; p_roles?: string[] }
         Returns: boolean
@@ -911,6 +928,7 @@ export type Database = {
           p_belt_rank: string
           p_club_entry_id: string
           p_date_of_birth: string
+          p_disciplines?: string[]
           p_full_name: string
           p_gender: string
           p_reason: string
@@ -923,6 +941,7 @@ export type Database = {
           p_athlete_id: string
           p_belt_rank: string
           p_date_of_birth: string
+          p_disciplines?: string[]
           p_full_name: string
           p_gender: string
           p_reason: string
@@ -991,6 +1010,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_event_belts: {
+        Args: { p_belts: string[]; p_event_id: string }
+        Returns: undefined
+      }
       set_seeds: {
         Args: { p_category_id: string; p_registration_ids: string[] }
         Returns: undefined
@@ -1016,6 +1039,7 @@ export type Database = {
         Args: {
           p_belt: string
           p_date_of_birth: string
+          p_disciplines?: string[]
           p_event_id: string
           p_gender: string
           p_weight: number

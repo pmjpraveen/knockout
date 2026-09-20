@@ -38,7 +38,7 @@ select set_config('request.jwt.claims', '{"role":"service_role"}', true);
 create temp table ref as
   select save_club_entry('11111111-1111-1111-1111-111111111111', null, 'Dragon Dojo', 'a@b.c',
     '[{"full_name":"Kai","date_of_birth":"2013-03-01","gender":"male","weight":35,"belt_rank":"orange"},
-      {"full_name":"Mei","date_of_birth":"1990-01-01","gender":"female","weight":50,"belt_rank":"5th kyu"}]'::jsonb) as id;
+      {"full_name":"Mei","date_of_birth":"1990-01-01","gender":"female","weight":50,"belt_rank":"black"}]'::jsonb) as id;
 grant select on ref to authenticated;
 select is((select count(*)::int from athletes where club_entry_id = (select id from ref)), 2, 'save_club_entry stores the roster');
 
