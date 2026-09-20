@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
-    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/contrast.check.ts && supabase test db"
+    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/fitImage.check.ts && node lib/contrast.check.ts && supabase test db"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
