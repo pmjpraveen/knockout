@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode, useEffect, useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { haptic } from '@/lib/haptics';
 import { theme } from '@/theme/tokens';
@@ -76,7 +76,7 @@ export function Button({ title, onPress, disabled, variant = 'primary', icon, la
       }]}
     >
       {gradient && <LinearGradient colors={theme.gradients.primary} start={{ x: 0.5, y: 1 }} end={{ x: 0.5, y: 0 }} style={StyleSheet.absoluteFill} />}
-      {icon}
+      {icon ? <View>{icon}</View> : null}
       <Text variant="bodyLg" color={disabled ? 'slateGray' : armed ? 'danger' : style.text}>
         {armed ? confirmTitle : title}
       </Text>

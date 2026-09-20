@@ -2,14 +2,14 @@ import { View } from 'react-native';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { DateField } from '@/components/DateField';
 import { TextField } from '@/components/TextField';
-import { AthleteDraft, athleteGenders, belts } from '@/lib/athlete';
+import { AthleteDraft, athleteGenders, competeLabels, competeOptions } from '@/lib/athlete';
 import { theme } from '@/theme/tokens';
 
 const yearsAgo = (years: number) => new Date(new Date().getFullYear() - years, 0, 1, 12);
 
-type Props = { value: AthleteDraft; onChange: (next: AthleteDraft) => void };
+type Props = { value: AthleteDraft; onChange: (next: AthleteDraft) => void; belts: readonly string[] };
 
-export function AthleteFields({ value, onChange }: Props) {
+export function AthleteFields({ value, onChange, belts }: Props) {
   const set = <K extends keyof AthleteDraft>(key: K) => (next: AthleteDraft[K]) => onChange({ ...value, [key]: next });
 
   return (
@@ -18,7 +18,8 @@ export function AthleteFields({ value, onChange }: Props) {
       <DateField label="Date of birth" value={value.date_of_birth} onChange={set('date_of_birth')} maximumDate={new Date()} startAt={yearsAgo(12)} />
       <ChoiceChips label="Gender" options={athleteGenders} value={value.gender} onChange={set('gender')} />
       <TextField label="Weight (kg)" value={value.weight} onChangeText={set('weight')} keyboardType="numeric" />
-      <ChoiceChips label="Belt" options={belts} value={value.belt_rank as (typeof belts)[number]} onChange={set('belt_rank')} />
+      <ChoiceChips label="Belt" options={belts} value={value.belt_rank} onChange={set('belt_rank')} />
+      <ChoiceChips label="Events" options={competeOptions} value={value.compete} onChange={set('compete')} labels={competeLabels} />
     </View>
   );
 }

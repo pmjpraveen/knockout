@@ -127,18 +127,18 @@ export function EventWizard({ userId }: { userId: string }) {
 
           {step === 0 && (
             <>
-              <TextField plainLabel label="Tournament name" value={draft.name} onChangeText={(name) => set({ name })} autoCapitalize="words" />
-              <TextField plainLabel label="Venue" value={draft.venue} onChangeText={(venue) => set({ venue })} autoCapitalize="words" />
-              <TextField plainLabel label="Host club" value={draft.hostClub} onChangeText={(hostClub) => set({ hostClub })} autoCapitalize="words" />
+              <TextField label="Tournament name" value={draft.name} onChangeText={(name) => set({ name })} autoCapitalize="words" />
+              <TextField label="Venue" value={draft.venue} onChangeText={(venue) => set({ venue })} autoCapitalize="words" />
+              <TextField label="Host club" value={draft.hostClub} onChangeText={(hostClub) => set({ hostClub })} autoCapitalize="words" />
             </>
           )}
           {step === 1 && <CoverImageField value={draft.cover} onChange={(cover) => set({ cover })} />}
           {step === 2 && (
             <>
-              <DateField plainLabel label="Tournament starts on" value={draft.startDate} onChange={(startDate) => set({ startDate })} />
-              <DateField plainLabel label="Tournament ends on" value={draft.endDate} onChange={(endDate) => set({ endDate })} />
-              <DateField plainLabel label="Registration starts on" value={draft.opens} onChange={(opens) => set({ opens })} clearable />
-              <DateField plainLabel label="Registration ends on" value={draft.closes} onChange={(closes) => set({ closes })} clearable />
+              <DateField label="Tournament starts on" value={draft.startDate} onChange={(startDate) => set({ startDate })} />
+              <DateField label="Tournament ends on" value={draft.endDate} onChange={(endDate) => set({ endDate })} />
+              <DateField label="Registration starts on" value={draft.opens} onChange={(opens) => set({ opens })} clearable />
+              <DateField label="Registration ends on" value={draft.closes} onChange={(closes) => set({ closes })} clearable />
             </>
           )}
           {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}

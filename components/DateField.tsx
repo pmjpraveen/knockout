@@ -11,7 +11,6 @@ export type DateFieldProps = {
   /** ISO date (YYYY-MM-DD), or '' when empty. */
   value: string;
   onChange: (value: string) => void;
-  plainLabel?: boolean;
   clearable?: boolean;
   maximumDate?: Date;
   /** Where the picker opens when nothing is chosen yet, e.g. a plausible birth year. */
@@ -19,7 +18,7 @@ export type DateFieldProps = {
 };
 
 /** Native date picker on iOS and Android; the field shows DD-MM-YYYY. (The web version is DateField.web.tsx.) */
-export function DateField({ label, value, onChange, plainLabel, clearable, maximumDate, startAt }: DateFieldProps) {
+export function DateField({ label, value, onChange, clearable, maximumDate, startAt }: DateFieldProps) {
   const [open, setOpen] = useState(false);
   const ios = Platform.OS === 'ios';
   const shownInPicker = isDate(value) ? isoToDate(value) : (startAt ?? maximumDate ?? new Date());
@@ -28,7 +27,7 @@ export function DateField({ label, value, onChange, plainLabel, clearable, maxim
     <View style={{ gap: theme.spacing[8] }}>
       <Pressable accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })} accessibilityLabel={`${label}, ${value ? formatDate(value) : 'not set'}`} onPress={() => setOpen((o) => !o)}>
         <View style={{ pointerEvents: 'none' }}>
-          <TextField label={label} plainLabel={plainLabel} value={formatDate(value)} placeholder="DD-MM-YYYY" editable={false} />
+          <TextField label={label} value={formatDate(value)} placeholder="DD-MM-YYYY" editable={false} />
         </View>
       </Pressable>
       {open && (

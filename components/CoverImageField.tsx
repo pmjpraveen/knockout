@@ -1,21 +1,11 @@
+import ImagePlus from 'lucide-react-native/icons/image-plus';
 import { Image, Pressable, View } from 'react-native';
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
 import { Cover, coverAspect, pickCover } from '@/lib/coverImage';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
-
-function ImageIcon() {
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none" stroke={theme.colors.inkBlack} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <Rect x="3" y="4" width="18" height="16" rx="3" />
-      <Circle cx="9" cy="10" r="1.5" />
-      <Path d="M4 18l5-5 4 4 3-3 4 4" />
-    </Svg>
-  );
-}
 
 /** Add, change or remove a tournament's cover image. */
 export function CoverImageField({ value, onChange }: { value: Pick<Cover, 'image'> | null; onChange: (cover: Cover | null) => void }) {
@@ -50,7 +40,7 @@ export function CoverImageField({ value, onChange }: { value: Pick<Cover, 'image
             pressFeedback(pressed),
           ]}
         >
-          <ImageIcon />
+          <ImagePlus size={24} color={theme.colors.inkBlack} strokeWidth={1.5} />
           <Text variant="bodyLg">Add image</Text>
         </Pressable>
       )}

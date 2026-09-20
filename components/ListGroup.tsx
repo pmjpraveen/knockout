@@ -1,3 +1,4 @@
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { Children, ReactNode } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
@@ -43,7 +44,7 @@ export function ListRow({ title, detail, tone = 'slateGray', onPress }: { title:
     >
       <Text variant="bodyLg" style={{ flex: 1 }}>{title}</Text>
       {detail ? <Text variant="body" weight="medium" color={tone}>{detail}</Text> : null}
-      <Text variant="bodyLg" color="steelGray">›</Text>
+      <ChevronRight size={20} color={theme.colors.steelGray} strokeWidth={1.75} />
     </Pressable>
   );
 }

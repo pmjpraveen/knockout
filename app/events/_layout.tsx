@@ -5,9 +5,12 @@ export default function EventsLayout() {
   return (
     <Stack screenOptions={stackScreenOptions}>
       <Stack.Screen name="new" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]/index" options={{ title: 'Event' }} />
+      <Stack.Screen name="[id]/index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]/edit" options={{ title: 'Edit event' }} />
+      <Stack.Screen name="[id]/belts" options={{ title: 'Belts' }} />
       <Stack.Screen name="[id]/staff" options={{ title: 'Staff' }} />
+      <Stack.Screen name="[id]/import-categories" options={{ title: 'Import categories' }} />
+      <Stack.Screen name="[id]/import-athletes" options={{ title: 'Import participants' }} />
       <Stack.Screen name="[id]/clone" options={{ title: 'Copy categories' }} />
       <Stack.Screen name="[id]/restructure" options={{ title: 'Merge or split' }} />
       <Stack.Screen name="[id]/split" options={{ title: 'Split category' }} />

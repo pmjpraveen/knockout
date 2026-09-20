@@ -1,6 +1,6 @@
+import Trash from 'lucide-react-native/icons/trash';
 import { useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, Pressable, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import { Text } from '@/components/Text';
 import { EventRow, formatDateRange, humanize } from '@/lib/events';
 import { haptic } from '@/lib/haptics';
@@ -92,9 +92,7 @@ function DeleteChip({ name, onDelete }: { name: string; onDelete: () => void }) 
       {armed ? (
         <Text variant="body" weight="medium" color="danger">Delete?</Text>
       ) : (
-        <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={theme.colors.charcoal} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-          <Path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
-        </Svg>
+        <Trash size={18} color={theme.colors.charcoal} strokeWidth={1.75} />
       )}
     </Pressable>
   );

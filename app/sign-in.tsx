@@ -29,8 +29,8 @@ export default function SignIn() {
 
   const form = (
     <>
-      <TextField plainLabel label="Email address" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="email" />
-      <TextField plainLabel label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" />
+      <TextField label="Email address" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="email" />
+      <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" />
       {error && <Text color="danger">{error}</Text>}
       <Button title="Log in" disabled={busy} onPress={() => run(() => supabase.auth.signInWithPassword(credentials))} />
 

@@ -15,9 +15,7 @@ type Props<T extends string> = {
 export function ChoiceChips<T extends string>({ label, options, value, onChange, labels }: Props<T>) {
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.spacing[4] }}>
-      <Text variant="label" weight="medium" color="charcoal" style={{ textTransform: 'uppercase' }}>
-        {label}
-      </Text>
+      <Text>{label}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>
         {options.map((option) => {
           const selected = option === value;

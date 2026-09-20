@@ -5,6 +5,7 @@ import { Button } from '@/components/Button';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
+import { useEventBelts } from '@/hooks/useEventBelts';
 import { useSubmit } from '@/hooks/useSubmit';
 import { defaultLabel } from '@/lib/categoryLabel';
 import { bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
@@ -17,6 +18,9 @@ const text = (value: number | string | null | undefined) => (value === null || v
 
 export function CategoryForm({ eventId, category, initialStatus }: Props) {
   const router = useRouter();
+  const belts = useEventBelts(eventId);
+  const beltOptions = ['', ...belts];
+  const beltLabels = { '': 'Any' };
   const [label, setLabel] = useState(category?.label ?? '');
   const [discipline, setDiscipline] = useState<(typeof disciplines)[number]>((category?.discipline as (typeof disciplines)[number]) ?? 'kumite');
   const [gender, setGender] = useState<(typeof genders)[number]>((category?.gender as (typeof genders)[number]) ?? 'any');
@@ -40,8 +44,8 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
     age_max: toNumber(ageMax),
     weight_min: toNumber(weightMin),
     weight_max: toNumber(weightMax),
-    belt_min: beltMin.trim() || null,
-    belt_max: beltMax.trim() || null,
+    belt_min: beltMin || null,
+    belt_max: beltMax || null,
   };
   const suggested = defaultLabel(criteria);
   const modes = scoringModes[discipline];
@@ -98,10 +102,8 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
       <ChoiceChips label="Gender" options={genders} value={gender} onChange={setGender} />
       {pair([ageMin, setAgeMin, 'Age min'], [ageMax, setAgeMax, 'Age max'])}
       {pair([weightMin, setWeightMin, 'Weight min (kg)'], [weightMax, setWeightMax, 'Weight max (kg)'])}
-      <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
-        <View style={{ flex: 1 }}><TextField label="Belt from" value={beltMin} onChangeText={setBeltMin} placeholder="white" /></View>
-        <View style={{ flex: 1 }}><TextField label="Belt to" value={beltMax} onChangeText={setBeltMax} placeholder="orange" /></View>
-      </View>
+      <ChoiceChips label="Belt from" options={beltOptions} value={beltMin} onChange={setBeltMin} labels={beltLabels} />
+      <ChoiceChips label="Belt to" options={beltOptions} value={beltMax} onChange={setBeltMax} labels={beltLabels} />
       <ChoiceChips label="Bracket format" options={bracketFormats} value={format} onChange={setFormat} />
       <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
       {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}

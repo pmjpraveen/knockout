@@ -10,10 +10,13 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
-    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/fitImage.check.ts && node lib/contrast.check.ts && supabase test db"
+    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/fitImage.check.ts && node lib/sheetImport.check.ts && node lib/contrast.check.ts && supabase test db",
+    "lint": "expo lint"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~10.0.0",
     "supabase": "^2.117.0",
     "typescript": "~5.9.2"
   },
@@ -24,8 +27,11 @@
     "@react-native-community/datetimepicker": "8.4.4",
     "@supabase/supabase-js": "^2.116.0",
     "expo": "~54.0.0",
+    "expo-blur": "~15.0.8",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.14",
+    "expo-document-picker": "~14.0.8",
+    "expo-file-system": "~19.0.24",
     "expo-font": "~14.0.12",
     "expo-haptics": "~15.0.8",
     "expo-image-manipulator": "~14.0.8",
@@ -33,17 +39,20 @@
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
     "expo-router": "~6.0.24",
+    "expo-sharing": "~14.0.8",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-updates": "~29.0.20",
     "expo-web-browser": "~15.0.11",
     "gsap": "^3.15.0",
+    "lucide-react-native": "^1.47.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
-    "react-native-web": "^0.21.0"
+    "react-native-web": "^0.21.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }

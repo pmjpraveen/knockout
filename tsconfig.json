@@ -2,6 +2,7 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "allowImportingTsExtensions": true,
     "paths": { "@/*": ["./*"] }
   },
   "exclude": ["**/*.check.ts", "node_modules", "supabase/functions"],

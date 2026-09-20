@@ -5,14 +5,16 @@ import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
+import { useEventBelts } from '@/hooks/useEventBelts';
 import { useSubmit } from '@/hooks/useSubmit';
-import { AthleteDraft, athleteProblem, emptyAthlete, toAthleteInput, toDraft } from '@/lib/athlete';
+import { AthleteDraft, athleteProblem, newAthlete, toAthleteInput, toDraft } from '@/lib/athlete';
 import { supabase } from '@/lib/supabase';
 
 export default function OrganizerAthlete() {
-  const { entryId, athleteId } = useLocalSearchParams<{ id: string; entryId: string; athleteId?: string }>();
+  const { id, entryId, athleteId } = useLocalSearchParams<{ id: string; entryId: string; athleteId?: string }>();
   const router = useRouter();
-  const [athlete, setAthlete] = useState<AthleteDraft>(emptyAthlete);
+  const belts = useEventBelts(id);
+  const [athlete, setAthlete] = useState<AthleteDraft>(() => newAthlete());
   const [reason, setReason] = useState('');
   const [invalid, setInvalid] = useState<string | null>(null);
   const { run, busy, error } = useSubmit();
@@ -22,12 +24,16 @@ export default function OrganizerAthlete() {
     supabase.from('athletes').select('*').eq('id', athleteId).single().then(({ data }) => data && setAthlete(toDraft(data)));
   }, [athleteId]);
 
+  useEffect(() => {
+    if (!athleteId) setAthlete((current) => (belts.includes(current.belt_rank) ? current : { ...current, belt_rank: belts[0] }));
+  }, [athleteId, belts]);
+
   const save = () => {
     const problem = athleteProblem(athlete) ?? (reason.trim() ? null : 'A reason is required for organizer changes.');
     setInvalid(problem);
     if (problem) return;
-    const { full_name, date_of_birth, gender, weight, belt_rank } = toAthleteInput(athlete);
-    const fields = { p_full_name: full_name, p_date_of_birth: date_of_birth, p_gender: gender, p_weight: weight, p_belt_rank: belt_rank, p_reason: reason };
+    const { full_name, date_of_birth, gender, weight, belt_rank, disciplines } = toAthleteInput(athlete);
+    const fields = { p_full_name: full_name, p_date_of_birth: date_of_birth, p_gender: gender, p_weight: weight, p_belt_rank: belt_rank, p_disciplines: disciplines, p_reason: reason };
     return run(async () => {
       const result = athleteId
         ? await supabase.rpc('organizer_edit_athlete', { p_athlete_id: athleteId, ...fields })
@@ -39,7 +45,7 @@ export default function OrganizerAthlete() {
 
   return (
     <Screen>
-      <AthleteFields value={athlete} onChange={setAthlete} />
+      <AthleteFields value={athlete} onChange={setAthlete} belts={belts} />
       <TextField label="Reason for change" value={reason} onChangeText={setReason} autoCapitalize="sentences" placeholder="e.g. Weigh-in correction" />
       {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}
       <Button title={athleteId ? 'Save change' : 'Add participant'} disabled={busy} onPress={save} />

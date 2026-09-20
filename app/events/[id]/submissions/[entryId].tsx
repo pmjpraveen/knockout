@@ -7,7 +7,7 @@ import { SkeletonScreen } from '@/components/Skeleton';
 import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
-import { toAthleteInput, toDraft } from '@/lib/athlete';
+import { competeLabels, toAthleteInput, toDraft } from '@/lib/athlete';
 import { formatDate, formatDateTime } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 
@@ -23,9 +23,10 @@ function Suggested({ eventId, athlete }: { eventId: string; athlete: Athlete }) 
         p_gender: athlete.gender as string,
         p_weight: athlete.weight as number,
         p_belt: athlete.belt_rank as string,
+        p_disciplines: athlete.disciplines ?? undefined,
       })
       .then(({ data }) => setLabels((data ?? []).map((c) => c.label)));
-  }, [eventId, athlete.id, athlete.date_of_birth, athlete.gender, athlete.weight, athlete.belt_rank]);
+  }, [eventId, athlete.id, athlete.date_of_birth, athlete.gender, athlete.weight, athlete.belt_rank, athlete.disciplines]);
 
   return <Text variant="body" color={labels.length ? 'success' : 'warning'}>{labels.length ? `Suggested: ${labels.join(' · ')}` : 'No matching category'}</Text>;
 }
@@ -59,7 +60,7 @@ export default function SubmissionDetail() {
         <Card key={athlete.id}>
           <Text variant="bodyLg" weight="medium">{athlete.full_name}</Text>
           <Text variant="body" color="slateGray">
-            {[athlete.gender, athlete.date_of_birth && formatDate(athlete.date_of_birth), athlete.weight && `${athlete.weight} kg`, athlete.belt_rank].filter(Boolean).join(' · ')}
+            {[athlete.gender, athlete.date_of_birth && formatDate(athlete.date_of_birth), athlete.weight && `${athlete.weight} kg`, athlete.belt_rank, competeLabels[toDraft(athlete).compete]].filter(Boolean).join(' · ')}
           </Text>
           {approved ? (
             <Text variant="body" color="success">
