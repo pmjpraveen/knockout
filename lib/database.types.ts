@@ -1064,6 +1064,8 @@ export type Database = {
           bracket_side: string
           category_id: string
           category_label: string
+          club_a: string
+          club_b: string
           discipline: string
           judge_panel: number
           match_id: string

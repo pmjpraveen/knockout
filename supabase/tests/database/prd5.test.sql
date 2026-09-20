@@ -1,5 +1,5 @@
 begin;
-select plan(37);
+select plan(38);
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'org@test.dev'),
@@ -67,6 +67,7 @@ select pg_temp.as_user('00000000-0000-0000-0000-0000000000d1');
 select is((select count(*)::int from tatami_scoreboard('22222222-2222-2222-2222-222222222221')), 2, 'a scorekeeper downloads their tatami''s playable matches');
 select is((select scoring_mode from tatami_scoreboard('22222222-2222-2222-2222-222222222221') limit 1), 'kumite_points', 'kumite categories default to point scoring');
 select is((select match_seconds from tatami_scoreboard('22222222-2222-2222-2222-222222222221') limit 1), 120, 'the clock defaults to the kumite duration');
+select isnt((select club_a from tatami_scoreboard('22222222-2222-2222-2222-222222222221') limit 1), null, 'the scoreboard names each competitor''s club');
 select throws_ok($$select tatami_scoreboard('22222222-2222-2222-2222-222222222222')$$, '42501', null, 'a scorekeeper cannot download another tatami');
 
 -- start + score + undo, one batch, device A

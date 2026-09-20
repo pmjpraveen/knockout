@@ -13,11 +13,13 @@ export type ScoreEvent = {
 };
 
 export type Method = 'points' | 'lead' | 'decision' | 'disqualification' | 'withdrawal' | 'judges' | 'flags' | 'win_loss';
-export type Outcome = { winner: string; method: Method };
+export type Outcome = { winner: string; method: Method; note?: string | null };
 
 export const points = { ippon: 3, waza_ari: 2, yuko: 1 } as const;
 export const penaltyLevels = ['Chukoku', 'Keikoku', 'Hansoku-chui', 'Hansoku'] as const;
 export const leadToWin = 8;
+// Senshu is forfeited at Keikoku, the second penalty in a category. The PRD does not cover Senshu; check this level against the ruleset in use.
+const senshuForfeitedAt = 2;
 
 /** Events still in force: void events and the events they cancel are dropped, history stays in the log. */
 export function activeEvents(events: ScoreEvent[]) {
@@ -34,13 +36,22 @@ export function kumiteState(events: ScoreEvent[], a: string, b: string) {
     1: active.filter((e) => e.athlete_id === id && e.type === 'penalty' && penaltyCategory(e) === 1).length,
     2: active.filter((e) => e.athlete_id === id && e.type === 'penalty' && penaltyCategory(e) === 2).length,
   });
-  return { points: { a: total(a), b: total(b) }, penalties: { a: penalties(a), b: penalties(b) } };
+  const result = { points: { a: total(a), b: total(b) }, penalties: { a: penalties(a), b: penalties(b) } };
+  return { ...result, senshu: senshuHolder(active, a, b, result.penalties) };
+}
+
+/** Senshu goes to whoever scores first (undoing that score passes it on) and is lost to a Keikoku or worse. */
+function senshuHolder(active: ScoreEvent[], a: string, b: string, penalties: { a: { 1: number; 2: number }; b: { 1: number; 2: number } }) {
+  const first = active.find((e) => e.type in points && (e.athlete_id === a || e.athlete_id === b));
+  if (!first) return null;
+  const side = first.athlete_id === a ? 'a' : 'b';
+  return Math.max(penalties[side][1], penalties[side][2]) >= senshuForfeitedAt ? null : side;
 }
 
 /** The level the next penalty in a category would be (capped at Hansoku). */
 export const nextPenaltyLevel = (existing: number) => penaltyLevels[Math.min(existing, penaltyLevels.length - 1)];
 
-/** Auto-detected results: disqualification, an 8-point lead, or time up with a higher score. Ties need a referee decision. */
+/** Auto-detected results: disqualification, an 8-point lead, or time up with a higher score. A tie goes to Senshu; with no Senshu it needs a referee decision. */
 export function kumiteOutcome(state: ReturnType<typeof kumiteState>, a: string, b: string, remainingSeconds: number): Outcome | null {
   const disqualified = (p: { 1: number; 2: number }) => p[1] >= penaltyLevels.length || p[2] >= penaltyLevels.length;
   if (disqualified(state.penalties.a)) return { winner: b, method: 'disqualification' };
@@ -48,6 +59,7 @@ export function kumiteOutcome(state: ReturnType<typeof kumiteState>, a: string, 
   const lead = state.points.a - state.points.b;
   if (Math.abs(lead) >= leadToWin) return { winner: lead > 0 ? a : b, method: 'lead' };
   if (remainingSeconds <= 0 && lead !== 0) return { winner: lead > 0 ? a : b, method: 'points' };
+  if (remainingSeconds <= 0 && state.senshu) return { winner: state.senshu === 'a' ? a : b, method: 'decision', note: 'Senshu: first unopposed score' };
   return null;
 }
 
