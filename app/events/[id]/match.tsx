@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { KataScoreboard } from '@/components/KataScoreboard';
 import { KumiteScoreboard } from '@/components/KumiteScoreboard';
 import { Screen } from '@/components/Screen';
@@ -36,11 +36,19 @@ export default function Match() {
   }
 
   const props = { row, eventId: id, onDone: done };
+  if (row.scoring_mode === 'kumite_points') {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false }} />
+        <KumiteScoreboard {...props} />
+      </>
+    );
+  }
   return (
     <Screen animate={false}>
       <SyncBanner />
       <Text color="slateGray">{row.category_label} · {matchLabel(row.bracket_side, row.round)}</Text>
-      {row.scoring_mode === 'win_loss' ? <WinLossScoreboard {...props} /> : row.scoring_mode === 'kumite_points' ? <KumiteScoreboard {...props} /> : <KataScoreboard {...props} />}
+      {row.scoring_mode === 'win_loss' ? <WinLossScoreboard {...props} /> : <KataScoreboard {...props} />}
     </Screen>
   );
 }

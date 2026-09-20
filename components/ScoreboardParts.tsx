@@ -1,5 +1,6 @@
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { PixelRatio, Pressable, View } from 'react-native';
+import { Path, Svg } from 'react-native-svg';
 import { Button } from '@/components/Button';
 import { Pop, Reveal } from '@/components/Motion';
 import { Text } from '@/components/Text';
@@ -20,6 +21,9 @@ export type ScoreboardRow = {
   athlete_a: string;
   athlete_b_id: string;
   athlete_b: string;
+  /** Missing on rows cached before clubs were added. */
+  club_a?: string | null;
+  club_b?: string | null;
 };
 
 const CornerContext = createContext<string | null>(null);
@@ -90,18 +94,38 @@ export function ScorePanel({ clock, aka, ao, totalStyle = 'scoreDisplay' }: {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
-/** Black pill; turns Warning Amber in the final 10 seconds. */
-export function MatchClock({ remaining }: { remaining: number }) {
+const ring = 8;
+const clockText = { fontFamily: theme.fonts.monoMedium, fontSize: 32, lineHeight: 32 };
+export const clockHeight = 64;
+
+/** Black pill whose green ring runs down with the time and is gone at 00:00. It turns Warning Amber in the final 10 seconds. */
+export function MatchClock({ remaining, total }: { remaining: number; total: number }) {
+  const [size, setSize] = useState({ width: 0, height: 0 });
   const whole = Math.ceil(remaining);
   const low = whole <= 10;
+  const { width, height } = size;
+  const w = width - ring;
+  const h = height - ring;
+  const r = h / 2;
+  const half = ring / 2;
+  const length = 2 * (w - h) + Math.PI * h;
+  const left = Math.max(0, Math.min(1, remaining / total)) * length;
+  // Starts at the top centre and runs clockwise, so the ring shrinks back towards the top.
+  const path = `M ${half + w / 2} ${half} H ${half + w - r} A ${r} ${r} 0 0 1 ${half + w - r} ${half + h} H ${half + r} A ${r} ${r} 0 0 1 ${half + r} ${half} H ${half + w / 2}`;
   return (
     <View
       accessible
       accessibilityRole="timer"
       accessibilityLabel={`${Math.floor(whole / 60)} minutes ${whole % 60} seconds remaining`}
-      style={{ backgroundColor: low ? theme.colors.warning : theme.colors.inkBlack, borderRadius: theme.radii.button, paddingHorizontal: theme.spacing[16] }}
+      onLayout={(event) => setSize(event.nativeEvent.layout)}
+      style={{ backgroundColor: low ? theme.colors.warning : theme.colors.inkBlack, borderRadius: theme.radii.button, height: clockHeight, justifyContent: 'center', paddingHorizontal: theme.spacing[16] + ring }}
     >
-      <Text variant="timerDisplay" color="paperWhite">{pad(Math.floor(whole / 60))}:{pad(whole % 60)}</Text>
+      {width > 0 && left > 0 && (
+        <Svg width={width} height={height} style={{ position: 'absolute', top: 0, left: 0 }}>
+          <Path d={path} fill="none" stroke={low ? theme.colors.paperWhite : theme.colors.success} strokeWidth={ring} strokeDasharray={`${left} ${length}`} />
+        </Svg>
+      )}
+      <Text variant="timerDisplay" color="paperWhite" style={clockText}>{pad(Math.floor(whole / 60))}:{pad(whole % 60)}</Text>
     </View>
   );
 }
@@ -127,7 +151,7 @@ const methodLabel = (method: string) => humanize(method).toLowerCase();
 
 /** The confirm step: nothing finalizes or advances the bracket until this is accepted. */
 export function ResultConfirm({ outcome, names, onConfirm, onCancel, busy }: {
-  outcome: Outcome & { note?: string | null };
+  outcome: Outcome;
   names: Record<string, string>;
   onConfirm: () => void;
   onCancel: () => void;

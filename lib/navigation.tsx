@@ -1,3 +1,3 @@
-import { theme } from '@/theme/tokens';
+import { PageHeader } from '@/components/PageHeader';
 
-export const stackScreenOptions = { headerTitleStyle: { fontFamily: theme.fonts.sans.medium } };
+export const stackScreenOptions = { header: PageHeader };
