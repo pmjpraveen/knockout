@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+dist/
+.env
+.env.local
+expo-env.d.ts
+supabase/.temp/
+supabase/.branches/
+.vercel
+.env*
+!.env.example
+*.docx
+.claude/
+.DS_Store
