@@ -20,5 +20,7 @@ export async function signInWithGoogle(): Promise<{ error: { message: string } |
   const code = new URL(result.url).searchParams.get('code');
   if (!code) return { error: { message: 'Google did not complete the sign-in. Please try again.' } };
   const exchanged = await supabase.auth.exchangeCodeForSession(code);
-  return { error: exchanged.error };
+  if (!exchanged.error) return { error: null };
+  const { data: current } = await supabase.auth.getSession();
+  return { error: current.session ? null : exchanged.error }; // app/auth-callback.tsx may have used the code first
 }

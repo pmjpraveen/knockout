@@ -2,15 +2,23 @@
   "expo": {
     "name": "Knockout",
     "slug": "karate-event-app",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "scheme": "karate-event-app",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "com.karateevent.app"
+      "bundleIdentifier": "com.onezero.knockout",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "buildNumber": "3"
     },
     "android": {
-      "package": "com.karateevent.app"
+      "package": "com.onezero.knockout",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
     },
     "web": {
       "bundler": "metro"
@@ -18,11 +26,19 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      ["expo-image-picker", { "photosPermission": "Knockout uses your photos to set a tournament cover image." }],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Knockout uses your photos to set a tournament cover image.",
+          "microphonePermission": false
+        }
+      ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#111111"
+          "backgroundColor": "#111111",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 160
         }
       ],
       "@react-native-community/datetimepicker",
@@ -43,6 +59,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/04951806-f39e-4fb7-a1f6-ee727fcea025"
-    }
+    },
+    "icon": "./assets/images/icon.png"
   }
 }

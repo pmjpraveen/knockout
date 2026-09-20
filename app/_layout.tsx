@@ -1,4 +1,4 @@
-import { GeistMono_700Bold } from '@expo-google-fonts/geist-mono';
+import { GeistMono_500Medium, GeistMono_700Bold } from '@expo-google-fonts/geist-mono';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -24,6 +24,7 @@ const fonts = {
   [theme.fonts.sans.medium]: require('@/assets/fonts/Switzer-Medium.otf'),
   [theme.fonts.display]: require('@/assets/fonts/FacultyGlyphic-Regular.ttf'),
   [theme.fonts.mono]: GeistMono_700Bold,
+  [theme.fonts.monoMedium]: GeistMono_500Medium,
 };
 
 export default function RootLayout() {
@@ -51,8 +52,9 @@ export default function RootLayout() {
         <Stack.Protected guard={!session}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         </Stack.Protected>
-        <Stack.Screen name="register/[token]" options={{ title: 'Register' }} />
-        <Stack.Screen name="schedule/[token]" options={{ title: 'Schedule' }} />
+        <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+        <Stack.Screen name="register/[token]" options={{ title: 'Register', headerBackVisible: false }} />
+        <Stack.Screen name="schedule/[token]" options={{ title: 'Schedule', headerBackVisible: false }} />
       </Stack>
       {showSplash && <Splash onReady={() => SplashScreen.hideAsync()} onDone={() => setSplashDone(true)} />}
     </>

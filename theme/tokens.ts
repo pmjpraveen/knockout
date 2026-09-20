@@ -33,6 +33,7 @@ export const theme = {
     },
     display: 'FacultyGlyphic-Regular', // login headline only
     mono: 'GeistMono_700Bold', // score-display and timer-display only
+    monoMedium: 'GeistMono_500Medium', // the match clock pill
   },
 
   type: {
