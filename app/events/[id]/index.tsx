@@ -41,6 +41,10 @@ export default function EventDetail() {
   const pending = entries.filter((e) => e.approval_status === 'submitted').length;
   const window = [event.registration_opens_at, event.registration_closes_at].map((at) => formatDate(dateOf(at)));
 
+  const deleteDraft = async () => {
+    if (await run(() => supabase.from('events').delete().eq('id', id))) router.canGoBack() ? router.back() : router.replace('/');
+  };
+
   const advance = () =>
     run(async () => {
       const result =
@@ -134,6 +138,10 @@ export default function EventDetail() {
           <ListRow title="Copy categories from another event" onPress={go('clone')} />
           {event.status === 'registration_closed' && <ListRow title="Merge or split categories" onPress={go('restructure')} />}
         </ListGroup>
+      )}
+
+      {isOrganizer && event.status === 'draft' && (
+        <Button title="Delete draft" variant="danger" confirmTitle="Tap again to delete this draft" disabled={busy} onPress={deleteDraft} />
       )}
     </Screen>
   );

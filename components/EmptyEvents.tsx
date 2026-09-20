@@ -48,7 +48,7 @@ export function EmptyEvents() {
       </View>
 
       <View style={{ alignItems: 'center', gap: theme.spacing[8], marginTop: theme.spacing[8] }}>
-        <Text variant="headingSm" weight="light" style={{ textAlign: 'center' }}>Host your first tournament</Text>
+        <Text variant="headingSm" style={{ textAlign: 'center' }}>Host your first tournament</Text>
         <Text variant="bodyLg" weight="light" color="slateGray" style={{ textAlign: 'center' }}>Create your tournament and invite clubs</Text>
       </View>
 

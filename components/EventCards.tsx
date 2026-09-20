@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, Pressable, View } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { Text } from '@/components/Text';
 import { EventRow, formatDateRange, humanize } from '@/lib/events';
+import { haptic } from '@/lib/haptics';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
@@ -29,7 +32,7 @@ type CardProps = { event: EventRow; thumb?: string | null; onPress: () => void }
 function Caption({ event }: { event: EventRow }) {
   return (
     <View style={{ gap: theme.spacing[4] }}>
-      <Text variant="bodyLg" weight="light" numberOfLines={1}>{event.name}</Text>
+      <Text variant="bodyLg" numberOfLines={1}>{event.name}</Text>
       <Text color="charcoal">{formatDateRange(event.start_date, event.end_date)}</Text>
     </View>
   );
@@ -50,12 +53,60 @@ export function EventHeroCard({ event, thumb, onPress }: CardProps) {
   );
 }
 
-/** A card for the drafts grid: `width` wide and `ratio` (width over height) shaped, square by default. */
-export function EventTile({ event, thumb, onPress, width, ratio = 1 }: CardProps & { width: number; ratio?: number }) {
+/** A trash button for a card's corner. The first tap arms it ("Delete?"), the second deletes; it disarms after 4 seconds. */
+function DeleteChip({ name, onDelete }: { name: string; onDelete: () => void }) {
+  const [armed, setArmed] = useState(false);
+
+  useEffect(() => {
+    if (!armed) return;
+    const timer = setTimeout(() => setArmed(false), 4000);
+    return () => clearTimeout(timer);
+  }, [armed]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={armed ? `Confirm deleting ${name}` : `Delete draft ${name}`}
+      hitSlop={theme.spacing[8]}
+      onPress={() => {
+        if (armed) return onDelete();
+        haptic.warning();
+        setArmed(true);
+      }}
+      style={({ pressed }) => [
+        {
+          position: 'absolute',
+          top: theme.spacing[12],
+          right: theme.spacing[12],
+          minWidth: 36,
+          height: 36,
+          borderRadius: 18,
+          paddingHorizontal: armed ? theme.spacing[12] : 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: armed ? theme.colors.dangerTint : theme.colors.paperWhite,
+        },
+        pressFeedback(pressed),
+      ]}
+    >
+      {armed ? (
+        <Text variant="body" weight="medium" color="danger">Delete?</Text>
+      ) : (
+        <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke={theme.colors.charcoal} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+          <Path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+        </Svg>
+      )}
+    </Pressable>
+  );
+}
+
+/** A card for the drafts grid: `width` wide and `ratio` (width over height) shaped, square by default. `onDelete` adds a delete button. */
+export function EventTile({ event, thumb, onPress, onDelete, width, ratio = 1 }: CardProps & { width: number; ratio?: number; onDelete?: () => void }) {
   return (
     <Pressable accessibilityRole="button" style={({ pressed }) => [{ width, gap: theme.spacing[12] }, pressFeedback(pressed)]} onPress={onPress}>
       <View style={{ width, height: width / ratio, borderRadius: theme.radii.scorePanel, overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
         <Image accessibilityLabel={`${event.name} cover`} source={coverSource(thumb)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
+        {onDelete && <DeleteChip name={event.name} onDelete={onDelete} />}
       </View>
       <Caption event={event} />
     </Pressable>

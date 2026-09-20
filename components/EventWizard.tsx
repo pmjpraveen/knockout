@@ -121,7 +121,7 @@ export function EventWizard({ userId }: { userId: string }) {
 
           <View style={{ gap: theme.spacing[8], marginTop: wide ? 0 : theme.spacing[8], marginBottom: wide ? theme.spacing[4] : 0 }}>
             <Text variant="label" weight="medium" style={{ textTransform: 'uppercase' }}>Step {step + 1}</Text>
-            <Text variant="subheading" weight="light">{steps[step].title}</Text>
+            <Text variant="subheading">{steps[step].title}</Text>
             <Text variant="label" weight="light" color="slateGray" style={{ lineHeight: 20 }}>{steps[step].hint}</Text>
           </View>
 
