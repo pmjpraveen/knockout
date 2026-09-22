@@ -7,7 +7,7 @@ import { SkeletonScreen } from '@/components/Skeleton';
 import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
-import { competeLabels, toAthleteInput, toDraft } from '@/lib/athlete';
+import { competeLabels, toDraft } from '@/lib/athlete';
 import { formatDate, formatDateTime } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 

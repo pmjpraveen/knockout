@@ -29,10 +29,9 @@ export default function EventScreen() {
   if (!data.event) return <SkeletonScreen />;
 
   // The tab lives in the URL, so it survives coming back from a sub-screen and the browser's back button.
-  const tab = tabs.find((item) => item.key === tabParam)?.key ?? 'home';
-
   const event = data as EventData;
-  const shown = tabs.filter((item) => item.key !== 'configure' || data.canOverride);
+  const shown = tabs.filter((item) => (item.key !== 'configure' || data.canOverride) && (item.key !== 'categories' || !data.isScorekeeperOnly));
+  const tab = shown.find((item) => item.key === tabParam)?.key ?? 'home';
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>

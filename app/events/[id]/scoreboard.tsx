@@ -35,6 +35,9 @@ export default function Scoreboard() {
     Promise.all(rows.map(async (row) => [row.match_id, await loadMatch(row.match_id)] as const)).then((pairs) => setLocal(Object.fromEntries(pairs)));
   }, [rows]);
   const queue = rows.filter((row) => !local[row.match_id]?.finalized);
+  // A tatami works through one category at a time (enforced by the server too): the queue is already
+  // ordered so the running category's matches come first, so its own first row names it.
+  const runningCategory = queue[0]?.category_label;
 
   return (
     <Screen animate={false}>
@@ -55,11 +58,15 @@ export default function Scoreboard() {
           <Text variant="bodyLg" weight="medium">{row.athlete_a} vs {row.athlete_b}</Text>
           <Text variant="body" color="slateGray">{row.category_label} · {matchLabel(row.bracket_side, row.round)}</Text>
           {local[row.match_id]?.conflict && <Text variant="body" color="danger">Conflict: {local[row.match_id].conflict}</Text>}
-          {index < 2 && (
-            <Button
-              title={local[row.match_id]?.started || row.match_status === 'in_progress' ? 'Continue scoring' : 'Score this match'}
-              onPress={() => router.push({ pathname: '/events/[id]/match', params: { id, tatamiId, matchId: row.match_id } })}
-            />
+          {index < 2 && row.category_label !== runningCategory && !local[row.match_id]?.started && row.match_status !== 'in_progress' ? (
+            <Text variant="body" color="slateGray">Finish {runningCategory} on this tatami first.</Text>
+          ) : (
+            index < 2 && (
+              <Button
+                title={local[row.match_id]?.started || row.match_status === 'in_progress' ? 'Continue scoring' : 'Score this match'}
+                onPress={() => router.push({ pathname: '/events/[id]/match', params: { id, tatamiId, matchId: row.match_id } })}
+              />
+            )
           )}
         </Card>
       ))}

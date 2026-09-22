@@ -1,4 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '@/components/event/EventCover';
 import { KataScoreboard } from '@/components/KataScoreboard';
 import { KumiteScoreboard } from '@/components/KumiteScoreboard';
 import { Screen } from '@/components/Screen';
@@ -17,7 +18,9 @@ export default function Match() {
   const router = useRouter();
   const { rows, loading } = useFocusQuery(() => supabase.rpc('tatami_scoreboard', { p_tatami_id: tatamiId }), [tatamiId], `scoreboard:${tatamiId}`);
   const row = rows.find((r) => r.match_id === matchId);
-  const done = () => router.replace({ pathname: '/events/[id]/scoreboard', params: { id } });
+  // Pop back to wherever the scorekeeper opened this match from (the queue list, or a tatami's full queue),
+  // rather than always landing on the Scoreboard tab first and needing a second tap to actually leave.
+  const done = () => goBack(router);
 
   if (!row) {
     return (

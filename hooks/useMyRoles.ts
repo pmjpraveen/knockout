@@ -12,9 +12,12 @@ export function useMyRoles(eventId: string) {
     !!userId,
   );
 
+  const canOverride = rows.some((m) => m.role !== 'scorekeeper');
   return {
     memberships: rows,
     isOrganizer: rows.some((m) => m.role === 'organizer'),
-    canOverride: rows.some((m) => m.role !== 'scorekeeper'),
+    canOverride,
+    /** Every membership on this event is scorekeeper: no organizer or tournament director role at all. */
+    isScorekeeperOnly: rows.length > 0 && !canOverride,
   };
 }
