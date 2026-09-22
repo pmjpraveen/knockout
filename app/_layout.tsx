@@ -1,4 +1,3 @@
-import { GeistMono_500Medium, GeistMono_700Bold } from '@expo-google-fonts/geist-mono';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -6,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Splash } from '@/components/Splash';
+import { WebHeader } from '@/components/WebHeader';
+import { useFaviconColorScheme } from '@/hooks/useFaviconColorScheme';
 import { useSession } from '@/hooks/useSession';
 import { startSyncLoop } from '@/lib/offline';
 import { stackScreenOptions } from '@/lib/navigation';
@@ -23,8 +24,9 @@ const fonts = {
   [theme.fonts.sans.regular]: require('@/assets/fonts/Switzer-Regular.otf'),
   [theme.fonts.sans.medium]: require('@/assets/fonts/Switzer-Medium.otf'),
   [theme.fonts.display]: require('@/assets/fonts/FacultyGlyphic-Regular.ttf'),
-  [theme.fonts.mono]: GeistMono_700Bold,
-  [theme.fonts.monoMedium]: GeistMono_500Medium,
+  // Required directly (not from the package's barrel index), which would otherwise bundle all 18 weights it exports.
+  [theme.fonts.mono]: require('@expo-google-fonts/geist-mono/700Bold/GeistMono_700Bold.ttf'),
+  [theme.fonts.monoMedium]: require('@expo-google-fonts/geist-mono/500Medium/GeistMono_500Medium.ttf'),
 };
 
 export default function RootLayout() {
@@ -35,15 +37,20 @@ export default function RootLayout() {
   const showSplash = Platform.OS !== 'web' && !splashDone && !publicRoutes.some((route) => pathname.startsWith(route));
   const signedIn = !!session;
   useEffect(() => (signedIn ? startSyncLoop() : undefined), [signedIn]);
+  useFaviconColorScheme();
   const ready = session !== undefined && (fontsLoaded || fontError);
   useEffect(() => {
     if (ready && !showSplash) SplashScreen.hideAsync();
   }, [ready, showSplash]);
   if (!ready) return null;
 
+  // The wizard renders full-bleed on web (its own overlay), so the persistent header would fight it there.
+  const isCreatingEvent = pathname.startsWith('/events/new');
+
   return (
     <>
       <StatusBar style={showSplash ? 'light' : 'dark'} />
+      {!isCreatingEvent && <WebHeader />}
       <Stack screenOptions={stackScreenOptions}>
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="index" options={{ title: 'Events' }} />
