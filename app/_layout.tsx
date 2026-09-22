@@ -16,7 +16,7 @@ SplashScreen.preventAutoHideAsync();
 
 // The launch animation is for the iOS and Android apps. Clubs and the public open these web links cold and
 // should not wait on it.
-const publicRoutes = ['/register', '/schedule'];
+const publicRoutes = ['/register', '/schedule', '/terms', '/privacy'];
 
 const fonts = {
   [theme.fonts.sans.light]: require('@/assets/fonts/Switzer-Light.otf'),
@@ -48,11 +48,14 @@ export default function RootLayout() {
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="index" options={{ title: 'Events' }} />
           <Stack.Screen name="events" options={{ headerShown: false }} />
+          <Stack.Screen name="delete-account" options={{ title: 'Account deletion' }} />
         </Stack.Protected>
         <Stack.Protected guard={!session}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         </Stack.Protected>
         <Stack.Screen name="auth-callback" options={{ headerShown: false }} />
+        <Stack.Screen name="terms" options={{ title: 'Terms and conditions' }} />
+        <Stack.Screen name="privacy" options={{ title: 'Privacy policy' }} />
         <Stack.Screen name="register/[token]" options={{ title: 'Register', headerBackVisible: false }} />
         <Stack.Screen name="schedule/[token]" options={{ title: 'Schedule', headerBackVisible: false }} />
       </Stack>

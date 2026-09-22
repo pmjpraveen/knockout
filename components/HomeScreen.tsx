@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { ReactNode, useState } from 'react';
 import { Image, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,7 +29,14 @@ export const wideColumn = 1272;
 
 /** The avatar doubles as the account menu, whose only entry is Sign out. */
 function AccountMenu({ uri, name }: { uri?: string; name: string }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const entries = [
+    { title: 'Terms and conditions', onPress: () => router.push('/terms') },
+    { title: 'Privacy policy', onPress: () => router.push('/privacy') },
+    { title: 'Account deletion', danger: true, onPress: () => router.push('/delete-account') },
+    { title: 'Sign out', onPress: () => supabase.auth.signOut() },
+  ];
   return (
     <View style={{ zIndex: 1 }}>
       <Pressable accessibilityRole="button" accessibilityLabel={`Account menu for ${name}`} style={({ pressed }) => pressFeedback(pressed)} onPress={() => setOpen((o) => !o)}>
@@ -41,7 +48,7 @@ function AccountMenu({ uri, name }: { uri?: string; name: string }) {
             position: 'absolute',
             top: 48,
             right: 0,
-            minWidth: 160,
+            minWidth: 240,
             padding: theme.spacing[4],
             backgroundColor: theme.colors.paperWhite,
             borderWidth: 1,
@@ -50,13 +57,16 @@ function AccountMenu({ uri, name }: { uri?: string; name: string }) {
             ...theme.shadows.scorePanel,
           }}
         >
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [{ minHeight: theme.touchTarget.minimum, justifyContent: 'center', paddingHorizontal: theme.spacing[12] }, pressFeedback(pressed)]}
-            onPress={() => supabase.auth.signOut()}
-          >
-            <Text>Sign out</Text>
-          </Pressable>
+          {entries.map((entry, index) => (
+            <Pressable
+              key={entry.title}
+              accessibilityRole="button"
+              style={({ pressed }) => [{ minHeight: theme.touchTarget.minimum, justifyContent: 'center', paddingHorizontal: theme.spacing[12], borderTopWidth: index === entries.length - 1 ? 1 : 0, borderTopColor: theme.colors.mist }, pressFeedback(pressed)]}
+              onPress={() => { setOpen(false); entry.onPress(); }}
+            >
+              <Text color={entry.danger ? 'danger' : 'inkBlack'}>{entry.title}</Text>
+            </Pressable>
+          ))}
         </View>
       )}
     </View>
