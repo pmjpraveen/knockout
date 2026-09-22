@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { GoogleIcon } from '@/components/GoogleIcon';
 import { LoginArtwork, wideBreakpoint } from '@/components/LoginArtwork';
-import { LogoMark } from '@/components/LogoMark';
+import { LogoLockup } from '@/components/LogoLockup';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useSubmit } from '@/hooks/useSubmit';
@@ -50,7 +50,7 @@ export default function SignIn() {
       <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite, overflow: 'hidden' }}>
         <LoginArtwork />
         <ScrollView contentContainerStyle={{ alignItems: 'center', gap: theme.spacing[32], padding: theme.spacing[16], paddingTop: theme.spacing[48] }} {...scroll}>
-          <LogoMark />
+          <LogoLockup width={170} />
           <View
             style={{
               width: '100%',
@@ -77,7 +77,7 @@ export default function SignIn() {
       <View style={{ flexGrow: 1, alignItems: 'center', paddingHorizontal: theme.spacing[16] }}>
         <View style={{ width: '100%', maxWidth: 400, gap: theme.spacing[16], paddingTop: Math.max(insets.top, theme.spacing[32]) + theme.spacing[8], paddingBottom: theme.spacing[8] }}>
           <View style={{ alignItems: 'center' }}>
-            <LogoMark />
+            <LogoLockup width={170} />
           </View>
           {heading}
           {form}

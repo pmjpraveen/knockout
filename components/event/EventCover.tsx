@@ -3,12 +3,11 @@ import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import { Image, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { coverSource } from '@/components/EventCards';
-import { Glass } from '@/components/Glass';
 import { theme } from '@/theme/tokens';
 
 export const goBack = (router: ReturnType<typeof useRouter>) => (router.canGoBack() ? router.back() : router.replace('/'));
 
-/** A round back button. On a cover image it is a small piece of glass; on a plain page it is a light circle. */
+/** A round back button. On a cover image it is solid white so it reads on any picture; on a plain page it is a light circle. */
 export function BackButton({ onCover }: { onCover?: boolean }) {
   const router = useRouter();
   const button = (
@@ -16,10 +15,8 @@ export function BackButton({ onCover }: { onCover?: boolean }) {
       <ArrowLeft size={20} color={theme.colors.inkBlack} strokeWidth={2} />
     </Pressable>
   );
-  return onCover ? (
-    <Glass radius={20} style={{ width: 40, height: 40 }}>{button}</Glass>
-  ) : (
-    <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.cloud }}>{button}</View>
+  return (
+    <View style={[{ width: 40, height: 40, borderRadius: 20, backgroundColor: onCover ? theme.colors.paperWhite : theme.colors.cloud }, onCover && theme.shadows.subtle]}>{button}</View>
   );
 }
 
