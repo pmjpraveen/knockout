@@ -427,6 +427,10 @@ verify_jwt = false
 # Public by design: the unlisted schedule token is the only credential.
 verify_jwt = false
 
+[functions.delete-account]
+# The function checks the caller's session itself and only ever deletes that caller's own account.
+verify_jwt = false
+
 [auth.external.google]
 # Turn on once the Google OAuth client exists: set enabled = true and fill in the two values below
 # (or use env(GOOGLE_CLIENT_ID) / env(GOOGLE_CLIENT_SECRET)). Then restart with `npx supabase stop && npx supabase start`.

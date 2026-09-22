@@ -166,6 +166,7 @@ export type Database = {
           bracket_format: string | null
           created_at: string
           discipline: string
+          event_day: string | null
           event_id: string
           gender: string | null
           id: string
@@ -174,6 +175,8 @@ export type Database = {
           match_seconds: number | null
           scoring_mode: string | null
           sequence: number | null
+          split_index: number | null
+          split_root: string | null
           status: string
           tatami_id: string | null
           weight_max: number | null
@@ -187,6 +190,7 @@ export type Database = {
           bracket_format?: string | null
           created_at?: string
           discipline: string
+          event_day?: string | null
           event_id: string
           gender?: string | null
           id?: string
@@ -195,6 +199,8 @@ export type Database = {
           match_seconds?: number | null
           scoring_mode?: string | null
           sequence?: number | null
+          split_index?: number | null
+          split_root?: string | null
           status?: string
           tatami_id?: string | null
           weight_max?: number | null
@@ -208,6 +214,7 @@ export type Database = {
           bracket_format?: string | null
           created_at?: string
           discipline?: string
+          event_day?: string | null
           event_id?: string
           gender?: string | null
           id?: string
@@ -216,6 +223,8 @@ export type Database = {
           match_seconds?: number | null
           scoring_mode?: string | null
           sequence?: number | null
+          split_index?: number | null
+          split_root?: string | null
           status?: string
           tatami_id?: string | null
           weight_max?: number | null
@@ -227,6 +236,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_split_root_fkey"
+            columns: ["split_root"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
           {
@@ -829,6 +845,10 @@ export type Database = {
         Args: { p_event_id: string }
         Returns: undefined
       }
+      assert_tatami_category_turn: {
+        Args: { p_category_id: string; p_tatami_id: string }
+        Returns: undefined
+      }
       assign_category_to_tatami: {
         Args: { p_category_id: string; p_tatami_id?: string }
         Returns: undefined
@@ -842,6 +862,13 @@ export type Database = {
         Returns: undefined
       }
       bracket_event_id: { Args: { p_bracket_id: string }; Returns: string }
+      bracket_podium: {
+        Args: { p_bracket_id: string }
+        Returns: {
+          athlete: string
+          place: number
+        }[]
+      }
       bracket_propagate: { Args: { p_match_id: string }; Returns: undefined }
       bracket_resequence: { Args: { p_tatami_id: string }; Returns: undefined }
       bracket_seed_order: { Args: { p_size: number }; Returns: number[] }
@@ -855,6 +882,15 @@ export type Database = {
       }
       can_score_match: { Args: { p_match_id: string }; Returns: boolean }
       category_event_id: { Args: { p_category_id: string }; Returns: string }
+      category_podium: {
+        Args: { p_category_id: string }
+        Returns: {
+          athlete_id: string
+          athlete_name: string
+          club_name: string
+          place: number
+        }[]
+      }
       club_entry_event_id: {
         Args: { p_club_entry_id: string }
         Returns: string
@@ -870,6 +906,7 @@ export type Database = {
           conflict: boolean
           discipline: string
           estimated_call_time: string
+          event_day: string
           match_id: string
           match_status: string
           minutes: number
@@ -1009,6 +1046,18 @@ export type Database = {
           p_winner: string
         }
         Returns: undefined
+      }
+      set_category_day: {
+        Args: { p_category_id: string; p_day: string }
+        Returns: undefined
+      }
+      set_category_groups: {
+        Args: {
+          p_category_id: string
+          p_groups: number
+          p_tatami_ids?: string[]
+        }
+        Returns: string[]
       }
       set_event_belts: {
         Args: { p_belts: string[]; p_event_id: string }

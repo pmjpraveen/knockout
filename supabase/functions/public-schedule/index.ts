@@ -7,7 +7,17 @@ const cors = {
 
 const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-const maxPerTatami = 30;
+const maxPerTatamiPerDay = 30;
+
+// Keeps each day's first matches, so a long first day cannot push a later day off the list.
+const withinDayLimit = () => {
+  const seen = new Map<string, number>();
+  return (m: any) => {
+    const count = (seen.get(m.event_day ?? '') ?? 0) + 1;
+    seen.set(m.event_day ?? '', count);
+    return count <= maxPerTatamiPerDay;
+  };
+};
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
@@ -18,7 +28,7 @@ Deno.serve(async (req) => {
     const { token } = await req.json();
     const { data: event } = await admin
       .from('events')
-      .select('id, name, venue')
+      .select('id, name, venue, start_date, end_date')
       .eq('schedule_token', typeof token === 'string' ? token : '')
       .maybeSingle();
     if (!event) return respond(404, { error: 'This schedule link is not valid.' });
@@ -31,14 +41,14 @@ Deno.serve(async (req) => {
 
     // Names, ring, round and estimated time only: no ids, dates of birth, weights or clubs.
     return respond(200, {
-      event: { name: event.name, venue: event.venue },
+      event: { name: event.name, venue: event.venue, start_date: event.start_date, end_date: event.end_date },
       updated_at: new Date().toISOString(),
       tatamis: (tatamis ?? []).map((t) => ({
         name: t.name,
         status: t.status,
         matches: (schedule ?? [])
           .filter((m: any) => m.tatami_id === t.id)
-          .slice(0, maxPerTatami)
+          .filter(withinDayLimit())
           .map((m: any) => ({
             position: m.queue_position,
             category: m.category_label,
@@ -48,6 +58,7 @@ Deno.serve(async (req) => {
             athlete_a: m.athlete_a,
             athlete_b: m.athlete_b,
             estimated_call_time: m.estimated_call_time,
+            day: m.event_day,
           })),
       })),
     });
