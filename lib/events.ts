@@ -5,7 +5,14 @@ export type CategoryRow = Tables<'categories'>;
 
 export const disciplines = ['kumite', 'kata', 'team'] as const;
 export const genders = ['any', 'male', 'female', 'mixed'] as const;
-export const bracketFormats = ['single_elim_repechage', 'round_robin', 'double_elim'] as const;
+export const bracketFormats = ['single_elim_repechage', 'single_elim', 'round_robin', 'double_elim'] as const;
+
+export const bracketFormatLabels: Record<(typeof bracketFormats)[number], string> = {
+  single_elim_repechage: 'Single elim + repechage',
+  single_elim: 'Single elim, semis share 3rd',
+  round_robin: 'Round robin',
+  double_elim: 'Double elim',
+};
 
 /** Scoring modes each discipline can use; the first is the default. */
 export const scoringModes = {

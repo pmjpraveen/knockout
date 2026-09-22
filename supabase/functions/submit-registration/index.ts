@@ -90,8 +90,8 @@ async function handle(body: any) {
 
     case 'save': {
       if (!open) throw new HttpError(403, 'Registration is closed for this event.');
-      if (!Array.isArray(body.athletes) || body.athletes.length < 1 || body.athletes.length > 200) {
-        throw new HttpError(400, 'Add between 1 and 200 participants.');
+      if (!Array.isArray(body.athletes) || body.athletes.length < 1 || body.athletes.length > 400) {
+        throw new HttpError(400, 'Add between 1 and 400 participants.');
       }
       const { data, error } = await admin.rpc('save_club_entry', {
         p_event_id: event.id,

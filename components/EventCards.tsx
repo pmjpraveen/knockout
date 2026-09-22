@@ -8,7 +8,7 @@ import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
 /** Shown wherever an event has no cover image of its own. */
-export const fallbackCover: ImageSourcePropType = require('@/assets/images/event-fallback.jpg');
+export const fallbackCover: ImageSourcePropType = require('@/assets/images/event-fallback.png');
 
 export const coverSource = (image: string | null | undefined): ImageSourcePropType => (image ? { uri: image } : fallbackCover);
 

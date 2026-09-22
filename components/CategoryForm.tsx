@@ -10,7 +10,7 @@ import { useEventDays } from '@/hooks/useEventDays';
 import { useSubmit } from '@/hooks/useSubmit';
 import { defaultLabel } from '@/lib/categoryLabel';
 import { dayLabels } from '@/lib/schedule';
-import { bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
+import { bracketFormatLabels, bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -111,7 +111,7 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
       <ChoiceChips label="Belt from" options={beltOptions} value={beltMin} onChange={setBeltMin} labels={beltLabels} />
       <ChoiceChips label="Belt to" options={beltOptions} value={beltMax} onChange={setBeltMax} labels={beltLabels} />
       {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
-      <ChoiceChips label="Bracket format" options={bracketFormats} value={format} onChange={setFormat} />
+      <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
       <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
       {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}
       <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />

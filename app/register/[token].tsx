@@ -23,7 +23,7 @@ type Info = {
 };
 type Row = { key: number; athlete: AthleteDraft; compact: boolean };
 
-const maxParticipants = 200; // what the submit-registration function accepts for one submission
+const maxParticipants = 400; // what the submit-registration function accepts for one submission
 const compactAbove = 8; // longer lists show one line per participant until someone taps Edit
 let nextKey = 0;
 const newRow = (athlete: AthleteDraft, compact = false): Row => ({ key: nextKey++, athlete, compact });

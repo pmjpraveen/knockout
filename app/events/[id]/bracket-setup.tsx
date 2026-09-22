@@ -8,7 +8,7 @@ import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
-import { bracketFormats } from '@/lib/events';
+import { bracketFormatLabels, bracketFormats } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -76,7 +76,7 @@ export default function BracketSetup() {
       </Text>
       {started && <Text color="warning">Matches have started, so seeds and the draw are locked. Use a withdrawal override on the bracket instead.</Text>}
 
-      <ChoiceChips label="Format" options={bracketFormats} value={format} onChange={setFormat} />
+      <ChoiceChips label="Format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
 
       <Text variant="subheading" weight="medium">Seeds</Text>
       {seeded.length === 0 && <Text color="slateGray">No manual seeds. The whole draw is random.</Text>}
