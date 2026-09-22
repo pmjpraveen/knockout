@@ -9,7 +9,8 @@ export type QueueItem = {
   key: string;
   a: string | null;
   b: string | null;
-  time: string;
+  /** Empty for a day that has not started: its queue has an order but no call times yet. */
+  time: string | null;
   category: string;
   detail: string;
   conflict?: boolean;
@@ -55,7 +56,7 @@ export function TatamiQueueCard({ name, paused, items, footer }: { name: string;
           <Athlete name={item.a} corner="aka" />
           <Athlete name={item.b} corner="ao" />
           <Text variant="body" color="slateGray">
-            ≈ {formatTime(item.time)} · {item.category} · {item.detail}
+            {item.time ? `≈ ${formatTime(item.time)} · ` : ''}{item.category} · {item.detail}
           </Text>
           {item.conflict && <Text variant="body" color="warning">An athlete here is also called to another ring at this time.</Text>}
           {item.action}

@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { BracketMatch, BracketTree } from '@/components/BracketTree';
 import { Button } from '@/components/Button';
+import { Podium } from '@/components/Podium';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { Screen } from '@/components/Screen';
@@ -56,6 +57,7 @@ export default function Bracket() {
       <Text variant="heading" weight="medium">{categories[0]?.label}</Text>
       <Text color="slateGray">{humanize(bracket.format)} · {matches.length} matches</Text>
       {stale && <Text color="warning">Offline: showing the bracket as last synced.</Text>}
+      <Podium categoryId={categoryId} />
       <BracketTree matches={matches as BracketMatch[]} />
 
       {bracket.format === 'round_robin' && standings.length > 0 && (

@@ -6,8 +6,10 @@ import { ChoiceChips } from '@/components/ChoiceChips';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useEventBelts } from '@/hooks/useEventBelts';
+import { useEventDays } from '@/hooks/useEventDays';
 import { useSubmit } from '@/hooks/useSubmit';
 import { defaultLabel } from '@/lib/categoryLabel';
+import { dayLabels } from '@/lib/schedule';
 import { bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
@@ -34,6 +36,9 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
   const [scoringMode, setScoringMode] = useState(category?.scoring_mode ?? '');
   const [panel, setPanel] = useState(String(category?.judge_panel ?? 5));
   const [matchSeconds, setMatchSeconds] = useState(text(category?.match_seconds));
+  const days = useEventDays(eventId, [category?.event_day ?? null]);
+  const [pickedDay, setPickedDay] = useState<string | null>(category?.event_day ?? null);
+  const day = pickedDay ?? days[0] ?? null;
   const [invalid, setInvalid] = useState<string | null>(null);
   const { run, busy, error } = useSubmit();
 
@@ -68,6 +73,7 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
     const fields = {
       ...criteria, label: label.trim() || suggested, bracket_format: format,
       scoring_mode: mode, judge_panel: Number(panel), match_seconds: seconds,
+      ...(day && { event_day: day }),
     };
     return run(async () => {
       const result = category
@@ -104,6 +110,7 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
       {pair([weightMin, setWeightMin, 'Weight min (kg)'], [weightMax, setWeightMax, 'Weight max (kg)'])}
       <ChoiceChips label="Belt from" options={beltOptions} value={beltMin} onChange={setBeltMin} labels={beltLabels} />
       <ChoiceChips label="Belt to" options={beltOptions} value={beltMax} onChange={setBeltMax} labels={beltLabels} />
+      {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
       <ChoiceChips label="Bracket format" options={bracketFormats} value={format} onChange={setFormat} />
       <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
       {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}

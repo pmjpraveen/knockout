@@ -5,11 +5,12 @@ import { Screen } from '@/components/Screen';
 import { SkeletonList } from '@/components/Skeleton';
 import { TatamiQueueCard } from '@/components/TatamiQueueCard';
 import { Text } from '@/components/Text';
-import { matchLabel } from '@/lib/schedule';
+import { ChoiceChips } from '@/components/ChoiceChips';
+import { currentDay, dayLabels, eventDays, matchLabel } from '@/lib/schedule';
 import { supabaseUrl } from '@/lib/supabase';
 
 type PublicSchedule = {
-  event: { name: string; venue: string | null };
+  event: { name: string; venue: string | null; start_date: string | null; end_date: string | null };
   updated_at: string;
   tatamis: {
     name: string;
@@ -21,7 +22,8 @@ type PublicSchedule = {
       side: string;
       athlete_a: string | null;
       athlete_b: string | null;
-      estimated_call_time: string;
+      estimated_call_time: string | null;
+      day: string | null;
     }[];
   }[];
 };
@@ -33,6 +35,7 @@ export default function PublicSchedulePage() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const [schedule, setSchedule] = useState<PublicSchedule | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -58,6 +61,9 @@ export default function PublicSchedulePage() {
 
   if (!schedule) return <Screen>{error ? <Text color="danger">{error}</Text> : <SkeletonList count={2} />}</Screen>;
 
+  const days = eventDays(schedule.event.start_date, schedule.event.end_date, schedule.tatamis.flatMap((t) => t.matches.map((m) => m.day)));
+  const day = picked ?? currentDay(days, schedule.tatamis.flatMap((t) => t.matches.map((m) => m.day)));
+
   return (
     <Screen wide>
       <Text variant="heading" weight="medium">{schedule.event.name}</Text>
@@ -66,13 +72,14 @@ export default function PublicSchedulePage() {
         Times are estimates and update live. Refreshed {new Date(schedule.updated_at).toLocaleTimeString()}.
       </Text>
       {error && <Text color="warning">Could not refresh. Showing the last update.</Text>}
+      {days.length > 1 && day && <ChoiceChips label="Day" options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
       <CardGrid>
       {schedule.tatamis.map((tatami) => (
         <TatamiQueueCard
           key={tatami.name}
           name={tatami.name}
           paused={tatami.status === 'paused'}
-          items={tatami.matches.map((m) => ({
+          items={tatami.matches.filter((m) => !day || m.day === day).map((m) => ({
             key: String(m.position),
             a: m.athlete_a,
             b: m.athlete_b,

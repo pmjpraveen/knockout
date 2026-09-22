@@ -43,6 +43,9 @@ export default function Brackets() {
             </Text>
             {!ready && <Text variant="body" color="slateGray">Close registration to draw this category.</Text>}
             {isOrganizer && ready && category.status !== 'completed' && (
+              <Button title="Split into groups" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/category-groups', params: { id, categoryId: category.id } })} />
+            )}
+            {isOrganizer && ready && category.status !== 'completed' && (
               <Button
                 title={drawn.includes(category.status) ? 'Seed & redraw' : 'Seed & generate'}
                 variant="secondary"

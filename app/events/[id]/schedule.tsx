@@ -9,9 +9,11 @@ import { Text } from '@/components/Text';
 import { TatamiQueueCard } from '@/components/TatamiQueueCard';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useLiveReload } from '@/hooks/useLiveReload';
+import { useEventDays } from '@/hooks/useEventDays';
 import { useMyRoles } from '@/hooks/useMyRoles';
 import { useSubmit } from '@/hooks/useSubmit';
-import { matchLabel } from '@/lib/schedule';
+import { useState } from 'react';
+import { currentDay, dayLabels, matchLabel } from '@/lib/schedule';
 import { supabase } from '@/lib/supabase';
 
 const drawn = ['bracket_generated', 'in_progress'];
@@ -36,14 +38,23 @@ export default function Schedule() {
     return result;
   });
 
+  const days = useEventDays(id, categories.map((category) => category.event_day));
+  const [picked, setPicked] = useState<string | null>(null);
+  const day = picked ?? currentDay(days, schedule.map((row) => row.event_day));
+  const daySchedule = schedule.filter((row) => !day || row.event_day === day);
+  const dayCategories = categories.filter((category) => !day || category.event_day === day);
+  const running = !daySchedule.some((row) => row.estimated_call_time === null);
+
   const tatamiLabels = { none: 'Unassigned', ...Object.fromEntries(tatamis.map((t) => [t.id, t.name])) };
-  const clashes = schedule.filter((row) => row.conflict);
+  const clashes = daySchedule.filter((row) => row.conflict);
 
   return (
     <Screen wide>
       {canOverride && (
         <Button title="Tatamis, timing & public link" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/tatamis', params: { id } })} />
       )}
+      {days.length > 1 && day && <ChoiceChips label="Day" options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
+      {!running && <Text color="slateGray">This day has not started. Its queues show the running order; call times appear once it does.</Text>}
       {stale && <Text color="warning">Offline: showing the schedule as last synced. Times are estimates from that moment.</Text>}
       {loadingTatamis && <SkeletonList count={2} />}
       {!loadingTatamis && tatamis.length === 0 && <Text color="slateGray">No tatamis yet. Add the rings first.</Text>}
@@ -67,7 +78,7 @@ export default function Schedule() {
 
       <CardGrid>
       {tatamis.map((tatami) => {
-        const queue = schedule.filter((row) => row.tatami_id === tatami.id);
+        const queue = daySchedule.filter((row) => row.tatami_id === tatami.id);
         return (
           <TatamiQueueCard
             key={tatami.id}
@@ -85,7 +96,7 @@ export default function Schedule() {
             footer={
               <>
                 {queue.length > 3 && <Text variant="body" color="slateGray">{queue.length - 3} more in the queue</Text>}
-                <Button title="Full queue" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/tatami', params: { id, tatamiId: tatami.id } })} />
+                <Button title="Full queue" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/tatami', params: { id, tatamiId: tatami.id, ...(day && { day }) } })} />
                 {canOverride && (
                   <Button
                     title={tatami.status === 'paused' ? 'Resume tatami' : 'Pause tatami'}
@@ -101,12 +112,15 @@ export default function Schedule() {
       })}
       </CardGrid>
 
-      {canOverride && categories.length > 0 && (
+      {canOverride && dayCategories.length > 0 && (
         <>
           <Text variant="subheading" weight="medium">Categories and running order</Text>
-          {categories.map((category, index) => (
+          {dayCategories.map((category, index) => (
             <Card key={category.id}>
               <Text variant="bodyLg" weight="medium">{index + 1}. {category.label}</Text>
+              {days.length > 1 && (
+                <ChoiceChips label="Day" options={days} value={category.event_day ?? days[0]} labels={dayLabels(days)} onChange={(next) => act(() => supabase.rpc('set_category_day', { p_category_id: category.id, p_day: next }))} />
+              )}
               <ChoiceChips
                 label="Runs on"
                 options={['none', ...tatamis.map((t) => t.id)]}
@@ -117,7 +131,7 @@ export default function Schedule() {
                 }
               />
               <Button title="Run earlier" variant="secondary" disabled={busy || index === 0} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: -1 }))} />
-              <Button title="Run later" variant="secondary" disabled={busy || index === categories.length - 1} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: 1 }))} />
+              <Button title="Run later" variant="secondary" disabled={busy || index === dayCategories.length - 1} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: 1 }))} />
               <Button title="Split across tatamis" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket-split', params: { id, categoryId: category.id } })} />
             </Card>
           ))}

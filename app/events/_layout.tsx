@@ -13,6 +13,7 @@ export default function EventsLayout() {
       <Stack.Screen name="[id]/import-athletes" options={{ title: 'Import participants' }} />
       <Stack.Screen name="[id]/clone" options={{ title: 'Copy categories' }} />
       <Stack.Screen name="[id]/restructure" options={{ title: 'Merge or split' }} />
+      <Stack.Screen name="[id]/category-groups" options={{ title: 'Split into groups' }} />
       <Stack.Screen name="[id]/split" options={{ title: 'Split category' }} />
       <Stack.Screen name="[id]/link" options={{ title: 'Registration link' }} />
       <Stack.Screen name="[id]/submissions" options={{ title: 'Submissions' }} />

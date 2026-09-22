@@ -8,11 +8,12 @@ import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useLiveReload } from '@/hooks/useLiveReload';
 import { useMyRoles } from '@/hooks/useMyRoles';
 import { useSubmit } from '@/hooks/useSubmit';
-import { matchLabel } from '@/lib/schedule';
+import { currentDay, matchLabel } from '@/lib/schedule';
+import { formatDate } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 
 export default function TatamiQueue() {
-  const { id, tatamiId } = useLocalSearchParams<{ id: string; tatamiId: string }>();
+  const { id, tatamiId, day: requestedDay } = useLocalSearchParams<{ id: string; tatamiId: string; day?: string }>();
   const router = useRouter();
   const { canOverride } = useMyRoles(id);
   const { run, busy, error } = useSubmit();
@@ -21,7 +22,9 @@ export default function TatamiQueue() {
   useLiveReload(() => { reloadTatami(); reloadSchedule(); }, ['matches', 'tatamis']);
 
   const tatami = tatamis[0];
-  const queue = schedule.filter((row) => row.tatami_id === tatamiId);
+  const ofTatami = schedule.filter((row) => row.tatami_id === tatamiId);
+  const day = requestedDay ?? currentDay([], ofTatami.map((row) => row.event_day));
+  const queue = ofTatami.filter((row) => !day || row.event_day === day);
 
   const act = (action: () => PromiseLike<{ error: { message: string } | null }>) => run(async () => {
     const result = await action();
@@ -34,6 +37,7 @@ export default function TatamiQueue() {
   return (
     <Screen>
       {error && <Text color="danger">{error}</Text>}
+      {day && <Text color="slateGray">Queue for {formatDate(day)}</Text>}
       <TatamiQueueCard
         name={tatami.name}
         paused={tatami.status === 'paused'}
