@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import * as XLSX from 'xlsx';
 import { parseAthleteRows } from './athleteImport.ts';
 import { parseCategoryRows } from './categoryImport.ts';
-import { readSheet, toIsoDate } from './sheetRows.ts';
+import { readSheet, sheetErrorMessage, toIsoDate } from './sheetRows.ts';
 
 assert.equal(toIsoDate('14-03-2013'), '2013-03-14');
 assert.equal(toIsoDate('4/3/2013'), '2013-03-04', 'day first, as the app writes dates');
@@ -70,4 +70,13 @@ for (const [bookType, date] of [['xlsx', new Date(2013, 2, 14)], ['csv', '14-03-
 
 const custom = parseAthleteRows([row(2, { club: 'Dojo A', name: 'Kid', dob: '01-01-2015', gender: 'male', weight: '30', belt: 'Green Stripe belt' })], ['white', 'green stripe'], true, '2026-09-19');
 assert.equal(custom.items[0].belt_rank, 'green stripe', "a dojo's own belt names are matched");
+// a workbook whose first sheet is empty is read from the sheet that has the data
+const twoSheets = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(twoSheets, XLSX.utils.aoa_to_sheet([]), 'Empty');
+XLSX.utils.book_append_sheet(twoSheets, XLSX.utils.aoa_to_sheet([['Discipline'], ['Kumite']]), 'Data');
+assert.equal((await readSheet(XLSX.write(twoSheets, { type: 'array', bookType: 'xlsx' }))).length, 1, 'the empty first sheet is skipped');
+
+assert.match(sheetErrorMessage(new Error('File is password-protected')), /password-protected/);
+assert.match(sheetErrorMessage(new Error('File too large')), /over 5 MB/);
+assert.match(sheetErrorMessage(new Error('Unsupported file')), /could not be read \(Unsupported file\)/, 'an unknown failure says why');
 console.log('sheetImport ok');

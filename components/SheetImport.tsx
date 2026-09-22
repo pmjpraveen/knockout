@@ -10,7 +10,7 @@ import type { Parsed } from '@/lib/categoryImport';
 import { pickSheet } from '@/lib/pickSheet';
 import { saveFile } from '@/lib/saveFile';
 import { buildTemplate, TemplateFormat, TemplateKind } from '@/lib/sheetTemplate';
-import { readSheet, SheetRow } from '@/lib/sheetRows';
+import { readSheet, SheetRow, sheetErrorMessage } from '@/lib/sheetRows';
 import { theme } from '@/theme/tokens';
 
 const listed = 8;
@@ -55,8 +55,8 @@ export function SheetImport<T>({ kind, belts, intro, noun, parse, describe, send
           setSummary(null);
         }
         return { error: null };
-      } catch {
-        return { error: { message: 'That file could not be read. Use an .xlsx or .csv file.' } };
+      } catch (e) {
+        return { error: { message: sheetErrorMessage(e) } };
       }
     });
 

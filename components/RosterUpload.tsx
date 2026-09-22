@@ -11,7 +11,7 @@ import { parseAthleteRows } from '@/lib/athleteImport';
 import type { Problem } from '@/lib/categoryImport';
 import { pickSheet } from '@/lib/pickSheet';
 import { saveFile } from '@/lib/saveFile';
-import { readSheet } from '@/lib/sheetRows';
+import { readSheet, sheetErrorMessage } from '@/lib/sheetRows';
 import { buildTemplate, TemplateFormat } from '@/lib/sheetTemplate';
 import { theme } from '@/theme/tokens';
 
@@ -61,8 +61,8 @@ export function RosterUpload({ existing, max, belts, onAdd }: { existing: Athlet
         onAdd(accepted);
         setOutcome({ file: picked.name, added: accepted.length, duplicates, overflow: fresh.length - accepted.length, problems: parsed.problems });
         return { error: null };
-      } catch {
-        return { error: { message: 'That file could not be read. Use an .xlsx or .csv file under 5 MB.' } };
+      } catch (e) {
+        return { error: { message: sheetErrorMessage(e) } };
       }
     });
 

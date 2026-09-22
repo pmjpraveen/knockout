@@ -13,19 +13,27 @@ function textOf(value: unknown) {
 }
 
 /**
- * Reads the first sheet of an .xlsx, .xls or .csv file. Headers are matched loosely (case, spaces and punctuation
+ * Reads the first sheet that has data from an .xlsx, .xls or .csv file. Headers are matched loosely (case, spaces and punctuation
  * ignored) and empty rows are dropped. `line` is the row number in the file, counting the header as line 1.
  */
 export async function readSheet(bytes: ArrayBuffer | Uint8Array): Promise<SheetRow[]> {
   const XLSX = await import('xlsx');
   // raw: CSV cells stay text. Otherwise 02-11-2011 would be read as a US date (February 11).
   const book = XLSX.read(bytes, { type: 'array', cellDates: true, raw: true });
-  const sheet = book.Sheets[book.SheetNames[0]];
+  const sheet = book.SheetNames.map((name) => book.Sheets[name]).find((candidate) => candidate?.['!ref']) ?? book.Sheets[book.SheetNames[0]];
   const firstLine = XLSX.utils.decode_range(sheet['!ref'] ?? 'A1').s.r + 1; // the header sits on this line of the file
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '', raw: true, blankrows: true });
   return rows
     .map((row, index) => ({ line: firstLine + 1 + index, cells: Object.fromEntries(Object.entries(row).map(([header, value]) => [keyOf(header), textOf(value)])) }))
     .filter((row) => Object.values(row.cells).some((text) => text !== ''));
+}
+
+/** What to tell the person when a chosen file fails: a plain reason for the usual causes, else the technical one so it can be reported. */
+export function sheetErrorMessage(error: unknown) {
+  const reason = error instanceof Error ? error.message : String(error);
+  if (/password|encrypt/i.test(reason)) return 'That file is password-protected. Save a copy without a password and try again.';
+  if (/too large/i.test(reason)) return 'That file is over 5 MB.';
+  return `That file could not be read (${reason.slice(0, 120)}). Use an .xlsx or .csv file.`;
 }
 
 /** The first non-empty cell among the accepted header spellings, e.g. `pick(cells, ['dob', 'dateofbirth'])`. */
