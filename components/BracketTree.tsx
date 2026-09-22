@@ -13,8 +13,8 @@ export type BracketMatch = {
   winner_id: string | null;
   athlete_a_id: string | null;
   athlete_b_id: string | null;
-  a: { full_name: string } | null;
-  b: { full_name: string } | null;
+  athlete_a: string | null;
+  athlete_b: string | null;
 };
 
 const sideOrder = ['main', 'winners', 'losers', 'grand_final', 'reset', 'repechage_top', 'repechage_bottom', 'pool'];
@@ -29,16 +29,16 @@ const sideTitle: Record<string, string> = {
 };
 
 function Side({ match, slot }: { match: BracketMatch; slot: 'a' | 'b' }) {
-  const athlete = match[slot];
+  const name = slot === 'a' ? match.athlete_a : match.athlete_b;
   const athleteId = slot === 'a' ? match.athlete_a_id : match.athlete_b_id;
   const decided = match.status === 'completed';
   const won = decided && match.winner_id === athleteId;
-  const empty = athlete ? null : match.status === 'bye' ? 'Bye' : 'TBD';
+  const empty = name ? null : match.status === 'bye' ? 'Bye' : 'TBD';
 
   return (
     <View
       accessible
-      accessibilityLabel={`${slot === 'a' ? 'Aka' : 'Ao'} corner: ${athlete?.full_name ?? empty}${won ? ', winner' : ''}`}
+      accessibilityLabel={`${slot === 'a' ? 'Aka' : 'Ao'} corner: ${name ?? empty}${won ? ', winner' : ''}`}
       style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8], minHeight: 28 }}
     >
       <View
@@ -46,7 +46,7 @@ function Side({ match, slot }: { match: BracketMatch; slot: 'a' | 'b' }) {
           width: 8,
           height: 8,
           borderRadius: 4,
-          backgroundColor: athlete ? (slot === 'a' ? theme.colors.aka : theme.colors.ao) : 'transparent',
+          backgroundColor: name ? (slot === 'a' ? theme.colors.aka : theme.colors.ao) : 'transparent',
         }}
       />
       <Text
@@ -56,7 +56,7 @@ function Side({ match, slot }: { match: BracketMatch; slot: 'a' | 'b' }) {
         numberOfLines={1}
         style={{ flex: 1 }}
       >
-        {athlete?.full_name ?? empty}
+        {name ?? empty}
       </Text>
     </View>
   );

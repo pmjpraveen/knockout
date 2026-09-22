@@ -15,12 +15,15 @@ const drawn = ['bracket_generated', 'in_progress', 'completed'];
 export default function Brackets() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { isOrganizer } = useMyRoles(id);
-  const { rows: categories, error, loading } = useFocusQuery(() =>
+  const { isOrganizer, isScorekeeperOnly, memberships } = useMyRoles(id);
+  const { rows: allCategories, error, loading } = useFocusQuery(() =>
     supabase.from('categories').select('*, registrations(count)').eq('event_id', id).order('created_at'),
   );
   const { rows: entries } = useFocusQuery(() => supabase.from('club_entries').select('id, approval_status').eq('event_id', id));
   const pending = entries.filter((e) => e.approval_status !== 'approved').length;
+
+  const myTatamis = new Set(memberships.map((m) => m.tatami_id).filter(Boolean));
+  const categories = isScorekeeperOnly ? allCategories.filter((c) => myTatamis.has(c.tatami_id)) : allCategories;
 
   return (
     <Screen>

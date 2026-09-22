@@ -10,7 +10,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts",
-    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/fitImage.check.ts && node lib/sheetImport.check.ts && node lib/schedule.check.ts && node lib/contrast.check.ts && supabase test db",
+    "test": "node lib/categoryLabel.check.ts && node lib/scoring.check.ts && node lib/dates.check.ts && node lib/hosts.check.ts && node lib/fitImage.check.ts && node lib/sheetImport.check.ts && node lib/schedule.check.ts && node lib/contrast.check.ts && node lib/bracketReport.check.ts && supabase test db",
     "lint": "expo lint"
   },
   "devDependencies": {
@@ -38,6 +38,7 @@
     "expo-image-picker": "~17.0.11",
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.12",
+    "expo-print": "~15.0.8",
     "expo-router": "~6.0.24",
     "expo-sharing": "~14.0.8",
     "expo-splash-screen": "~31.0.13",

@@ -9,14 +9,16 @@ import { Screen } from '@/components/Screen';
 import { SkeletonScreen } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
+import { useCategoryPodium } from '@/hooks/useCategoryPodium';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useMyRoles } from '@/hooks/useMyRoles';
 import { useSubmit } from '@/hooks/useSubmit';
+import { buildBracketReportHtml } from '@/lib/bracketReport';
 import { humanize } from '@/lib/events';
+import { exportPdf, openExportWindow } from '@/lib/exportPdf';
 import { supabase } from '@/lib/supabase';
 
 const noBracket = '00000000-0000-0000-0000-000000000000';
-const athleteColumns = 'a:athletes!matches_athlete_a_id_fkey(full_name), b:athletes!matches_athlete_b_id_fkey(full_name)';
 
 export default function Bracket() {
   const { id, categoryId } = useLocalSearchParams<{ id: string; categoryId: string }>();
@@ -24,21 +26,23 @@ export default function Bracket() {
   const [withdrawn, setWithdrawn] = useState('');
   const [note, setNote] = useState('');
   const { run, busy, error } = useSubmit();
+  const { run: runExport, busy: exporting, error: exportError } = useSubmit();
 
-  const { rows: categories } = useFocusQuery(() => supabase.from('categories').select('label').eq('id', categoryId));
+  const { rows: categories } = useFocusQuery(() => supabase.from('categories').select('label, events(name)').eq('id', categoryId));
   const { rows: brackets, loading: loadingBracket } = useFocusQuery(() => supabase.from('brackets').select('*').eq('category_id', categoryId), [], `bracket:${categoryId}`);
   const bracket = brackets[0];
   const { rows: matches, stale, reload } = useFocusQuery(
-    () => supabase.from('matches').select(`*, ${athleteColumns}`).eq('bracket_id', bracket?.id ?? noBracket),
+    () => supabase.rpc('bracket_matches', { p_bracket_id: bracket?.id ?? noBracket }),
     [bracket?.id],
     `matches:${bracket?.id}`,
   );
   const { rows: standings } = useFocusQuery(() => supabase.rpc('pool_standings', { p_bracket_id: bracket?.id ?? noBracket }), [bracket?.id]);
+  const podium = useCategoryPodium(categoryId);
 
   const names = new Map<string, string>();
   matches.forEach((m) => {
-    if (m.athlete_a_id && m.a) names.set(m.athlete_a_id, m.a.full_name);
-    if (m.athlete_b_id && m.b) names.set(m.athlete_b_id, m.b.full_name);
+    if (m.athlete_a_id && m.athlete_a) names.set(m.athlete_a_id, m.athlete_a);
+    if (m.athlete_b_id && m.athlete_b) names.set(m.athlete_b_id, m.athlete_b);
   });
   const started = matches.some((m) => m.status === 'in_progress' || m.status === 'completed');
 
@@ -50,13 +54,38 @@ export default function Bracket() {
     }
   };
 
+  const category = categories[0];
+  const exportAsPdf = () => {
+    const target = openExportWindow(); // opened synchronously here, in the click itself, so browsers don't treat it as a pop-up
+    return runExport(async () => {
+      const { data: participants, error: participantsError } = await supabase.rpc('category_participants', { p_category_id: categoryId });
+      if (participantsError) return { error: participantsError };
+      const html = buildBracketReportHtml({
+        eventName: category?.events?.name ?? '',
+        categoryLabel: category?.label ?? '',
+        bracketFormat: humanize(bracket!.format),
+        participants: participants ?? [],
+        matches,
+        podium,
+      });
+      try {
+        await exportPdf(`${category?.label ?? 'Bracket'}.pdf`, html, target);
+        return { error: null };
+      } catch (e) {
+        return { error: { message: (e as Error).message } };
+      }
+    });
+  };
+
   if (!bracket) return loadingBracket ? <SkeletonScreen /> : <Screen><Text color="slateGray">No bracket yet.</Text></Screen>;
 
   return (
     <Screen wide>
-      <Text variant="heading" weight="medium">{categories[0]?.label}</Text>
+      <Text variant="heading" weight="medium">{category?.label}</Text>
       <Text color="slateGray">{humanize(bracket.format)} · {matches.length} matches</Text>
       {stale && <Text color="warning">Offline: showing the bracket as last synced.</Text>}
+      <Button title="Export as PDF" variant="secondary" disabled={exporting} onPress={exportAsPdf} />
+      {exportError && <Text color="danger">{exportError}</Text>}
       <Podium categoryId={categoryId} />
       <BracketTree matches={matches as BracketMatch[]} />
 

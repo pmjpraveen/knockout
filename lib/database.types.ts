@@ -862,6 +862,23 @@ export type Database = {
         Returns: undefined
       }
       bracket_event_id: { Args: { p_bracket_id: string }; Returns: string }
+      bracket_matches: {
+        Args: { p_bracket_id: string }
+        Returns: {
+          athlete_a: string
+          athlete_a_id: string
+          athlete_b: string
+          athlete_b_id: string
+          bracket_side: string
+          id: string
+          is_repechage: boolean
+          pool: number
+          position: number
+          round: number
+          status: string
+          winner_id: string
+        }[]
+      }
       bracket_podium: {
         Args: { p_bracket_id: string }
         Returns: {
@@ -882,6 +899,15 @@ export type Database = {
       }
       can_score_match: { Args: { p_match_id: string }; Returns: boolean }
       category_event_id: { Args: { p_category_id: string }; Returns: string }
+      category_participants: {
+        Args: { p_category_id: string }
+        Returns: {
+          athlete_id: string
+          club_name: string
+          full_name: string
+          seed: number
+        }[]
+      }
       category_podium: {
         Args: { p_category_id: string }
         Returns: {
