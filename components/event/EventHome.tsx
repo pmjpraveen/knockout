@@ -77,7 +77,7 @@ export function EventHome({ data }: { data: EventData }) {
               <>
                 <Divider />
                 <InfoRow icon={<Building size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  {event.host_club ? <Text>Hosted by <Text weight="medium">{event.host_club}</Text></Text> : <Text weight="medium">{event.venue}</Text>}
+                  {event.host_club ? <Text>Hosted by <Text>{event.host_club}</Text></Text> : <Text>{event.venue}</Text>}
                   {event.host_club && event.venue ? <Text color="slateGray">{event.venue}</Text> : null}
                 </InfoRow>
               </>
@@ -86,7 +86,7 @@ export function EventHome({ data }: { data: EventData }) {
               <>
                 <Divider />
                 <InfoRow icon={<CalendarRange size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  <Text weight="medium">Registration</Text>
+                  <Text>Registration</Text>
                   <Text color="slateGray">{opens && closes ? formatDateRange(opens, closes) : opens ? `Opens ${formatDate(opens)}` : `Closes ${formatDate(closes)}`}</Text>
                 </InfoRow>
               </>
@@ -95,7 +95,7 @@ export function EventHome({ data }: { data: EventData }) {
               <>
                 <Divider />
                 <InfoRow icon={<UserCheck size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  <Text weight="medium">Your role</Text>
+                  <Text>Your role</Text>
                   {memberships.map((m, index) => (
                     <Text key={index} color="slateGray">{humanize(m.role)}{m.tatamis ? ` · ${m.tatamis.name}` : ''}</Text>
                   ))}
@@ -118,14 +118,14 @@ export function EventHome({ data }: { data: EventData }) {
           {isOrganizer && missingDates && <Text color="warning">Add the tournament dates in Configure before opening registration.</Text>}
           {isOrganizer && step ? (
             <Button
-              large
+              size="large"
               title={step.action}
               confirmTitle={step.status === 'completed' ? 'Tap again: data is deleted in 7 days' : undefined}
               disabled={busy || (step.status === 'registration_open' && missingDates)}
               onPress={advance}
             />
           ) : (
-            live && memberships.length > 0 && <Button large title="Open scoreboard" onPress={go('scoreboard')} />
+            live && memberships.length > 0 && <Button size="large" title="Open scoreboard" onPress={go('scoreboard')} />
           )}
           {error && <Text color="danger">{error}</Text>}
 

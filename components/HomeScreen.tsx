@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { Stack } from 'expo-router';
 import { ReactNode } from 'react';
 import { Platform, ScrollView, useWindowDimensions, View } from 'react-native';
@@ -13,7 +12,7 @@ import { theme } from '@/theme/tokens';
 export const wideColumn = 1272;
 
 /**
- * The signed-in home layout: a warm gradient, the greeting and account menu (with the logo on wide screens), then
+ * The signed-in home layout: the greeting and account menu (with the logo on wide screens), then
  * `children` in a centred column. `footer` stays pinned to the bottom, outside the scroll. On wide screens the
  * greeting can be dropped (`greeting={false}`) once there is content to show; phones always keep it.
  */
@@ -29,14 +28,13 @@ export function HomeScreen({ children, footer, contentWidth = 400, greeting = tr
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <LinearGradient colors={theme.gradients.welcome} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 300 }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + theme.spacing[8], paddingBottom: theme.spacing[32] }}>
         <View style={[column, { maxWidth: wide ? wideColumn : contentWidth, zIndex: 1 }]}>
           {(greeting || !wide) && (
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: wide ? theme.spacing[32] : 0 }}>
               <View>
                 <Text variant="bodyLg">Hi,</Text>
-                <Text variant="subheading" weight="medium">{name}</Text>
+                <Text variant="subheading">{name}</Text>
               </View>
               {/* On web the persistent WebHeader already carries the account menu. */}
               {!wide && Platform.OS !== 'web' && menu}

@@ -120,9 +120,9 @@ export function EventWizard({ userId }: { userId: string }) {
           {!wide && <View style={{ alignSelf: 'flex-start' }}>{saveButton}</View>}
 
           <View style={{ gap: theme.spacing[8], marginTop: wide ? 0 : theme.spacing[8], marginBottom: wide ? theme.spacing[4] : 0 }}>
-            <Text variant="label" weight="medium" style={{ textTransform: 'uppercase' }}>Step {step + 1}</Text>
+            <Text variant="label" style={{ textTransform: 'uppercase' }}>Step {step + 1}</Text>
             <Text variant="subheading">{steps[step].title}</Text>
-            <Text variant="label" weight="light" color="slateGray" style={{ lineHeight: 20 }}>{steps[step].hint}</Text>
+            <Text variant="label" color="slateGray" style={{ lineHeight: 20 }}>{steps[step].hint}</Text>
           </View>
 
           {step === 0 && (
@@ -162,7 +162,7 @@ export function EventWizard({ userId }: { userId: string }) {
       >
         <View>{step > 0 && <Button title="Back" variant="ghost" onPress={() => goTo(step - 1)} />}</View>
         <View style={{ minWidth: 128 }}>
-          <Button title={last ? 'Create' : 'Next'} large disabled={busy} onPress={advance} />
+          <Button title={last ? 'Create' : 'Next'} size="large" disabled={busy} onPress={advance} />
         </View>
       </View>
     </View>
