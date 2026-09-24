@@ -52,10 +52,10 @@ export default function Scoreboard() {
       {!loading && queue.length === 0 && tatamiId && <Text color="slateGray">Nothing ready to score.</Text>}
       {queue.map((row, index) => (
         <Card key={row.match_id}>
-          <Text variant="label" weight="medium" color="slateGray" style={{ textTransform: 'uppercase' }}>
+          <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>
             {row.match_status === 'in_progress' || local[row.match_id]?.started ? 'In progress' : index === 0 ? 'Next' : 'Later'}
           </Text>
-          <Text variant="bodyLg" weight="medium">{row.athlete_a} vs {row.athlete_b}</Text>
+          <Text variant="bodyLg">{row.athlete_a} vs {row.athlete_b}</Text>
           <Text variant="body" color="slateGray">{row.category_label} · {matchLabel(row.bracket_side, row.round)}</Text>
           {local[row.match_id]?.conflict && <Text variant="body" color="danger">Conflict: {local[row.match_id].conflict}</Text>}
           {index < 2 && row.category_label !== runningCategory && !local[row.match_id]?.started && row.match_status !== 'in_progress' ? (

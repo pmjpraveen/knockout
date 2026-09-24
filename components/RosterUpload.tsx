@@ -69,7 +69,7 @@ export function RosterUpload({ existing, max, belts, onAdd }: { existing: Athlet
   return (
     <Card>
       <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="subheading" weight="medium">Upload your participants list</Text>
+        <Text variant="subheading">Upload your participants list</Text>
         <Text color="slateGray">Skip typing each athlete. Download the sample sheet, fill in one row per participant, then upload it. You can check and change everyone below before you submit.</Text>
         <View style={{ gap: theme.spacing[8] }}>
           <Button title="Download sample sheet (.xlsx)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('xlsx')} />
@@ -79,7 +79,7 @@ export function RosterUpload({ existing, max, belts, onAdd }: { existing: Athlet
         {error && <Text color="danger">{error}</Text>}
         {outcome && (
           <View style={{ gap: theme.spacing[4] }}>
-            <Text weight="medium" color={outcome.added > 0 ? 'success' : 'warning'}>
+            <Text color={outcome.added > 0 ? 'success' : 'warning'}>
               {outcome.added > 0 ? `${outcome.added} ${outcome.added === 1 ? 'participant' : 'participants'} added below from ${outcome.file}.` : `No participants were added from ${outcome.file}.`}
             </Text>
             {outcome.duplicates > 0 && <Text variant="body" color="slateGray">{outcome.duplicates} already in your list, so skipped.</Text>}

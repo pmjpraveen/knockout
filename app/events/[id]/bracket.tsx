@@ -81,7 +81,7 @@ export default function Bracket() {
 
   return (
     <Screen wide>
-      <Text variant="heading" weight="medium">{category?.label}</Text>
+      <Text variant="heading">{category?.label}</Text>
       <Text color="slateGray">{humanize(bracket.format)} · {matches.length} matches</Text>
       {stale && <Text color="warning">Offline: showing the bracket as last synced.</Text>}
       <Button title="Export as PDF" variant="secondary" disabled={exporting} onPress={exportAsPdf} />
@@ -91,10 +91,10 @@ export default function Bracket() {
 
       {bracket.format === 'round_robin' && standings.length > 0 && (
         <>
-          <Text variant="subheading" weight="medium">Standings</Text>
+          <Text variant="subheading">Standings</Text>
           {standings.map((s) => (
             <Card key={`${s.pool}-${s.athlete_id}`}>
-              <Text weight="medium">Pool {s.pool} · #{s.rank} {names.get(s.athlete_id)}</Text>
+              <Text>Pool {s.pool} · #{s.rank} {names.get(s.athlete_id)}</Text>
               <Text variant="body" color="slateGray">{s.wins} wins · {s.losses} losses</Text>
             </Card>
           ))}
@@ -103,7 +103,7 @@ export default function Bracket() {
 
       {canOverride && started && (
         <>
-          <Text variant="subheading" weight="medium">Withdrawal override</Text>
+          <Text variant="subheading">Withdrawal override</Text>
           <Text color="slateGray">Unplayed matches for the athlete become walkovers. The note is logged.</Text>
           <ChoiceChips label="Athlete" options={[...names.keys()]} value={withdrawn} onChange={setWithdrawn} labels={Object.fromEntries(names)} />
           <TextField label="Note" value={note} onChangeText={setNote} autoCapitalize="sentences" placeholder="e.g. Injured in warm-up" />

@@ -56,7 +56,7 @@ export default function Submissions() {
         <Card key={entry.id}>
           <Link href={{ pathname: '/events/[id]/submissions/[entryId]', params: { id, entryId: entry.id } }} asChild>
             <Pressable style={({ pressed }) => [{ gap: theme.spacing[4] }, pressFeedback(pressed)]}>
-              <Text variant="bodyLg" weight="medium">{entry.club_name}</Text>
+              <Text variant="bodyLg">{entry.club_name}</Text>
               <Text variant="body" color="slateGray">
                 {entry.athletes[0]?.count ?? 0} participants · {formatDateTime(entry.submitted_at)}
               </Text>

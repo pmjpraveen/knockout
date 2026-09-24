@@ -62,7 +62,7 @@ export default function BracketSetup() {
 
   const row = (registrationId: string, label: string, caption: string, actions: React.ReactNode) => (
     <Card key={registrationId}>
-      <Text weight="medium">{label}</Text>
+      <Text>{label}</Text>
       <Text variant="body" color="slateGray">{caption}</Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>{actions}</View>
     </Card>
@@ -70,7 +70,7 @@ export default function BracketSetup() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{category?.label}</Text>
+      <Text variant="heading">{category?.label}</Text>
       <Text color="slateGray">
         {registrations.length} athletes. Seeded athletes are placed first and byes go to the top seeds. Everyone else is drawn at random, keeping club-mates apart in round 1 where possible.
       </Text>
@@ -78,7 +78,7 @@ export default function BracketSetup() {
 
       <ChoiceChips label="Format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
 
-      <Text variant="subheading" weight="medium">Seeds</Text>
+      <Text variant="subheading">Seeds</Text>
       {seeded.length === 0 && <Text color="slateGray">No manual seeds. The whole draw is random.</Text>}
       {seeded.map((rid, index) => {
         const r = byId.get(rid)!;
@@ -91,7 +91,7 @@ export default function BracketSetup() {
         ));
       })}
 
-      <Text variant="subheading" weight="medium">Unseeded</Text>
+      <Text variant="subheading">Unseeded</Text>
       {unseeded.map((r) =>
         row(r.id, r.athletes?.full_name ?? '', r.athletes?.club_entries?.club_name ?? '', !started && (
           <>

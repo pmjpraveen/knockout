@@ -48,7 +48,7 @@ export default function Conflicts() {
       {error && <Text color="danger">{error}</Text>}
       {rows.map((conflict) => (
         <Card key={conflict.id}>
-          <Text weight="medium" color="warning">{humanize(conflict.reason)}</Text>
+          <Text color="warning">{humanize(conflict.reason)}</Text>
           <Text>{explanations[conflict.reason] ?? 'The server rejected this operation.'}</Text>
           <Text variant="body" color="slateGray">
             {formatDateTime(conflict.created_at)} · device {conflict.device_id.slice(0, 8)} · {(conflict.op as { kind?: string }).kind}

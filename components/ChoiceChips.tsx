@@ -28,14 +28,14 @@ export function ChoiceChips<T extends string>({ label, options, value, onChange,
               style={({ pressed }) => [{
                 minHeight: theme.touchTarget.minimum,
                 paddingHorizontal: theme.spacing[16],
-                borderRadius: theme.radii.chip,
+                borderRadius: theme.radii.button,
                 justifyContent: 'center',
                 backgroundColor: selected ? theme.colors.inkBlack : theme.colors.paperWhite,
                 borderWidth: 1,
                 borderColor: selected ? theme.colors.inkBlack : theme.colors.mist,
               }, pressFeedback(pressed)]}
             >
-              <Text weight="medium" color={selected ? 'paperWhite' : 'inkBlack'}>
+              <Text color={selected ? 'paperWhite' : 'inkBlack'}>
                 {labels?.[option] ?? humanize(option)}
               </Text>
             </Pressable>

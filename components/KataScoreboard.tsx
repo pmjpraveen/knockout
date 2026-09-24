@@ -29,7 +29,7 @@ export function KataScoreboard({ row, eventId, onDone }: { row: ScoreboardRow; e
   if (scoring.finalized) {
     return (
       <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="heading" weight="medium">{names[scoring.finalized.winner]} wins</Text>
+        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
         <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
         <Button title="Back to the queue" onPress={onDone} />
       </View>
@@ -93,7 +93,7 @@ export function KataScoreboard({ row, eventId, onDone }: { row: ScoreboardRow; e
       {scoring.started && outcome && !confirming && <Button title="Review result" onPress={() => setConfirming(outcome)} />}
       {scoring.started && !outcome && !flags && state.totals.a !== null && state.totals.a === state.totals.b && (
         <View style={{ gap: theme.spacing[8] }}>
-          <Text weight="medium">Totals are level. Record the judges&apos; decision.</Text>
+          <Text>Totals are level. Record the judges&apos; decision.</Text>
           {[a, b].map((id) => (
             <Button key={id} title={`Decision: ${names[id]}`} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
           ))}

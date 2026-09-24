@@ -23,7 +23,7 @@ export default function SignIn() {
   const heading = (
     <View style={{ alignItems: wide ? 'flex-start' : 'center', gap: theme.spacing[8], paddingVertical: wide ? 0 : theme.spacing[16] }}>
       <Text variant="heading" style={{ textAlign: wide ? 'left' : 'center', fontFamily: theme.fonts.display }}>Log in to Knockout</Text>
-      <Text variant="bodyLg" weight="light" color="slateGray" style={{ textAlign: wide ? 'left' : 'center' }}>Your tournaments start here</Text>
+      <Text variant="bodyLg" color="slateGray" style={{ textAlign: wide ? 'left' : 'center' }}>Your tournaments start here</Text>
     </View>
   );
 

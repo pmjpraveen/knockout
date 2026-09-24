@@ -11,7 +11,7 @@ export function ListGroup({ title, children }: { title?: string; children: React
   return (
     <View style={{ gap: theme.spacing[8] }}>
       {title && (
-        <Text variant="label" weight="medium" color="slateGray" style={{ textTransform: 'uppercase' }}>
+        <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>
           {title}
         </Text>
       )}
@@ -43,7 +43,7 @@ export function ListRow({ title, detail, tone = 'slateGray', onPress }: { title:
       })}
     >
       <Text variant="bodyLg" style={{ flex: 1 }}>{title}</Text>
-      {detail ? <Text variant="body" weight="medium" color={tone}>{detail}</Text> : null}
+      {detail ? <Text variant="body" color={tone}>{detail}</Text> : null}
       <ChevronRight size={20} color={theme.colors.steelGray} strokeWidth={1.75} />
     </Pressable>
   );

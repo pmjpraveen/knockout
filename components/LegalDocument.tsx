@@ -9,7 +9,7 @@ export function LegalDocument({ sections }: { sections: LegalSection[] }) {
       <Text color="slateGray">Last updated {legalUpdated}</Text>
       {sections.map((section) => (
         <Fragment key={section.heading}>
-          <Text variant="subheading" weight="medium">{section.heading}</Text>
+          <Text variant="subheading">{section.heading}</Text>
           {section.body.map((paragraph) => (
             <Text key={paragraph} color="charcoal">{paragraph}</Text>
           ))}

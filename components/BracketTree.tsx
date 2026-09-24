@@ -108,11 +108,11 @@ export function BracketTree({ matches }: { matches: BracketMatch[] }) {
         const title = key.startsWith('pool:') ? `Pool ${key.split(':')[1]}` : sideTitle[key];
         return (
           <View key={key} style={{ gap: theme.spacing[12] }}>
-            <Text variant="subheading" weight="medium">{title}</Text>
+            <Text variant="subheading">{title}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: theme.spacing[16] }}>
               {rounds.map((round, index) => (
                 <Reveal key={round} delay={index * 0.08} style={{ gap: theme.spacing[12] }}>
-                  <Text variant="label" weight="medium" color="slateGray" style={{ textTransform: 'uppercase' }}>
+                  <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>
                     Round {round}
                   </Text>
                   <View style={{ flex: 1, justifyContent: 'space-around', gap: theme.spacing[12] }}>

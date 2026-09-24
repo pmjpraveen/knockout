@@ -66,7 +66,7 @@ export default function PublicSchedulePage() {
 
   return (
     <Screen wide>
-      <Text variant="heading" weight="medium">{schedule.event.name}</Text>
+      <Text variant="heading">{schedule.event.name}</Text>
       {schedule.event.venue && <Text color="charcoal">{schedule.event.venue}</Text>}
       <Text variant="body" color="slateGray">
         Times are estimates and update live. Refreshed {new Date(schedule.updated_at).toLocaleTimeString()}.

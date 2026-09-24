@@ -134,19 +134,19 @@ export default function Register() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{info.event.name}</Text>
+      <Text variant="heading">{info.event.name}</Text>
       {info.event.venue && <Text color="charcoal">{info.event.venue}</Text>}
       {info.event.closes_at && <Text color="slateGray">Registration closes {formatDate(dateOf(info.event.closes_at))}</Text>}
       {entry && <StatusPill status={entry.approval_status} />}
       {entry?.rejection_reason && (
         <Card>
-          <Text weight="medium" color="warning">The organizer asked for changes</Text>
+          <Text color="warning">The organizer asked for changes</Text>
           <Text>{entry.rejection_reason}</Text>
         </Card>
       )}
       {saved && reference && (
         <Card>
-          <Text weight="medium">Submitted. Keep this link to edit until it is approved:</Text>
+          <Text>Submitted. Keep this link to edit until it is approved:</Text>
           <Text selectable color="charcoal">{registrationUrl(token, reference)}</Text>
         </Card>
       )}
@@ -164,12 +164,12 @@ export default function Register() {
           <TextField label="Club name" value={clubName} onChangeText={setClubName} autoCapitalize="words" />
           <TextField label="Contact (email or phone)" value={contact} onChangeText={setContact} />
           <RosterUpload existing={athletes.filter((athlete) => !isBlank(athlete))} max={maxParticipants} belts={info.event.belts} onAdd={addFromSheet} />
-          {rows.length > 1 && <Text variant="subheading" weight="medium">Participants ({rows.length})</Text>}
+          {rows.length > 1 && <Text variant="subheading">Participants ({rows.length})</Text>}
           {rows.map((row, index) =>
             row.compact ? (
               <Card key={row.key}>
                 <View style={{ gap: theme.spacing[8] }}>
-                  <Text weight="medium">{row.athlete.full_name}</Text>
+                  <Text>{row.athlete.full_name}</Text>
                   <Text variant="body" color="slateGray">
                     {[formatDate(row.athlete.date_of_birth), humanize(row.athlete.gender), `${row.athlete.weight} kg`, humanize(row.athlete.belt_rank), competeLabels[row.athlete.compete]].join(' · ')}
                   </Text>
@@ -186,7 +186,7 @@ export default function Register() {
             ) : (
               <Card key={row.key}>
                 <View style={{ gap: theme.spacing[12] }}>
-                  <Text variant="subheading" weight="medium">Participant {index + 1}</Text>
+                  <Text variant="subheading">Participant {index + 1}</Text>
                   <AthleteFields value={row.athlete} onChange={update(row.key)} belts={info.event.belts} />
                   <Suggestion token={token} athlete={row.athlete} />
                   {rows.length > 1 && <Button title="Remove" variant="secondary" onPress={() => setRows((list) => list.filter((r) => r.key !== row.key))} />}

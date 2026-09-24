@@ -2,11 +2,11 @@ export const theme = {
   colors: {
     // Neutrals
     inkBlack: '#0F1115',
-    charcoal: '#3F4552',
-    slateGray: '#6B7280',
-    steelGray: '#9CA3AF',
-    mist: '#E5E7EB',
-    cloud: '#F3F4F6',
+    charcoal: '#525356',
+    slateGray: '#646668',
+    steelGray: '#BFC0C1',
+    mist: '#E9EAEA',
+    cloud: '#F7F8F8',
     paperWhite: '#FFFFFF',
 
     // Competitor colors — reserved for corner identity only
@@ -16,12 +16,12 @@ export const theme = {
     aoTint: '#E8F0FE',
 
     // Semantic
-    success: '#15803D',
-    successTint: '#E7F4EC',
-    warning: '#B45309',
-    warningTint: '#FDF2E3',
-    danger: '#9F1239',
-    dangerTint: '#FBE7EC',
+    success: '#22794A',
+    successTint: '#F5F8F6',
+    warning: '#8E571E',
+    warningTint: '#FFF5EE',
+    danger: '#A2121C',
+    dangerTint: '#FDF6F4',
   },
 
   // One family per weight: React Native selects custom-font weights by family name.
@@ -37,14 +37,14 @@ export const theme = {
   },
 
   type: {
-    caption: { fontSize: 12, lineHeight: 17, letterSpacing: 0 },
-    label: { fontSize: 13, lineHeight: 17, letterSpacing: 0.26 },
-    body: { fontSize: 15, lineHeight: 22 },
-    bodyLg: { fontSize: 17, lineHeight: 24, letterSpacing: -0.17 },
-    subheading: { fontSize: 19, lineHeight: 25, letterSpacing: -0.19 },
+    caption: { fontSize: 12, lineHeight: 16, letterSpacing: 0 },
+    label: { fontSize: 12, lineHeight: 16, letterSpacing: 0.26 },
+    body: { fontSize: 14, lineHeight: 20 },
+    bodyLg: { fontSize: 16, lineHeight: 24, letterSpacing: -0.17 },
+    subheading: { fontSize: 18, lineHeight: 24, letterSpacing: -0.19 },
     headingSm: { fontSize: 22, lineHeight: 28, letterSpacing: -0.22 },
     heading: { fontSize: 28, lineHeight: 34, letterSpacing: -0.42 },
-    headingLg: { fontSize: 34, lineHeight: 39, letterSpacing: -0.68 },
+    headingLg: { fontSize: 32, lineHeight: 40, letterSpacing: -0.68 },
     display: { fontSize: 40, lineHeight: 42, letterSpacing: -0.8 },
     timerDisplay: { fontSize: 56, lineHeight: 56, fontFamily: 'GeistMono_700Bold' },
     scoreDisplay: { fontSize: 96, lineHeight: 96, fontFamily: 'GeistMono_700Bold' },
@@ -63,7 +63,11 @@ export const theme = {
   },
 
   touchTarget: {
+    // `minimum` is the true accessibility floor (used by ChoiceChips, ListGroup, TextField, etc.) — kept
+    // untouched. Button's own `normal` (40) and `medium` (36) sizes fall below it deliberately; see Button.tsx.
     minimum: 48,
+    medium: 36,
+    normal: 40,
     scoreButton: 56,
   },
 
@@ -71,7 +75,6 @@ export const theme = {
   // Warm cream that fades to white behind the greeting on the empty events screen (top to bottom).
   gradients: {
     primary: ['#111111', '#444444'],
-    welcome: ['#FAECD6', '#FFFFFF'],
   },
 
   shadows: {

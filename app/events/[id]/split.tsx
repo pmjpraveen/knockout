@@ -46,7 +46,7 @@ export default function Split() {
       {registrations.map((r) => (
         <Pressable key={r.id} style={({ pressed }) => pressFeedback(pressed)} onPress={() => toggle(r.id)}>
           <Card>
-            <Text weight="medium">{r.athletes?.full_name}</Text>
+            <Text>{r.athletes?.full_name}</Text>
             <Text variant="body" color="slateGray">
               {[r.seed !== null && `Seed ${r.seed}`, moving.includes(r.id) && 'Moving to new category'].filter(Boolean).join(' · ')}
             </Text>

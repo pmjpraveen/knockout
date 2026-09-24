@@ -45,7 +45,7 @@ export default function MatchAudit() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{match.athlete_a} vs {match.athlete_b}</Text>
+      <Text variant="heading">{match.athlete_a} vs {match.athlete_b}</Text>
       <Text color="slateGray">
         {humanize(match.status)}
         {match.winner ? ` · ${match.winner} won by ${humanize(match.result_method ?? '').toLowerCase()}` : ''}
@@ -54,11 +54,11 @@ export default function MatchAudit() {
       {match.result_note && <Text>Note: {match.result_note}</Text>}
       {match.scoring_device_id && <Text variant="body" color="slateGray">Scoreboard device {match.scoring_device_id.slice(0, 8)}</Text>}
 
-      <Text variant="subheading" weight="medium">Logged events</Text>
+      <Text variant="subheading">Logged events</Text>
       {audit.events.length === 0 && <Text color="slateGray">Nothing logged yet.</Text>}
       {audit.events.map((event) => (
         <Card key={event.sequence}>
-          <Text weight="medium">
+          <Text>
             #{event.sequence} {humanize(event.type)}
             {event.athlete ? ` · ${event.athlete}` : ''}
             {event.value !== null ? ` · ${event.value}` : ''}
@@ -73,7 +73,7 @@ export default function MatchAudit() {
 
       {open && (
         <>
-          <Text variant="subheading" weight="medium">Override</Text>
+          <Text variant="subheading">Override</Text>
           <Text color="slateGray">Finish this match by hand, or free it from a scoreboard device that has died. A note is required and logged.</Text>
           <TextField label="Note" value={note} onChangeText={setNote} autoCapitalize="sentences" placeholder="e.g. Tablet died, result confirmed by referee" />
           {match.athlete_a && match.athlete_b && (

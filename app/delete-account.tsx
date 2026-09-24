@@ -12,7 +12,7 @@ export default function DeleteAccount() {
 
   return (
     <Screen>
-      <Text variant="subheading" weight="medium">Delete your account</Text>
+      <Text variant="subheading">Delete your account</Text>
       <Text color="charcoal">This cannot be undone. When you delete your account:</Text>
       <Text color="charcoal">• Your login is removed and you are signed out.</Text>
       <Text color="charcoal">• If you are an organizer, every tournament you created is deleted with everything in it: categories, participants, brackets, schedules, results and cover images.</Text>

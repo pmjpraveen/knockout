@@ -38,7 +38,7 @@ export default function CloneCategories() {
         .map((event) => (
           <Pressable key={event.id} style={({ pressed }) => pressFeedback(pressed)} disabled={busy} onPress={() => copyFrom(event.id)}>
             <Card>
-              <Text variant="bodyLg" weight="medium">{event.name}</Text>
+              <Text variant="bodyLg">{event.name}</Text>
               <Text variant="body" color="slateGray">{formatDateRange(event.start_date, event.end_date)}</Text>
             </Card>
           </Pressable>

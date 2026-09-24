@@ -54,10 +54,10 @@ export default function Staff() {
         </>
       )}
 
-      <Text variant="subheading" weight="medium">Staff</Text>
+      <Text variant="subheading">Staff</Text>
       {staff.map((member) => (
         <Card key={member.id}>
-          <Text weight="medium">{member.email}</Text>
+          <Text>{member.email}</Text>
           <Text variant="body" color="slateGray">
             {humanize(member.role)}{member.tatami_id ? ` · ${tatamiLabels[member.tatami_id] ?? ''}` : ''}
           </Text>
@@ -66,7 +66,7 @@ export default function Staff() {
           )}
         </Card>
       ))}
-      <Text variant="subheading" weight="medium">Create a login</Text>
+      <Text variant="subheading">Create a login</Text>
       <Text color="slateGray">They sign in with this email and password. Share the password with them yourself. You can create logins until the event is completed.</Text>
       <TextField label="Staff email" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="off" />
       <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="off" placeholder="At least 8 characters" />

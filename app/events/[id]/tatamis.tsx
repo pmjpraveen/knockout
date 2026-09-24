@@ -46,7 +46,7 @@ export default function Tatamis() {
 
   return (
     <Screen>
-      <Text variant="subheading" weight="medium">Tatamis</Text>
+      <Text variant="subheading">Tatamis</Text>
       {tatamis.map((tatami) => (
         <Card key={tatami.id}>
           <TextField label="Label" value={names[tatami.id] ?? tatami.name} onChangeText={(value) => setNames((n) => ({ ...n, [tatami.id]: value }))} autoCapitalize="words" />
@@ -74,7 +74,7 @@ export default function Tatamis() {
 
       {isOrganizer && (
         <>
-          <Text variant="subheading" weight="medium">Match duration</Text>
+          <Text variant="subheading">Match duration</Text>
           <Text color="slateGray">Drives the estimated call times.</Text>
           {disciplines.map(([key, label]) => (
             <TextField key={key} label={label} value={minutes[key] ?? ''} onChangeText={(value) => setMinutes((m) => ({ ...m, [key]: value }))} keyboardType="numeric" />
@@ -86,7 +86,7 @@ export default function Tatamis() {
             onPress={() => act(() => supabase.from('events').update({ kumite_minutes: Number(minutes.kumite_minutes), kata_minutes: Number(minutes.kata_minutes), team_minutes: Number(minutes.team_minutes) }).eq('id', id))}
           />
 
-          <Text variant="subheading" weight="medium">Public schedule</Text>
+          <Text variant="subheading">Public schedule</Text>
           <Text color="slateGray">
             Anyone with this link sees upcoming matches, rings and estimated call times, without an account. Athlete names are shown; dates of birth, weights and clubs are not.
           </Text>

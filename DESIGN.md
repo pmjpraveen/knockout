@@ -12,11 +12,11 @@ A utility-first system built for people working a live tournament floor — Orga
 | Name | Value | Token | Role |
 |------|-------|-------|------|
 | Ink Black | `#0F1115` | `--color-ink-black` | Primary text, headings, icon strokes, primary button fill |
-| Charcoal | `#3F4552` | `--color-charcoal` | Secondary text, secondary icons |
-| Slate Gray | `#6B7280` | `--color-slate-gray` | Tertiary text, muted labels, inactive tab icons |
-| Steel Gray | `#9CA3AF` | `--color-steel-gray` | Placeholder text, disabled states, dividers on dark |
-| Mist | `#E5E7EB` | `--color-mist` | Hairline borders, card outlines, tab bar top border |
-| Cloud | `#F3F4F6` | `--color-cloud` | Subtle surface elevation, muted backgrounds, table stripe |
+| Charcoal | `#525356` | `--color-charcoal` | Secondary text, secondary icons |
+| Slate Gray | `#646668` | `--color-slate-gray` | Tertiary text, muted labels, inactive tab icons |
+| Steel Gray | `#BFC0C1` | `--color-steel-gray` | Placeholder text, disabled states, dividers on dark |
+| Mist | `#E9EAEA` | `--color-mist` | Hairline borders, card outlines, tab bar top border |
+| Cloud | `#F7F8F8` | `--color-cloud` | Subtle surface elevation, muted backgrounds, table stripe |
 | Paper White | `#FFFFFF` | `--color-paper-white` | Page background, card surfaces, text on dark/color fills |
 
 ### Competitor Colors — Aka & Ao
@@ -36,20 +36,20 @@ Deliberately different hues from Aka/Ao, so a system alert is never mistaken for
 
 | Name | Value | Token | Role |
 |------|-------|-------|------|
-| Success Green | `#15803D` | `--color-success` | Approved submissions, completed status, win confirmation |
-| Success Tint | `#E7F4EC` | `--color-success-tint` | Success status pill background |
-| Warning Amber | `#B45309` | `--color-warning` | Pending/flagged status, kumite penalty warnings, low-time clock state |
-| Warning Tint | `#FDF2E3` | `--color-warning-tint` | Warning status pill background |
-| Danger Maroon | `#9F1239` | `--color-danger` | Destructive actions (delete event, reject submission) — deliberately a deep wine, not Aka red |
-| Danger Tint | `#FBE7EC` | `--color-danger-tint` | Danger status pill background |
+| Success Green | `#22794A` | `--color-success` | Approved submissions, completed status, win confirmation |
+| Success Tint | `#F5F8F6` | `--color-success-tint` | Success status pill background |
+| Warning Amber | `#8E571E` | `--color-warning` | Pending/flagged status, kumite penalty warnings, low-time clock state |
+| Warning Tint | `#FFF5EE` | `--color-warning-tint` | Warning status pill background |
+| Danger Maroon | `#A2121C` | `--color-danger` | Destructive actions (delete event, reject submission) — deliberately a deep wine, not Aka red |
+| Danger Tint | `#FDF6F4` | `--color-danger-tint` | Danger status pill background |
 
 ## Tokens — Typography
 
 ### Switzer — Everything — display, headings, body, UI, nav. A clean neo-grotesque with a light, contemporary voice that stays legible at small sizes · `--font-switzer`
 - **Substitute:** SF Pro (iOS), Roboto (Android), Inter
 - **Weights:** 300 (Light), 400 (Regular), 500 (Medium)
-- **Sizes:** 12, 13, 15, 17, 19, 22, 28, 34, 40
-- **Line height:** 1.05, 1.15, 1.2, 1.25, 1.3, 1.3, 1.4, 1.4, 1.45
+- **Sizes:** 12, 12, 14, 16, 18, 22, 28, 32, 40
+- **Line height:** 1.33, 1.33, 1.43, 1.5, 1.33, 1.27, 1.21, 1.25, 1.05
 - **Letter spacing:** -0.020em, -0.020em, -0.015em, -0.010em, -0.010em, -0.010em, 0em, 0.02em, 0em
 - **Role:** Everything read — body copy, headings, buttons, navigation, form labels
 
@@ -69,19 +69,19 @@ Deliberately different hues from Aka/Ao, so a system alert is never mistaken for
 
 | Role | Size | Line Height | Letter Spacing | Token |
 |------|------|-------------|-----------------|-------|
-| caption | 12px | 1.4 | 0 | `--text-caption` |
-| label | 13px | 1.3 | 0.02em (uppercase) | `--text-label` |
-| body | 15px | 1.45 | 0 | `--text-body` |
-| body-lg | 17px | 1.4 | -0.01em | `--text-body-lg` |
-| subheading | 19px | 1.3 | -0.01em | `--text-subheading` |
-| heading-sm | 22px | 1.25 | -0.01em | `--text-heading-sm` |
-| heading | 28px | 1.2 | -0.015em | `--text-heading` |
-| heading-lg | 34px | 1.15 | -0.02em | `--text-heading-lg` |
+| caption | 12px | 1.33 | 0 | `--text-caption` |
+| label | 12px | 1.33 | 0.02em (uppercase) | `--text-label` |
+| body | 14px | 1.43 | 0 | `--text-body` |
+| body-lg | 16px | 1.5 | -0.01em | `--text-body-lg` |
+| subheading | 18px | 1.33 | -0.01em | `--text-subheading` |
+| heading-sm | 22px | 1.27 | -0.01em | `--text-heading-sm` |
+| heading | 28px | 1.21 | -0.015em | `--text-heading` |
+| heading-lg | 32px | 1.25 | -0.02em | `--text-heading-lg` |
 | display | 40px | 1.05 | -0.02em | `--text-display` |
 | timer-display | 56px | 1.0 | 0 (Geist Mono) | `--text-timer` |
 | score-display | 96px | 1.0 | 0 (Geist Mono) | `--text-score` |
 
-Never below 15px body text anywhere read at arm's length (ring-side, not just close-up) — the reference web system's 11–13px captions don't survive the distance test on a tournament floor.
+Keep body text no smaller than 14px anywhere read at arm's length (ring-side, not just close-up) — the reference web system's 11–13px captions don't survive the distance test on a tournament floor.
 
 ## Tokens — Spacing & Shapes
 
@@ -113,7 +113,7 @@ Never below 15px body text anywhere read at arm's length (ring-side, not just cl
 
 ### Touch Targets & Safe Areas
 
-- **Minimum tappable size:** 48×48pt everywhere.
+- **Minimum tappable size:** 48×48pt everywhere, except the Button component's own `medium` (36pt) and `normal` (40pt, its default) sizes — most buttons in the app are below this floor as a deliberate choice; the true minimum still governs every other tappable control (chips, list rows, text fields), and score-entry buttons keep their own dedicated 56pt+ size regardless of Button's `size` prop.
 - **Score-entry buttons:** 56pt+ tall — these are used mid-match, one-handed, without looking away from the match.
 - **Safe areas:** every screen respects device safe-area insets; the match clock in the score panel header must never sit under a notch or dynamic island.
 
@@ -194,7 +194,7 @@ Black pill, white `timer-display` numerals (Geist Mono, tabular), turns Warning 
 |-------|------|-------|---------|
 | 0 | Page Canvas | `#FFFFFF` | Main background for all screens |
 | 1 | Card Surface | `#FFFFFF` | Cards sit on canvas with hairline Mist borders |
-| 2 | Muted Surface | `#F3F4F6` | Table stripes, alt-row backgrounds |
+| 2 | Muted Surface | `#F7F8F8` | Table stripes, alt-row backgrounds |
 | 3 | Score Panel — Aka | `#E11D2E` | Left half of the live score panel |
 | 3 | Score Panel — Ao | `#0B57D0` | Right half of the live score panel |
 | 4 | Tab Bar | `#FFFFFF` | Bottom navigation, 1px Mist top border |
@@ -213,11 +213,11 @@ export const theme = {
   colors: {
     // Neutrals
     inkBlack: '#0F1115',
-    charcoal: '#3F4552',
-    slateGray: '#6B7280',
-    steelGray: '#9CA3AF',
-    mist: '#E5E7EB',
-    cloud: '#F3F4F6',
+    charcoal: '#525356',
+    slateGray: '#646668',
+    steelGray: '#BFC0C1',
+    mist: '#E9EAEA',
+    cloud: '#F7F8F8',
     paperWhite: '#FFFFFF',
 
     // Competitor colors — reserved for corner identity only
@@ -227,12 +227,12 @@ export const theme = {
     aoTint: '#E8F0FE',
 
     // Semantic
-    success: '#15803D',
-    successTint: '#E7F4EC',
-    warning: '#B45309',
-    warningTint: '#FDF2E3',
-    danger: '#9F1239',
-    dangerTint: '#FBE7EC',
+    success: '#22794A',
+    successTint: '#F5F8F6',
+    warning: '#8E571E',
+    warningTint: '#FFF5EE',
+    danger: '#A2121C',
+    dangerTint: '#FDF6F4',
   },
 
   // One family per weight: React Native selects custom-font weights by family name.
@@ -247,14 +247,14 @@ export const theme = {
   },
 
   type: {
-    caption: { fontSize: 12, lineHeight: 17, letterSpacing: 0 },
-    label: { fontSize: 13, lineHeight: 17, letterSpacing: 0.26 },
-    body: { fontSize: 15, lineHeight: 22 },
-    bodyLg: { fontSize: 17, lineHeight: 24, letterSpacing: -0.17 },
-    subheading: { fontSize: 19, lineHeight: 25, letterSpacing: -0.19 },
+    caption: { fontSize: 12, lineHeight: 16, letterSpacing: 0 },
+    label: { fontSize: 12, lineHeight: 16, letterSpacing: 0.26 },
+    body: { fontSize: 14, lineHeight: 20 },
+    bodyLg: { fontSize: 16, lineHeight: 24, letterSpacing: -0.17 },
+    subheading: { fontSize: 18, lineHeight: 24, letterSpacing: -0.19 },
     headingSm: { fontSize: 22, lineHeight: 28, letterSpacing: -0.22 },
     heading: { fontSize: 28, lineHeight: 34, letterSpacing: -0.42 },
-    headingLg: { fontSize: 34, lineHeight: 39, letterSpacing: -0.68 },
+    headingLg: { fontSize: 32, lineHeight: 40, letterSpacing: -0.68 },
     display: { fontSize: 40, lineHeight: 42, letterSpacing: -0.8 },
     timerDisplay: { fontSize: 56, lineHeight: 56, fontFamily: 'GeistMono_700Bold' },
     scoreDisplay: { fontSize: 96, lineHeight: 96, fontFamily: 'GeistMono_700Bold' },
@@ -273,15 +273,15 @@ export const theme = {
   },
 
   touchTarget: {
-    minimum: 48,
+    minimum: 48, // the true accessibility floor; kept untouched by Button's own sizes below
+    medium: 36,
+    normal: 40,
     scoreButton: 56,
   },
 
   // Primary button fill: CSS linear-gradient(360deg, #111111, #444444), i.e. dark at the bottom, lighter at the top.
-  // Warm cream that fades to white behind the greeting on the empty events screen (top to bottom).
   gradients: {
     primary: ['#111111', '#444444'],
-    welcome: ['#FAECD6', '#FFFFFF'],
   },
 
   shadows: {
@@ -308,11 +308,11 @@ export const theme = {
 ```css
 @theme {
   --color-ink-black: #0F1115;
-  --color-charcoal: #3F4552;
-  --color-slate-gray: #6B7280;
-  --color-steel-gray: #9CA3AF;
-  --color-mist: #E5E7EB;
-  --color-cloud: #F3F4F6;
+  --color-charcoal: #525356;
+  --color-slate-gray: #646668;
+  --color-steel-gray: #BFC0C1;
+  --color-mist: #E9EAEA;
+  --color-cloud: #F7F8F8;
   --color-paper-white: #FFFFFF;
 
   --color-aka: #E11D2E;
@@ -320,12 +320,12 @@ export const theme = {
   --color-ao: #0B57D0;
   --color-ao-tint: #E8F0FE;
 
-  --color-success: #15803D;
-  --color-success-tint: #E7F4EC;
-  --color-warning: #B45309;
-  --color-warning-tint: #FDF2E3;
-  --color-danger: #9F1239;
-  --color-danger-tint: #FBE7EC;
+  --color-success: #22794A;
+  --color-success-tint: #F5F8F6;
+  --color-warning: #8E571E;
+  --color-warning-tint: #FFF5EE;
+  --color-danger: #A2121C;
+  --color-danger-tint: #FDF6F4;
 
   --radius-card: 16px;
   --radius-chip: 8px;

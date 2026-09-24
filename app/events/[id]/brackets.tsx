@@ -39,7 +39,7 @@ export default function Brackets() {
         const ready = category.status === 'closed' || drawn.includes(category.status);
         return (
           <Card key={category.id}>
-            <Text variant="bodyLg" weight="medium">{category.label}</Text>
+            <Text variant="bodyLg">{category.label}</Text>
             <StatusPill status={category.status} />
             <Text variant="body" color="slateGray">
               {athletes} athletes · {humanize(category.bracket_format ?? 'no format')}

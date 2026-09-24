@@ -73,7 +73,7 @@ export default function CategoryGroups() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{base}</Text>
+      <Text variant="heading">{base}</Text>
       <Text color="slateGray">
         {total} athletes. Split them into groups that run at the same time, each with its own bracket and its own 1st, 2nd and 3rd. Athletes are dealt at random and club-mates are kept in different groups. Seeds are cleared.
       </Text>
@@ -110,10 +110,10 @@ export default function CategoryGroups() {
 
       {groups.length > 1 && (
         <>
-          <Text variant="subheading" weight="medium">Groups</Text>
+          <Text variant="subheading">Groups</Text>
           {groups.map((group) => (
             <Card key={group.id}>
-              <Text variant="bodyLg" weight="medium">{group.label}</Text>
+              <Text variant="bodyLg">{group.label}</Text>
               <Text variant="body" color="slateGray">
                 {group.registrations[0]?.count ?? 0} athletes · {ringName.get(group.tatami_id ?? '') ?? 'no tatami yet'}
               </Text>

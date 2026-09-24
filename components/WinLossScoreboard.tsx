@@ -20,7 +20,7 @@ export function WinLossScoreboard({ row, eventId, onDone }: { row: ScoreboardRow
   if (scoring.finalized) {
     return (
       <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="heading" weight="medium">{names[scoring.finalized.winner]} wins</Text>
+        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
         <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
         <Button title="Back to the queue" onPress={onDone} />
       </View>

@@ -42,7 +42,7 @@ export function TatamiQueueCard({ name, paused, items, footer }: { name: string;
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8] }}>
         <View style={{ backgroundColor: theme.colors.cloud, borderRadius: theme.radii.chip, paddingHorizontal: theme.spacing[8], paddingVertical: theme.spacing[4] }}>
-          <Text variant="label" weight="medium" style={{ textTransform: 'uppercase' }}>{name}</Text>
+          <Text variant="label" style={{ textTransform: 'uppercase' }}>{name}</Text>
         </View>
         {paused && <StatusPill status="paused" />}
       </View>
@@ -50,7 +50,7 @@ export function TatamiQueueCard({ name, paused, items, footer }: { name: string;
       {items.length === 0 && <Text color="slateGray">Nothing queued.</Text>}
       {items.map((item, index) => (
         <View key={item.key} style={{ gap: theme.spacing[4], borderTopWidth: index ? 1 : 0, borderTopColor: theme.colors.mist, paddingTop: index ? theme.spacing[12] : 0 }}>
-          <Text variant="label" weight="medium" color="slateGray" style={{ textTransform: 'uppercase' }}>
+          <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>
             {queueLabels[index] ?? 'Later'}
           </Text>
           <Athlete name={item.a} corner="aka" />

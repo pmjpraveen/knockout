@@ -62,13 +62,13 @@ export default function Schedule() {
 
       {clashes.length > 0 && (
         <Card>
-          <Text weight="medium" color="warning">Double-booked athletes</Text>
+          <Text color="warning">Double-booked athletes</Text>
           <Text variant="body" color="slateGray">
             These matches would call an athlete to two rings at once. Delay one of them.
           </Text>
           {clashes.map((row) => (
             <Card key={row.match_id}>
-              <Text weight="medium">{row.athlete_a ?? 'TBD'} vs {row.athlete_b ?? 'TBD'}</Text>
+              <Text>{row.athlete_a ?? 'TBD'} vs {row.athlete_b ?? 'TBD'}</Text>
               <Text variant="body" color="slateGray">{row.tatami_name} · #{row.queue_position} · {row.category_label}</Text>
               {canOverride && <Button title="Delay one place" variant="warning" disabled={busy} onPress={() => act(() => supabase.rpc('move_in_queue', { p_match_id: row.match_id, p_direction: 1 }))} />}
             </Card>
@@ -114,10 +114,10 @@ export default function Schedule() {
 
       {canOverride && dayCategories.length > 0 && (
         <>
-          <Text variant="subheading" weight="medium">Categories and running order</Text>
+          <Text variant="subheading">Categories and running order</Text>
           {dayCategories.map((category, index) => (
             <Card key={category.id}>
-              <Text variant="bodyLg" weight="medium">{index + 1}. {category.label}</Text>
+              <Text variant="bodyLg">{index + 1}. {category.label}</Text>
               {days.length > 1 && (
                 <ChoiceChips label="Day" options={days} value={category.event_day ?? days[0]} labels={dayLabels(days)} onChange={(next) => act(() => supabase.rpc('set_category_day', { p_category_id: category.id, p_day: next }))} />
               )}

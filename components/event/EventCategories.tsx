@@ -41,7 +41,7 @@ export function EventCategories({ data }: { data: EventData }) {
             >
               <View style={{ flex: 1, gap: theme.spacing[8] }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[12] }}>
-                  <Text variant="bodyLg" weight="medium" style={{ flex: 1 }}>{category.label}</Text>
+                  <Text variant="bodyLg" style={{ flex: 1 }}>{category.label}</Text>
                   <StatusPill status={category.status} />
                 </View>
                 <Text variant="body" color="slateGray">

@@ -51,7 +51,7 @@ export function ScoreButton({ title, onPress, disabled, penalty }: { title: stri
         paddingHorizontal: theme.spacing[12],
       }, pressFeedback(pressed)]}
     >
-      <Text variant="bodyLg" weight="medium" maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
+      <Text variant="bodyLg" maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit>{title}</Text>
     </Pressable>
   );
 }
@@ -64,7 +64,7 @@ function Half({ corner, name, total, totalStyle, children }: { corner: 'aka' | '
   return (
     <CornerContext.Provider value={spoken}>
       <View style={{ flex: 1, backgroundColor: theme.colors[corner], padding: theme.spacing[12], paddingTop: clockSpace(), gap: theme.spacing[8] }}>
-        <Text variant="bodyLg" weight="medium" color="paperWhite" numberOfLines={1} maxFontSizeMultiplier={1.2} importantForAccessibility="no" accessibilityElementsHidden>{name}</Text>
+        <Text variant="bodyLg" color="paperWhite" numberOfLines={1} maxFontSizeMultiplier={1.2} importantForAccessibility="no" accessibilityElementsHidden>{name}</Text>
         <Pop trigger={total} style={{ alignSelf: 'flex-start' }}>
           <Text variant={totalStyle} color="paperWhite" accessibilityLabel={total ? `${spoken}: ${total}` : spoken}>{total}</Text>
         </Pop>
@@ -141,7 +141,7 @@ export function SyncBanner() {
       : `All changes synced${lastSync ? ` at ${new Date(lastSync).toLocaleTimeString()}` : ''}.`;
   return (
     <View accessibilityLiveRegion="polite" style={{ backgroundColor: theme.colors[tone], borderRadius: theme.radii.chip, padding: theme.spacing[12], gap: theme.spacing[4] }}>
-      <Text variant="body" weight="medium" color={color}>{message}</Text>
+      <Text variant="body" color={color}>{message}</Text>
       {pending > 0 && <Button title="Sync now" variant="secondary" onPress={syncNow} />}
     </View>
   );
@@ -159,7 +159,7 @@ export function ResultConfirm({ outcome, names, onConfirm, onCancel, busy }: {
 }) {
   return (
     <Reveal y={16} style={{ borderWidth: 1, borderColor: theme.colors.inkBlack, borderRadius: theme.radii.card, padding: theme.spacing[16], gap: theme.spacing[12] }}>
-      <Text variant="subheading" weight="medium">Confirm result</Text>
+      <Text variant="subheading">Confirm result</Text>
       <Text variant="bodyLg">{names[outcome.winner]} wins by {methodLabel(outcome.method)}.</Text>
       {outcome.note ? <Text color="slateGray">{outcome.note}</Text> : null}
       <Text variant="body" color="slateGray">This ends the match and advances the bracket.</Text>

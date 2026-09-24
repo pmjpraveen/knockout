@@ -50,15 +50,15 @@ export default function SubmissionDetail() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{entry.club_name}</Text>
+      <Text variant="heading">{entry.club_name}</Text>
       <Text color="slateGray">{entry.club_contact}</Text>
       <StatusPill status={entry.approval_status} />
       {entry.rejection_reason && <Text color="warning">Flagged: {entry.rejection_reason}</Text>}
 
-      <Text variant="subheading" weight="medium">Participants</Text>
+      <Text variant="subheading">Participants</Text>
       {entry.athletes.map((athlete) => (
         <Card key={athlete.id}>
-          <Text variant="bodyLg" weight="medium">{athlete.full_name}</Text>
+          <Text variant="bodyLg">{athlete.full_name}</Text>
           <Text variant="body" color="slateGray">
             {[athlete.gender, athlete.date_of_birth && formatDate(athlete.date_of_birth), athlete.weight && `${athlete.weight} kg`, athlete.belt_rank, competeLabels[toDraft(athlete).compete]].filter(Boolean).join(' · ')}
           </Text>
@@ -74,10 +74,10 @@ export default function SubmissionDetail() {
       ))}
       {!archived && <Button title="Add participant" variant="secondary" onPress={() => edit()} />}
 
-      {log.length > 0 && <Text variant="subheading" weight="medium">Change log</Text>}
+      {log.length > 0 && <Text variant="subheading">Change log</Text>}
       {log.map((change) => (
         <Card key={change.id}>
-          <Text weight="medium">{change.action === 'add_athlete' ? 'Participant added' : 'Participant edited'}</Text>
+          <Text>{change.action === 'add_athlete' ? 'Participant added' : 'Participant edited'}</Text>
           <Text variant="body" color="slateGray">{change.reason} · {formatDateTime(change.created_at)}</Text>
         </Card>
       ))}

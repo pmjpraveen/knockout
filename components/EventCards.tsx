@@ -90,7 +90,7 @@ function DeleteChip({ name, onDelete }: { name: string; onDelete: () => void }) 
       ]}
     >
       {armed ? (
-        <Text variant="body" weight="medium" color="danger">Delete?</Text>
+        <Text variant="body" color="danger">Delete?</Text>
       ) : (
         <Trash size={18} color={theme.colors.charcoal} strokeWidth={1.75} />
       )}

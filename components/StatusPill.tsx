@@ -7,6 +7,7 @@ const tones = {
   gray: { background: 'cloud', text: 'charcoal' },
   amber: { background: 'warningTint', text: 'warning' },
   green: { background: 'successTint', text: 'success' },
+  red: { background: 'dangerTint', text: 'danger' },
 } as const;
 
 const toneOf: Record<string, keyof typeof tones> = {
@@ -17,7 +18,7 @@ const toneOf: Record<string, keyof typeof tones> = {
   completed: 'green',
   approved: 'green',
   submitted: 'amber',
-  rejected: 'amber',
+  rejected: 'red',
 };
 
 // The database says "rejected"; the Organizer's action and the club's view are "flagged".
@@ -35,7 +36,7 @@ export function StatusPill({ status }: { status: string }) {
         paddingVertical: theme.spacing[4],
       }}
     >
-      <Text variant="body" weight="medium" color={tone.text}>
+      <Text variant="body" color={tone.text}>
         {labelOf[status] ?? humanize(status)}
       </Text>
     </View>

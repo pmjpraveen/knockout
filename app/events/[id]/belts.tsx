@@ -68,7 +68,7 @@ export default function Belts() {
       <ListGroup>
         {belts.map((belt, index) => (
           <View key={belt} style={{ minHeight: theme.touchTarget.minimum, flexDirection: 'row', alignItems: 'center', gap: theme.spacing[4], paddingLeft: theme.spacing[16], paddingRight: theme.spacing[8] }}>
-            <Text weight="medium" style={{ flex: 1 }}>{index + 1}. {humanize(belt)}</Text>
+            <Text style={{ flex: 1 }}>{index + 1}. {humanize(belt)}</Text>
             <IconAction label={`Move ${belt} up`} Icon={ArrowUp} disabled={index === 0} onPress={() => move(index, -1)} />
             <IconAction label={`Move ${belt} down`} Icon={ArrowDown} disabled={index === belts.length - 1} onPress={() => move(index, 1)} />
             <IconAction label={`Remove ${belt}`} Icon={X} disabled={belts.length === 1} onPress={() => setBelts((list) => list.filter((b) => b !== belt))} />

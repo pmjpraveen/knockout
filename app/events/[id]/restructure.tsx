@@ -44,7 +44,7 @@ export default function Restructure() {
           <View key={category.id} style={{ gap: theme.spacing[8] }}>
             <Pressable style={({ pressed }) => pressFeedback(pressed)} onPress={() => toggle(category.id)}>
               <Card>
-                <Text variant="bodyLg" weight="medium">{category.label}</Text>
+                <Text variant="bodyLg">{category.label}</Text>
                 {position >= 0 && <Text variant="body" color="charcoal">{position === 0 ? 'Merge target' : 'Merges into target'}</Text>}
               </Card>
             </Pressable>

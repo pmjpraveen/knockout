@@ -45,7 +45,7 @@ export default function BracketSplit() {
 
   return (
     <Screen>
-      <Text variant="heading" weight="medium">{categories[0]?.label}</Text>
+      <Text variant="heading">{categories[0]?.label}</Text>
       <Text color="slateGray">
         {robin
           ? 'Pools are shared out across the rings you pick. Standings stay unified.'

@@ -66,18 +66,18 @@ export function buildBracketReportHtml({ eventName, categoryLabel, bracketFormat
   return `<!DOCTYPE html><html><head><meta charset="utf-8" /><title>${escape(categoryLabel)}</title><style>
     body { font-family: -apple-system, Helvetica, Arial, sans-serif; color: #0F1115; padding: 24px; }
     h1 { font-size: 22px; margin-bottom: 2px; }
-    h2 { font-size: 16px; margin-top: 28px; border-bottom: 1px solid #E5E7EB; padding-bottom: 4px; }
+    h2 { font-size: 16px; margin-top: 28px; border-bottom: 1px solid #E9EAEA; padding-bottom: 4px; }
     h3 { font-size: 14px; margin: 16px 0 8px; }
-    h4 { font-size: 11px; text-transform: uppercase; color: #6B7280; margin: 10px 0 4px; }
-    .subtitle { color: #6B7280; margin-bottom: 4px; }
-    .muted { color: #6B7280; }
+    h4 { font-size: 11px; text-transform: uppercase; color: #646668; margin: 10px 0 4px; }
+    .subtitle { color: #646668; margin-bottom: 4px; }
+    .muted { color: #646668; }
     .place { font-weight: 600; width: 40px; }
-    .vs { color: #9CA3AF; font-size: 11px; padding: 0 6px; }
+    .vs { color: #BFC0C1; font-size: 11px; padding: 0 6px; }
     table { border-collapse: collapse; width: 100%; }
     td { padding: 3px 8px 3px 0; font-size: 13px; vertical-align: top; }
     .rounds { display: flex; flex-wrap: wrap; gap: 24px; }
     .round table { width: auto; min-width: 180px; }
-    .round td { border-bottom: 1px solid #F3F4F6; padding: 4px 8px; }
+    .round td { border-bottom: 1px solid #F7F8F8; padding: 4px 8px; }
     section { break-inside: avoid; }
   </style></head><body>
     <h1>${escape(categoryLabel)}</h1>

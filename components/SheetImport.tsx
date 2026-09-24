@@ -89,7 +89,7 @@ export function SheetImport<T>({ kind, belts, intro, noun, parse, describe, send
 
       {file && !summary && (
         <>
-          <Text weight="medium">{file.name}</Text>
+          <Text>{file.name}</Text>
           {count === 0 && problems.length === 0 ? (
             <Text color="warning">The sheet has no rows below the header row.</Text>
           ) : (
