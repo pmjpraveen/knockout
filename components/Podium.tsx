@@ -1,6 +1,7 @@
 import Crown from 'lucide-react-native/icons/crown';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { Reveal } from '@/components/Motion';
 import { Text } from '@/components/Text';
 import { useCategoryPodium } from '@/hooks/useCategoryPodium';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
@@ -26,14 +27,14 @@ function Stand({ place, names }: { place: (typeof places)[number]; names: string
     <View style={{ alignItems: 'center', width: standWidth }}>
       <View style={{ alignItems: 'center', gap: 2, marginBottom: theme.spacing[8], minHeight: 40 }}>
         {names.map((name) => (
-          <Text key={name} weight="medium" numberOfLines={1} style={{ maxWidth: standWidth + 24, textAlign: 'center' }}>{name}</Text>
+          <Text key={name} numberOfLines={1} style={{ maxWidth: standWidth + 24, textAlign: 'center' }}>{name}</Text>
         ))}
       </View>
       <View style={{ width: '100%', height: heights[place], borderTopLeftRadius: theme.radii.chip, borderTopRightRadius: theme.radii.chip, overflow: 'hidden', ...theme.shadows.scorePanel }}>
         <View style={{ height: 10, backgroundColor: colors.top }} />
         <View style={{ flex: 1, backgroundColor: colors.face, alignItems: 'center', justifyContent: 'center', gap: 2 }}>
           {place === 1 && <Crown size={22} color={colors.text} strokeWidth={2} />}
-          <Text weight="medium" style={{ color: colors.text, fontSize: 24, lineHeight: 28 }}>{labels[place]}</Text>
+          <Text style={{ color: colors.text, fontSize: 24, lineHeight: 28 }}>{labels[place]}</Text>
         </View>
       </View>
     </View>
@@ -106,11 +107,13 @@ export function Podium({ categoryId }: { categoryId: string }) {
 
   return (
     <View style={{ gap: theme.spacing[8] }}>
-      <Text variant="subheading" weight="medium">Podium</Text>
+      <Text variant="subheading">Podium</Text>
       <View style={{ paddingTop: theme.spacing[24] }}>
         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', gap: theme.spacing[12] }}>
-          {order.filter((place) => byPlace.has(place)).map((place) => (
-            <Stand key={place} place={place} names={byPlace.get(place)!} />
+          {order.filter((place) => byPlace.has(place)).map((place, index) => (
+            <Reveal key={place} delay={index * 0.08} y={16}>
+              <Stand place={place} names={byPlace.get(place)!} />
+            </Reveal>
           ))}
         </View>
         <Confetti play={celebrate} />

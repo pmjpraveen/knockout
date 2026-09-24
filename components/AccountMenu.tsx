@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Image, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import { pressFeedback } from '@/lib/press';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
@@ -14,7 +15,7 @@ function Avatar({ uri, name }: { uri?: string; name: string }) {
     <Image source={{ uri }} onError={() => setFailed(true)} style={shape} />
   ) : (
     <View style={[shape, { backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }]}>
-      <Text weight="medium">{name.charAt(0).toUpperCase()}</Text>
+      <Text>{name.charAt(0).toUpperCase()}</Text>
     </View>
   );
 }
@@ -23,19 +24,38 @@ function Avatar({ uri, name }: { uri?: string; name: string }) {
 export function AccountMenu({ uri, name }: { uri?: string; name: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [rendered, setRendered] = useState(false);
+  const reduceMotion = useReduceMotion();
+  const progress = useRef(new Animated.Value(0)).current;
   const entries = [
     { title: 'Terms and conditions', onPress: () => router.push('/terms') },
     { title: 'Privacy policy', onPress: () => router.push('/privacy') },
     { title: 'Account deletion', danger: true, onPress: () => router.push('/delete-account') },
     { title: 'Sign out', onPress: () => supabase.auth.signOut() },
   ];
+
+  // Scales and fades from the avatar that opened it, rather than an instant show/hide, and stays mounted
+  // through the close animation so it can reverse cleanly if reopened mid-close.
+  useEffect(() => {
+    if (open) {
+      setRendered(true);
+      if (reduceMotion) return progress.setValue(1);
+      Animated.timing(progress, { toValue: 1, duration: 160, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    } else if (reduceMotion) {
+      progress.setValue(0);
+      setRendered(false);
+    } else {
+      Animated.timing(progress, { toValue: 0, duration: 120, easing: Easing.in(Easing.cubic), useNativeDriver: true }).start(({ finished }) => finished && setRendered(false));
+    }
+  }, [open, reduceMotion, progress]);
+
   return (
     <View style={{ zIndex: 1 }}>
       <Pressable accessibilityRole="button" accessibilityLabel={`Account menu for ${name}`} style={({ pressed }) => pressFeedback(pressed)} onPress={() => setOpen((o) => !o)}>
         <Avatar uri={uri} name={name} />
       </Pressable>
-      {open && (
-        <View
+      {rendered && (
+        <Animated.View
           style={{
             position: 'absolute',
             top: 48,
@@ -47,6 +67,9 @@ export function AccountMenu({ uri, name }: { uri?: string; name: string }) {
             borderColor: theme.colors.mist,
             borderRadius: theme.radii.card,
             ...theme.shadows.scorePanel,
+            opacity: progress,
+            transform: [{ scale: progress.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }],
+            transformOrigin: 'top right',
           }}
         >
           {entries.map((entry, index) => (
@@ -59,7 +82,7 @@ export function AccountMenu({ uri, name }: { uri?: string; name: string }) {
               <Text color={entry.danger ? 'danger' : 'inkBlack'}>{entry.title}</Text>
             </Pressable>
           ))}
-        </View>
+        </Animated.View>
       )}
     </View>
   );
