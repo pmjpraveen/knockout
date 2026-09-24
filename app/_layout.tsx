@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import { Splash } from '@/components/Splash';
 import { WebHeader } from '@/components/WebHeader';
 import { useFaviconColorScheme } from '@/hooks/useFaviconColorScheme';
+import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
 import { useSession } from '@/hooks/useSession';
 import { startSyncLoop } from '@/lib/offline';
 import { stackScreenOptions } from '@/lib/navigation';
@@ -38,6 +39,7 @@ export default function RootLayout() {
   const signedIn = !!session;
   useEffect(() => (signedIn ? startSyncLoop() : undefined), [signedIn]);
   useFaviconColorScheme();
+  useNavigationBarStyle();
   const ready = session !== undefined && (fontsLoaded || fontError);
   useEffect(() => {
     if (ready && !showSplash) SplashScreen.hideAsync();

@@ -12,6 +12,7 @@ import { Pop, Reveal } from '@/components/Motion';
 import { clockHeight, MatchClock, ResultConfirm, ScoreboardRow, SyncBanner } from '@/components/ScoreboardParts';
 import { Text } from '@/components/Text';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
+import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
 import { haptic } from '@/lib/haptics';
 import { pressFeedback } from '@/lib/press';
 import { activeEvents, clockState, kumiteOutcome, kumiteState, nextPenaltyLevel, Outcome, penaltyLevels, points } from '@/lib/scoring';
@@ -42,6 +43,7 @@ const useRoomy = () => {
  * turn instead; anything already wider than tall is shown as it is.
  */
 function Fullscreen({ children }: { children: ReactNode }) {
+  useNavigationBarStyle('light'); // the dark score panel needs light gesture-bar icons
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const turned = height > width;
@@ -128,7 +130,7 @@ function Half({ side, name, club, total, senshu, penalties, live, disabled, onSc
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors[side], paddingTop: roomy ? pad + clockHeight + pad : pad, paddingBottom: pad, paddingStart: aka ? start : seam, paddingEnd: aka ? seam : end }}>
       <View importantForAccessibility="no" accessibilityElementsHidden style={{ alignItems: align, paddingStart: aka || roomy ? 0 : clockClearance, paddingEnd: aka && !roomy ? clockClearance : 0, gap: theme.spacing[4] }}>
-        <Text variant="body" weight="medium" color="paperWhite">{aka ? 'Aka' : 'Ao'}</Text>
+        <Text variant="body" color="paperWhite">{aka ? 'Aka' : 'Ao'}</Text>
         <Text variant="headingSm" color="paperWhite" numberOfLines={1} maxFontSizeMultiplier={1.2}>{name}</Text>
         <Text variant="body" color="paperWhite" numberOfLines={1} maxFontSizeMultiplier={1.2}>{club}</Text>
       </View>
@@ -239,7 +241,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
   if (scoring.finalized) {
     prompt = overlay(
       <>
-        <Text variant="heading" weight="medium">{names[scoring.finalized.winner]} wins</Text>
+        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
         <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
         <SyncBanner />
         <Button title="Back to the queue" onPress={onDone} />
@@ -250,7 +252,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
   } else if (outcome) {
     prompt = overlay(
       <>
-        <Text variant="subheading" weight="medium">{names[outcome.winner]} wins by {outcome.note ? outcome.note.split(':')[0] : outcome.method === 'lead' ? 'an 8-point lead' : outcome.method}.</Text>
+        <Text variant="subheading">{names[outcome.winner]} wins by {outcome.note ? outcome.note.split(':')[0] : outcome.method === 'lead' ? 'an 8-point lead' : outcome.method}.</Text>
         <Button title="Review result" onPress={() => setConfirming(outcome)} />
         <Button title="Undo last" variant="secondary" disabled={!undoTarget} onPress={() => scoring.record('void', null, null, null, undoTarget!.id)} />
       </>,
@@ -258,7 +260,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
   } else if (timeUp) {
     prompt = overlay(
       <>
-        <Text weight="medium">Time is up and the score is level, with no Senshu. Record the referee&apos;s decision.</Text>
+        <Text>Time is up and the score is level, with no Senshu. Record the referee&apos;s decision.</Text>
         {[a, b].map((id) => (
           <Button key={id} title={`Decision: ${names[id]}`} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
         ))}
@@ -283,7 +285,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
         {!scoring.started ? (
           <Button
             title="Start match"
-            large
+            size="scoreButton"
             onPress={async () => {
               haptic.start();
               await scoring.start();
@@ -296,7 +298,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
               <Button
                 title={clock.running ? 'Pause clock' : 'Resume clock'}
                 variant="secondary"
-                large
+                size="scoreButton"
                 disabled={timeUp || !!outcome || !live}
                 onPress={() => {
                   haptic.tap();

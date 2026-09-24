@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, Platform, StyleSheet, View } from 'react-native';
 import { LogoLockup } from '@/components/LogoLockup';
+import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const native = Platform.OS !== 'web';
@@ -71,6 +72,7 @@ function OpeningLogo({ split }: { split: Animated.Value }) {
  */
 export function Splash({ onReady, onDone }: { onReady?: () => void; onDone: () => void }) {
   const reduce = useReduceMotion();
+  useNavigationBarStyle('light'); // the dark backdrop needs light gesture-bar icons
   const appear = useRef(new Animated.Value(0)).current; // fade-in and settle
   const split = useRef(new Animated.Value(reduce ? 1 : 0)).current; // 0 = the mark, 1 = the lockup
   const zoom = useRef(new Animated.Value(0)).current; // 0 = resting size, 1 = fully zoomed
