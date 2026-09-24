@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { LinkCard } from '@/components/LinkCard';
@@ -50,19 +51,21 @@ export default function Tatamis() {
       {tatamis.map((tatami) => (
         <Card key={tatami.id}>
           <TextField label="Label" value={names[tatami.id] ?? tatami.name} onChangeText={(value) => setNames((n) => ({ ...n, [tatami.id]: value }))} autoCapitalize="words" />
-          <Button
-            title="Rename"
-            variant="secondary"
-            disabled={busy || !(names[tatami.id] ?? tatami.name).trim() || (names[tatami.id] ?? tatami.name) === tatami.name}
-            onPress={() => act(() => supabase.from('tatamis').update({ name: names[tatami.id].trim() }).eq('id', tatami.id))}
-          />
-          <Button
-            title="Delete"
-            variant="danger"
-            confirmTitle="Tap again: its categories become unassigned"
-            disabled={busy}
-            onPress={() => act(() => supabase.from('tatamis').delete().eq('id', tatami.id))}
-          />
+          <ActionRow>
+            <Button
+              title="Rename"
+              variant="secondary"
+              disabled={busy || !(names[tatami.id] ?? tatami.name).trim() || (names[tatami.id] ?? tatami.name) === tatami.name}
+              onPress={() => act(() => supabase.from('tatamis').update({ name: names[tatami.id].trim() }).eq('id', tatami.id))}
+            />
+            <Button
+              title="Delete"
+              variant="danger"
+              confirmTitle="Tap again: its categories become unassigned"
+              disabled={busy}
+              onPress={() => act(() => supabase.from('tatamis').delete().eq('id', tatami.id))}
+            />
+          </ActionRow>
         </Card>
       ))}
       <TextField label="New tatami" value={newName} onChangeText={setNewName} placeholder="Tatami 1, Ring A…" autoCapitalize="words" />
@@ -91,16 +94,18 @@ export default function Tatamis() {
             Anyone with this link sees upcoming matches, rings and estimated call times, without an account. Athlete names are shown; dates of birth, weights and clubs are not.
           </Text>
           {publicScheduleUrl && <LinkCard url={publicScheduleUrl} />}
-          <Button
-            title={publicScheduleUrl ? 'Regenerate link' : 'Create public schedule link'}
-            variant={publicScheduleUrl ? 'danger' : 'primary'}
-            confirmTitle={publicScheduleUrl ? 'Tap again: the old link stops working' : undefined}
-            disabled={busy}
-            onPress={() => act(() => supabase.rpc('regenerate_schedule_link', { p_event_id: id }))}
-          />
-          {publicScheduleUrl && (
-            <Button title="Turn off public link" variant="secondary" disabled={busy} onPress={() => act(() => supabase.from('events').update({ schedule_token: null }).eq('id', id))} />
-          )}
+          <ActionRow>
+            <Button
+              title={publicScheduleUrl ? 'Regenerate link' : 'Create public schedule link'}
+              variant={publicScheduleUrl ? 'danger' : 'primary'}
+              confirmTitle={publicScheduleUrl ? 'Tap again: the old link stops working' : undefined}
+              disabled={busy}
+              onPress={() => act(() => supabase.rpc('regenerate_schedule_link', { p_event_id: id }))}
+            />
+            {publicScheduleUrl && (
+              <Button title="Turn off public link" variant="secondary" disabled={busy} onPress={() => act(() => supabase.from('events').update({ schedule_token: null }).eq('id', id))} />
+            )}
+          </ActionRow>
         </>
       )}
       {error && <Text color="danger">{error}</Text>}

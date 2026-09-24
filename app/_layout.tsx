@@ -5,7 +5,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { Splash } from '@/components/Splash';
-import { WebHeader } from '@/components/WebHeader';
 import { useFaviconColorScheme } from '@/hooks/useFaviconColorScheme';
 import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
 import { useSession } from '@/hooks/useSession';
@@ -46,13 +45,9 @@ export default function RootLayout() {
   }, [ready, showSplash]);
   if (!ready) return null;
 
-  // The wizard renders full-bleed on web (its own overlay), so the persistent header would fight it there.
-  const isCreatingEvent = pathname.startsWith('/events/new');
-
   return (
     <>
       <StatusBar style={showSplash ? 'light' : 'dark'} />
-      {!isCreatingEvent && <WebHeader />}
       <Stack screenOptions={stackScreenOptions}>
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="index" options={{ title: 'Events' }} />

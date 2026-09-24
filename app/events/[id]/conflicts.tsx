@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
@@ -53,16 +54,21 @@ export default function Conflicts() {
           <Text variant="body" color="slateGray">
             {formatDateTime(conflict.created_at)} · device {conflict.device_id.slice(0, 8)} · {(conflict.op as { kind?: string }).kind}
           </Text>
-          {conflict.match_id && conflict.reason !== 'match_not_found' && (
-            <Button title="Open match audit" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: conflict.match_id! } })} />
-          )}
           {open === conflict.id ? (
             <>
+              {conflict.match_id && conflict.reason !== 'match_not_found' && (
+                <Button title="Open match audit" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: conflict.match_id! } })} />
+              )}
               <TextField label="How was this resolved?" value={note} onChangeText={setNote} autoCapitalize="sentences" />
               <Button title="Mark resolved" disabled={busy || !note.trim()} onPress={() => resolve(conflict.id)} />
             </>
           ) : (
-            <Button title="Resolve…" variant="secondary" onPress={() => setOpen(conflict.id)} />
+            <ActionRow>
+              {conflict.match_id && conflict.reason !== 'match_not_found' && (
+                <Button title="Open match audit" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: conflict.match_id! } })} />
+              )}
+              <Button title="Resolve…" variant="secondary" onPress={() => setOpen(conflict.id)} />
+            </ActionRow>
           )}
         </Card>
       ))}

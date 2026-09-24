@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
@@ -117,10 +118,12 @@ export default function CategoryGroups() {
               <Text variant="body" color="slateGray">
                 {group.registrations[0]?.count ?? 0} athletes · {ringName.get(group.tatami_id ?? '') ?? 'no tatami yet'}
               </Text>
-              {isOrganizer && (
-                <Button title={drawnIds.has(group.id) ? 'Seed & redraw' : 'Seed & generate'} variant="secondary" disabled={started} onPress={() => router.push({ pathname: '/events/[id]/bracket-setup', params: { id, categoryId: group.id } })} />
-              )}
-              {drawnIds.has(group.id) && <Button title="View bracket" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id, categoryId: group.id } })} />}
+              <ActionRow>
+                {isOrganizer && (
+                  <Button title={drawnIds.has(group.id) ? 'Seed & redraw' : 'Seed & generate'} variant="secondary" disabled={started} onPress={() => router.push({ pathname: '/events/[id]/bracket-setup', params: { id, categoryId: group.id } })} />
+                )}
+                {drawnIds.has(group.id) && <Button title="View bracket" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id, categoryId: group.id } })} />}
+              </ActionRow>
               <Podium categoryId={group.id} />
             </Card>
           ))}

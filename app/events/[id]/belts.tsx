@@ -5,6 +5,7 @@ import X from 'lucide-react-native/icons/x';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { ListGroup } from '@/components/ListGroup';
 import { Screen } from '@/components/Screen';
@@ -76,8 +77,10 @@ export default function Belts() {
         ))}
       </ListGroup>
       <TextField label="Add a belt" value={name} onChangeText={setName} placeholder="e.g. green stripe" maxLength={30} />
-      <Button title="Add belt" variant="secondary" disabled={!name.trim() || belts.length >= maxBelts} onPress={add} />
-      <Button title="Use standard belts" variant="secondary" onPress={() => setBelts(standardBelts)} />
+      <ActionRow>
+        <Button title="Add belt" variant="secondary" disabled={!name.trim() || belts.length >= maxBelts} onPress={add} />
+        <Button title="Use standard belts" variant="secondary" onPress={() => setBelts(standardBelts)} />
+      </ActionRow>
       {error && <Text color="danger">{error}</Text>}
       <Button title="Save belts" disabled={busy || belts.length === 0} onPress={save} />
     </Screen>

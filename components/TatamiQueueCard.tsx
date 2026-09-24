@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { View } from 'react-native';
+import { ActionRow } from '@/components/ActionRow';
 import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
 import { formatTime, queueLabels } from '@/lib/schedule';
@@ -59,7 +60,7 @@ export function TatamiQueueCard({ name, paused, items, footer }: { name: string;
             {item.time ? `≈ ${formatTime(item.time)} · ` : ''}{item.category} · {item.detail}
           </Text>
           {item.conflict && <Text variant="body" color="warning">An athlete here is also called to another ring at this time.</Text>}
-          {item.action}
+          {item.action && <ActionRow>{item.action}</ActionRow>}
         </View>
       ))}
       {footer}

@@ -1,4 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
@@ -130,9 +131,11 @@ export default function Schedule() {
                   act(() => supabase.rpc('assign_category_to_tatami', { p_category_id: category.id, p_tatami_id: tatamiId === 'none' ? undefined : tatamiId }))
                 }
               />
-              <Button title="Run earlier" variant="secondary" disabled={busy || index === 0} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: -1 }))} />
-              <Button title="Run later" variant="secondary" disabled={busy || index === dayCategories.length - 1} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: 1 }))} />
-              <Button title="Split across tatamis" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket-split', params: { id, categoryId: category.id } })} />
+              <ActionRow>
+                <Button title="Run earlier" variant="secondary" disabled={busy || index === 0} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: -1 }))} />
+                <Button title="Run later" variant="secondary" disabled={busy || index === dayCategories.length - 1} onPress={() => act(() => supabase.rpc('move_category_sequence', { p_category_id: category.id, p_direction: 1 }))} />
+                <Button title="Split across tatamis" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket-split', params: { id, categoryId: category.id } })} />
+              </ActionRow>
             </Card>
           ))}
         </>

@@ -1,8 +1,9 @@
 import { Stack } from 'expo-router';
 import { ReactNode } from 'react';
-import { Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AccountMenu } from '@/components/AccountMenu';
+import { LogoLockup } from '@/components/LogoLockup';
 import { wideBreakpoint } from '@/components/LoginArtwork';
 import { Text } from '@/components/Text';
 import { useSession } from '@/hooks/useSession';
@@ -30,14 +31,19 @@ export function HomeScreen({ children, footer, contentWidth = 400, greeting = tr
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + theme.spacing[8], paddingBottom: theme.spacing[32] }}>
         <View style={[column, { maxWidth: wide ? wideColumn : contentWidth, zIndex: 1 }]}>
+          {wide && (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 72 }}>
+              <LogoLockup />
+              {menu}
+            </View>
+          )}
           {(greeting || !wide) && (
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: wide ? theme.spacing[32] : 0 }}>
               <View>
                 <Text variant="bodyLg">Hi,</Text>
-                <Text variant="subheading">{name}</Text>
+                <Text variant="heading" weight="medium">{name}</Text>
               </View>
-              {/* On web the persistent WebHeader already carries the account menu. */}
-              {!wide && Platform.OS !== 'web' && menu}
+              {!wide && menu}
             </View>
           )}
         </View>

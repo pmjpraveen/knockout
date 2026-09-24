@@ -32,14 +32,14 @@ export default function SignIn() {
       <TextField label="Email address" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="email" />
       <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="current-password" />
       {error && <Text color="danger">{error}</Text>}
-      <Button title="Log in" disabled={busy} onPress={() => run(() => supabase.auth.signInWithPassword(credentials))} />
+      <Button title="Log in" size="large" disabled={busy} onPress={() => run(() => supabase.auth.signInWithPassword(credentials))} />
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[12] }}>
         <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.mist }} />
         <Text color="slateGray">or</Text>
         <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.mist }} />
       </View>
-      <Button title="Log in with Google" variant="secondary" icon={<GoogleIcon />} disabled={busy} onPress={() => run(signInWithGoogle)} />
+      <Button title="Log in with Google" variant="secondary" size="large" icon={<GoogleIcon />} disabled={busy} onPress={() => run(signInWithGoogle)} />
     </>
   );
 

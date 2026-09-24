@@ -1,5 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
@@ -80,19 +81,21 @@ export default function MatchAudit() {
             <ChoiceChips label="Winner" options={['a', 'b']} value={winner} labels={names} onChange={setWinner} />
           )}
           {error && <Text color="danger">{error}</Text>}
-          <Button
-            title="Set result"
-            variant="danger"
-            confirmTitle="Tap again: this ends the match"
-            disabled={busy || !note.trim() || !winner}
-            onPress={async () => {
-              const { data } = await supabase.from('matches').select('athlete_a_id, athlete_b_id').eq('id', matchId).single();
-              if (data) await act(() => supabase.rpc('override_match_result', { p_match_id: matchId, p_winner_id: (winner === 'a' ? data.athlete_a_id : data.athlete_b_id)!, p_note: note }));
-            }}
-          />
-          {match.status === 'in_progress' && (
-            <Button title="Release scoreboard device" variant="warning" disabled={busy || !note.trim()} onPress={() => act(() => supabase.rpc('release_match_claim', { p_match_id: matchId, p_note: note }))} />
-          )}
+          <ActionRow>
+            <Button
+              title="Set result"
+              variant="danger"
+              confirmTitle="Tap again: this ends the match"
+              disabled={busy || !note.trim() || !winner}
+              onPress={async () => {
+                const { data } = await supabase.from('matches').select('athlete_a_id, athlete_b_id').eq('id', matchId).single();
+                if (data) await act(() => supabase.rpc('override_match_result', { p_match_id: matchId, p_winner_id: (winner === 'a' ? data.athlete_a_id : data.athlete_b_id)!, p_note: note }));
+              }}
+            />
+            {match.status === 'in_progress' && (
+              <Button title="Release scoreboard device" variant="warning" disabled={busy || !note.trim()} onPress={() => act(() => supabase.rpc('release_match_claim', { p_match_id: matchId, p_note: note }))} />
+            )}
+          </ActionRow>
         </>
       )}
     </Screen>

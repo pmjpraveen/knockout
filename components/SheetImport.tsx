@@ -1,7 +1,7 @@
 import Download from 'lucide-react-native/icons/download';
 import Upload from 'lucide-react-native/icons/upload';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Text } from '@/components/Text';
@@ -74,10 +74,10 @@ export function SheetImport<T>({ kind, belts, intro, noun, parse, describe, send
   return (
     <>
       <Text color="slateGray">{intro}</Text>
-      <View style={{ gap: theme.spacing[8] }}>
+      <ActionRow>
         <Button title="Download sample sheet (.xlsx)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('xlsx')} />
         <Button title="Download sample sheet (.csv)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('csv')} />
-      </View>
+      </ActionRow>
       <Button
         title={file ? 'Choose a different file' : 'Choose a file (.xlsx or .csv)'}
         variant={file ? 'secondary' : 'primary'}

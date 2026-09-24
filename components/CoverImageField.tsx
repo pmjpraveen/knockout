@@ -1,5 +1,6 @@
 import ImagePlus from 'lucide-react-native/icons/image-plus';
 import { Image, Pressable, View } from 'react-native';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
@@ -27,8 +28,10 @@ export function CoverImageField({ value, onChange }: { value: Pick<Cover, 'image
       {value ? (
         <>
           <Image accessibilityLabel="Tournament cover image" source={{ uri: value.image }} style={{ width: '100%', aspectRatio: coverAspect, borderRadius: theme.radii.card }} />
-          <Button title="Change image" variant="secondary" disabled={busy} onPress={choose} />
-          <Button title="Remove image" variant="ghost" onPress={() => onChange(null)} />
+          <ActionRow>
+            <Button title="Change image" variant="secondary" disabled={busy} onPress={choose} />
+            <Button title="Remove image" variant="ghost" onPress={() => onChange(null)} />
+          </ActionRow>
         </>
       ) : (
         <Pressable

@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { LinkCard } from '@/components/LinkCard';
 import { Screen } from '@/components/Screen';
@@ -36,19 +37,21 @@ export default function RegistrationLink() {
             url={registrationUrl(link.token)}
             note={`${link.is_active ? 'Active' : 'Deactivated'} · regenerated ${link.regenerated_count}×`}
           />
-          <Button
-            title={link.is_active ? 'Deactivate link' : 'Reactivate link'}
-            variant="secondary"
-            disabled={busy}
-            onPress={() => setActive(!link.is_active)}
-          />
-          <Button
-            title="Regenerate link"
-            variant="danger"
-            confirmTitle="Tap again: the old link stops working"
-            disabled={busy}
-            onPress={generate}
-          />
+          <ActionRow>
+            <Button
+              title={link.is_active ? 'Deactivate link' : 'Reactivate link'}
+              variant="secondary"
+              disabled={busy}
+              onPress={() => setActive(!link.is_active)}
+            />
+            <Button
+              title="Regenerate link"
+              variant="danger"
+              confirmTitle="Tap again: the old link stops working"
+              disabled={busy}
+              onPress={generate}
+            />
+          </ActionRow>
         </>
       ) : (
         <Button title="Generate registration link" disabled={busy} onPress={generate} />

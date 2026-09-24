@@ -2,6 +2,7 @@ import Download from 'lucide-react-native/icons/download';
 import Upload from 'lucide-react-native/icons/upload';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Text } from '@/components/Text';
@@ -71,11 +72,11 @@ export function RosterUpload({ existing, max, belts, onAdd }: { existing: Athlet
       <View style={{ gap: theme.spacing[12] }}>
         <Text variant="subheading">Upload your participants list</Text>
         <Text color="slateGray">Skip typing each athlete. Download the sample sheet, fill in one row per participant, then upload it. You can check and change everyone below before you submit.</Text>
-        <View style={{ gap: theme.spacing[8] }}>
+        <ActionRow>
           <Button title="Download sample sheet (.xlsx)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('xlsx')} />
           <Button title="Download sample sheet (.csv)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('csv')} />
           <Button title="Upload your list (.xlsx or .csv)" icon={<Upload size={18} color={theme.colors.paperWhite} strokeWidth={1.75} />} disabled={busy} onPress={upload} />
-        </View>
+        </ActionRow>
         {error && <Text color="danger">{error}</Text>}
         {outcome && (
           <View style={{ gap: theme.spacing[4] }}>

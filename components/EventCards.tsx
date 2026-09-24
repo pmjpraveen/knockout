@@ -27,26 +27,27 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-type CardProps = { event: EventRow; thumb?: string | null; onPress: () => void };
+type CardProps = { event: EventRow; thumb?: string | null; onPress: () => void; onDelete?: () => void };
 
 function Caption({ event }: { event: EventRow }) {
   return (
     <View style={{ gap: theme.spacing[4] }}>
-      <Text variant="bodyLg" numberOfLines={1}>{event.name}</Text>
+      <Text variant="bodyLg" weight="medium" numberOfLines={1}>{event.name}</Text>
       <Text color="charcoal">{formatDateRange(event.start_date, event.end_date)}</Text>
     </View>
   );
 }
 
-/** A full-width card for an event that is running or about to: cover, status and dates. */
-export function EventHeroCard({ event, thumb, onPress }: CardProps) {
+/** A grid card for an event: cover, status pill, name and dates. */
+export function EventHeroCard({ event, thumb, onPress, onDelete }: CardProps) {
   return (
     <Pressable accessibilityRole="button" style={({ pressed }) => [{ gap: theme.spacing[12] }, pressFeedback(pressed)]} onPress={onPress}>
-      <View style={{ aspectRatio: 2.15, borderRadius: theme.radii.scorePanel, overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
+      <View style={{ aspectRatio: 1.25, borderRadius: theme.radii.scorePanel, overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
         <Image accessibilityLabel={`${event.name} cover`} source={coverSource(thumb)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
         <View style={{ position: 'absolute', left: theme.spacing[12], bottom: theme.spacing[12] }}>
           <StatusBadge status={event.status} />
         </View>
+        {onDelete && <DeleteChip name={event.name} onDelete={onDelete} />}
       </View>
       <Caption event={event} />
     </Pressable>
@@ -94,19 +95,6 @@ function DeleteChip({ name, onDelete }: { name: string; onDelete: () => void }) 
       ) : (
         <Trash size={18} color={theme.colors.charcoal} strokeWidth={1.75} />
       )}
-    </Pressable>
-  );
-}
-
-/** A card for the drafts grid: `width` wide and `ratio` (width over height) shaped, square by default. `onDelete` adds a delete button. */
-export function EventTile({ event, thumb, onPress, onDelete, width, ratio = 1 }: CardProps & { width: number; ratio?: number; onDelete?: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" style={({ pressed }) => [{ width, gap: theme.spacing[12] }, pressFeedback(pressed)]} onPress={onPress}>
-      <View style={{ width, height: width / ratio, borderRadius: theme.radii.scorePanel, overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
-        <Image accessibilityLabel={`${event.name} cover`} source={coverSource(thumb)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
-        {onDelete && <DeleteChip name={event.name} onDelete={onDelete} />}
-      </View>
-      <Caption event={event} />
     </Pressable>
   );
 }

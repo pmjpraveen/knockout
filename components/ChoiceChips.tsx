@@ -10,13 +10,15 @@ type Props<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   labels?: Partial<Record<T, string>>;
+  /** False keeps every chip on one row (no wrapping). Defaults to true. */
+  wrap?: boolean;
 };
 
-export function ChoiceChips<T extends string>({ label, options, value, onChange, labels }: Props<T>) {
+export function ChoiceChips<T extends string>({ label, options, value, onChange, labels, wrap = true }: Props<T>) {
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.spacing[4] }}>
       <Text>{label}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>
+      <View style={{ flexDirection: 'row', flexWrap: wrap ? 'wrap' : 'nowrap', gap: theme.spacing[8] }}>
         {options.map((option) => {
           const selected = option === value;
           return (

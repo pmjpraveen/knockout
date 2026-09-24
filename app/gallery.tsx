@@ -8,7 +8,7 @@ import { Card } from '@/components/Card';
 import { CardGrid } from '@/components/CardGrid';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { DateField } from '@/components/DateField';
-import { EventHeroCard, EventTile } from '@/components/EventCards';
+import { EventHeroCard } from '@/components/EventCards';
 import { Glass } from '@/components/Glass';
 import { GlassTabBar, TabItem } from '@/components/GlassTabBar';
 import { GoogleIcon } from '@/components/GoogleIcon';
@@ -153,10 +153,12 @@ export default function Gallery() {
         <SkeletonList count={2} />
       </Section>
 
-      <Section title="EventHeroCard / EventTile">
-        <EventHeroCard event={sampleEvent} onPress={() => {}} />
-        <View style={{ flexDirection: 'row', gap: theme.spacing[16] }}>
-          <EventTile event={sampleEvent} onPress={() => {}} width={160} />
+      <Section title="EventHeroCard">
+        <View style={{ width: 240 }}>
+          <EventHeroCard event={sampleEvent} onPress={() => {}} />
+        </View>
+        <View style={{ width: 240 }}>
+          <EventHeroCard event={sampleEvent} onPress={() => {}} onDelete={() => {}} />
         </View>
       </Section>
 
@@ -194,7 +196,7 @@ export default function Gallery() {
 
       <Section title="Not shown here">
         <Text color="slateGray">
-          Screen-specific or data-bound components aren&apos;t included: PageHeader and WebHeader (rendered by the
+          Screen-specific or data-bound components aren&apos;t included: PageHeader (rendered by the
           navigator/root layout, not standalone), Podium (fetches live results), KumiteScoreboard /
           KataScoreboard / WinLossScoreboard (live match state), EventWizard / EventForm / CategoryForm /
           RosterUpload / SheetImport / CoverImageField (bound to Supabase mutations and file pickers), Splash and
