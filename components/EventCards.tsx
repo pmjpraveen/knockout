@@ -19,7 +19,7 @@ const dotOf: Record<string, keyof typeof theme.colors> = {
   in_progress: 'warning',
 };
 
-function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status }: { status: string }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8], backgroundColor: theme.colors.paperWhite, borderRadius: theme.radii.button, paddingHorizontal: theme.spacing[12], paddingVertical: theme.spacing[8] }}>
       <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: theme.colors[dotOf[status] ?? 'slateGray'] }} />
