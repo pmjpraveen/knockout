@@ -85,6 +85,15 @@ export const isoToDate = (iso: string) => new Date(Number(iso.slice(0, 4)), Numb
 export const startOfDay = (text: string) => (isDate(text) ? new Date(`${text}T00:00:00`).toISOString() : null);
 export const endOfDay = (text: string) => (isDate(text) ? new Date(`${text}T23:59:59`).toISOString() : null);
 
+/** Registration's closing day in words, only in its last week (or once it has passed) while it is open. */
+export function registrationCue(status: string, closesAt: string | null, now = new Date()) {
+  if (status !== 'registration_open' || !closesAt) return null;
+  const days = Math.round((isoToDate(dateOf(closesAt)).getTime() - isoToDate(dateToIso(now)).getTime()) / 86_400_000);
+  if (days < 0) return 'The closing date has passed';
+  if (days > 7) return null;
+  return `Closes ${days === 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`}`;
+}
+
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const dayAndMonth = (iso: string, withYear: boolean) => `${Number(iso.slice(8))} ${months[Number(iso.slice(5, 7)) - 1]}${withYear ? ` ${iso.slice(0, 4)}` : ''}`;
 

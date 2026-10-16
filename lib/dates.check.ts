@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { dateToIso, formatDate, formatDateRange, isDate, isoToDate, maskDate, parseDate } from './events.ts';
+import { dateToIso, endOfDay, formatDate, formatDateRange, isDate, isoToDate, maskDate, parseDate, registrationCue } from './events.ts';
 
 assert.equal(isDate('2026-09-19'), true);
 assert.equal(isDate('2026-02-30'), false, 'a day past the end of the month is not a date');
@@ -27,4 +27,15 @@ assert.equal(maskDate(''), '');
 
 assert.equal(dateToIso(isoToDate('2026-01-01')), '2026-01-01', 'round trip keeps the day');
 assert.equal(dateToIso(isoToDate('2026-12-31')), '2026-12-31');
+
+const now = new Date(2026, 9, 16, 15);
+const closing = (day: string, status = 'registration_open') => registrationCue(status, endOfDay(day), now);
+assert.equal(closing('2026-10-16'), 'Closes today');
+assert.equal(closing('2026-10-17'), 'Closes tomorrow');
+assert.equal(closing('2026-10-19'), 'Closes in 3 days');
+assert.equal(closing('2026-10-23'), 'Closes in 7 days', 'the last seven days are shown');
+assert.equal(closing('2026-10-24'), null, 'eight days or more away stays quiet');
+assert.equal(closing('2026-10-10'), 'The closing date has passed');
+assert.equal(closing('2026-10-19', 'draft'), null, 'nothing is closing before registration is open');
+assert.equal(registrationCue('registration_open', null, now), null, 'no closing date, no cue');
 console.log('dates ok');

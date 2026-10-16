@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
+import Circle from 'lucide-react-native/icons/circle';
+import CircleCheck from 'lucide-react-native/icons/circle-check';
 import { StatusBar } from 'expo-status-bar';
 import UserCheck from 'lucide-react-native/icons/user-check';
 import { Fragment, ReactNode, useRef, useState } from 'react';
@@ -16,7 +18,7 @@ import { useTabBarSpace } from '@/components/GlassTabBar';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
 import { coverAspect } from '@/lib/coverImage';
-import { dateOf, formatDate, formatDateRange, humanize, nextEventStep } from '@/lib/events';
+import { dateOf, formatDate, formatDateRange, humanize, nextEventStep, registrationCue } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { ensureRegistrationLink, registrationUrl } from '@/lib/registration';
 import { supabase } from '@/lib/supabase';
@@ -74,6 +76,41 @@ function PendingBanner({ count, onPress }: { count: number; onPress: () => void 
   );
 }
 
+type SetupStep = { title: string; hint: string; detail?: string; done: boolean; onPress: () => void };
+
+/** What a draft still needs, in the order an organizer would do it; hidden once everything is done. */
+function SetupChecklist({ steps }: { steps: SetupStep[] }) {
+  if (steps.every((step) => step.done)) return null;
+  return (
+    <ListGroup title="Set up your tournament">
+      {steps.map(({ title, hint, detail, done, onPress }) => (
+        <Pressable
+          key={title}
+          accessibilityRole="button"
+          accessibilityLabel={`${title}, ${done ? `done${detail ? `, ${detail}` : ''}` : hint}`}
+          onPress={onPress}
+          style={({ pressed }) => ({ minHeight: theme.touchTarget.minimum, flexDirection: 'row', alignItems: 'center', gap: theme.spacing[12], paddingHorizontal: theme.spacing[16], paddingVertical: theme.spacing[12], backgroundColor: pressed ? theme.colors.cloud : theme.colors.paperWhite })}
+        >
+          {done ? <CircleCheck size={22} color={theme.colors.success} strokeWidth={1.75} /> : <Circle size={22} color={theme.colors.steelGray} strokeWidth={1.75} />}
+          <Text variant="bodyLg" color={done ? 'slateGray' : 'inkBlack'} style={{ flex: 1 }}>{title}</Text>
+          <Text variant="body" color="slateGray">{done ? detail : hint}</Text>
+          <ChevronRight size={20} color={theme.colors.steelGray} strokeWidth={1.75} />
+        </Pressable>
+      ))}
+    </ListGroup>
+  );
+}
+
+/** What an organizer should do at this stage, above the main button. */
+function StagePrompt({ text, action }: { text: string; action: { title: string; onPress: () => void } }) {
+  return (
+    <View style={{ gap: theme.spacing[12], padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.cloud }}>
+      <Text>{text}</Text>
+      <Button title={action.title} variant="secondary" onPress={action.onPress} />
+    </View>
+  );
+}
+
 /** The event at a glance: cover, name, dates, host, how it is going, and the next step. */
 export function EventHome({ data }: { data: EventData }) {
   const { event, isOrganizer, canOverride, memberships, counts, live, unresolvedConflicts } = data;
@@ -108,6 +145,23 @@ export function EventHome({ data }: { data: EventData }) {
       await Promise.all([data.reloadEvent(), data.reloadCategories(), data.reloadLink()]);
       return link?.error ? link : result;
     });
+
+  const cue = registrationCue(event.status, event.registration_closes_at);
+  const prompt =
+    event.status === 'registration_closed'
+      ? { text: 'Registration is closed. Review any last submissions, then draw the brackets.', action: { title: 'Draw brackets', onPress: go('brackets') } }
+      : event.status === 'in_progress'
+        ? { text: 'The event is running. Follow the matches on the scoreboard.', action: { title: 'Open scoreboard', onPress: go('scoreboard') } }
+        : null;
+
+  const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const setupSteps: SetupStep[] = [
+    { title: 'Tournament dates', hint: 'Required', detail: formatDateRange(event.start_date, event.end_date), done: !missingDates, onPress: go('edit') },
+    { title: 'Categories', hint: 'Needed for registration', detail: count(counts.categories, 'category', 'categories'), done: counts.categories > 0, onPress: () => router.push({ pathname: '/events/[id]/categories/new', params: { id: event.id } }) },
+    { title: 'Belt system', hint: 'Review', detail: count(event.belts.length, 'belt', 'belts'), done: event.belts.length > 0, onPress: go('belts') },
+    { title: 'Tatamis', hint: 'Before the event', detail: count(counts.tatamis, 'tatami', 'tatamis'), done: counts.tatamis > 0, onPress: go('tatamis') },
+    { title: 'Staff', hint: 'Before the event', detail: count(counts.staff, 'person', 'people'), done: counts.staff > 0, onPress: go('staff') },
+  ];
 
   const createLink = () =>
     run(async () => {
@@ -156,6 +210,11 @@ export function EventHome({ data }: { data: EventData }) {
               <InfoRow icon={<Image source={require('@/assets/images/registration-clipboard.png')} accessible={false} resizeMode="contain" style={{ width: 28, height: 28 }} />}>
                 <Text>Registration</Text>
                 <Text color="slateGray">{opens && closes ? formatDateRange(opens, closes) : opens ? `Opens ${formatDate(opens)}` : `Closes ${formatDate(closes)}`}</Text>
+                {cue && (
+                  <View style={{ alignSelf: 'flex-start', marginTop: theme.spacing[4], paddingHorizontal: theme.spacing[8], paddingVertical: theme.spacing[4], borderRadius: theme.radii.chip, backgroundColor: theme.colors.warningTint }}>
+                    <Text variant="label" color="warning">{cue}</Text>
+                  </View>
+                )}
               </InfoRow>
             </>
           )}
@@ -182,6 +241,8 @@ export function EventHome({ data }: { data: EventData }) {
             <Button title="Create registration link" variant="secondary" disabled={busy} onPress={createLink} />
           )
         )}
+        {isOrganizer && event.status === 'draft' && <SetupChecklist steps={setupSteps} />}
+        {isOrganizer && prompt && <StagePrompt {...prompt} />}
         {isOrganizer && step ? (
           <Button
             size="large"

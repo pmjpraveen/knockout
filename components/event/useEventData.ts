@@ -18,6 +18,8 @@ export function useEventData(id: string) {
       .eq('categories.event_id', id),
   );
   const cover = useFocusQuery(() => supabase.from('event_covers').select('image').eq('event_id', id));
+  const tatamis = useFocusQuery(() => supabase.from('tatamis').select('id').eq('event_id', id));
+  const staff = useFocusQuery(() => supabase.rpc('list_event_staff', { p_event_id: id }));
   const link = useFocusQuery(() => supabase.from('registration_links').select('id, token, is_active').eq('event_id', id));
   const conflicts = useFocusQuery(() => supabase.from('scoring_conflicts').select('id').eq('event_id', id).is('resolved_at', null));
 
@@ -39,6 +41,8 @@ export function useEventData(id: string) {
       categories: categories.rows.length,
       participants: athletes.rows.length,
       clubs: entries.rows.filter((entry) => entry.approval_status === 'approved').length,
+      tatamis: tatamis.rows.length,
+      staff: staff.rows.filter((member) => member.role !== 'organizer').length,
       pending: entries.rows.filter((entry) => entry.approval_status === 'submitted').length,
     },
     live: ['registration_closed', 'in_progress'].includes(status),
