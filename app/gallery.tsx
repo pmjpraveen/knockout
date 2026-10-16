@@ -26,7 +26,7 @@ import { theme } from '@/theme/tokens';
 
 const sampleEvent: EventRow = {
   id: 'sample', organizer_id: 'sample', name: 'Sample Open Championship',
-  start_date: '2026-11-14', end_date: '2026-11-15', venue: 'City Sports Hall', host_club: 'Sample Dojo',
+  start_date: '2026-11-14', end_date: '2026-11-15', venue: 'City Sports Hall', host_club: 'Sample Club',
   status: 'registration_open', belts: ['white', 'yellow', 'orange'], kata_minutes: 3, kumite_minutes: 2, team_minutes: 5,
   created_at: '', completed_at: null, purge_at: null, registration_closes_at: null, registration_opens_at: null, schedule_token: null,
 };

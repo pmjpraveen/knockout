@@ -11,7 +11,7 @@ import { theme } from '@/theme/tokens';
 type Place = 1 | 2 | 3;
 const labels: Record<Place, string> = { 1: '1st', 2: '2nd', 3: '3rd' };
 // One-off celebration colors: not part of the design system's palette, used only for medals and confetti.
-const medal: Record<Place, { face: string; tint: string; text: string }> = {
+export const medal: Record<Place, { face: string; tint: string; text: string }> = {
   1: { face: '#F2B33D', tint: '#FFF7E0', text: '#6B4A05' },
   2: { face: '#AEB7C2', tint: '#F1F3F6', text: '#3F4552' },
   3: { face: '#C97F45', tint: '#FBEEE3', text: '#4A2E12' },

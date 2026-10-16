@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import Circle from 'lucide-react-native/icons/circle';
 import CircleCheck from 'lucide-react-native/icons/circle-check';
-import Crown from 'lucide-react-native/icons/crown';
 import { StatusBar } from 'expo-status-bar';
+import Trophy from 'lucide-react-native/icons/trophy';
 import UserCheck from 'lucide-react-native/icons/user-check';
 import { Fragment, ReactNode, useRef, useState } from 'react';
 import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
@@ -13,6 +13,7 @@ import { BackButton, CoverBackButton, EventCover, useCoverHeader } from '@/compo
 import type { EventData } from '@/components/event/useEventData';
 import { coverSource, StatusBadge } from '@/components/EventCards';
 import { LinkCard } from '@/components/LinkCard';
+import { MedalTable } from '@/components/MedalTable';
 import { ListGroup, ListRow } from '@/components/ListGroup';
 import { wideBreakpoint } from '@/components/LoginArtwork';
 import { wideColumn } from '@/components/HomeScreen';
@@ -20,9 +21,10 @@ import { StatusPill } from '@/components/StatusPill';
 import { useTabBarSpace } from '@/components/GlassTabBar';
 import { Text } from '@/components/Text';
 import { TopBar } from '@/components/TopBar';
-import { useFocusQuery } from '@/hooks/useFocusQuery';
+import { useEventResults } from '@/hooks/useEventResults';
 import { useSubmit } from '@/hooks/useSubmit';
 import { coverAspect } from '@/lib/coverImage';
+import { medalTally } from '@/lib/medals';
 import { dateOf, formatDate, formatDateRange, humanize, nextEventStep, registrationCue } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { ensureRegistrationLink, registrationUrl } from '@/lib/registration';
@@ -155,18 +157,7 @@ export function EventHome({ data }: { data: EventData }) {
   const go = (screen: string) => () => router.push({ pathname: `/events/[id]/${screen}` as '/events/[id]/edit', params: { id: event.id } });
   const [opens, closes] = [event.registration_opens_at, event.registration_closes_at].map((at) => dateOf(at));
   const finished = data.categories.filter((category) => category.status === 'completed');
-  const { rows: champions } = useFocusQuery(
-    () =>
-      Promise.all(finished.map((category) => supabase.rpc('category_podium', { p_category_id: category.id }))).then((results) => ({
-        data: results.flatMap((result, index) =>
-          (result.data ?? []).filter((row) => row.place === 1).map((row) => ({ categoryId: finished[index].id, category: finished[index].label, athlete: row.athlete_name, club: row.club_name })),
-        ),
-        error: results.find((result) => result.error)?.error ?? null,
-      })),
-    [finished.map((category) => category.id).join()],
-    undefined,
-    finished.length > 0,
-  );
+  const { rows: results } = useEventResults(event.id);
   const allFinished = data.categories.length > 0 && finished.length === data.categories.length;
 
   const advance = () =>
@@ -303,19 +294,13 @@ export function EventHome({ data }: { data: EventData }) {
       )}
       {error && <Text color="danger">{error}</Text>}
 
-      {champions.length > 0 && (
-        <ListGroup title={`Champions · ${champions.length}`}>
-          {champions.map((champion) => (
-            <ListRow
-              key={champion.categoryId}
-              Icon={Crown}
-              title={champion.athlete}
-              subtitle={[champion.category, champion.club].filter(Boolean).join(' · ')}
-              onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id: event.id, categoryId: champion.categoryId } })}
-            />
-          ))}
+      {finished.length > 0 && (
+        <ListGroup>
+          <ListRow Icon={Trophy} title="Results" subtitle={`${finished.length} of ${data.categories.length} categories completed`} onPress={go('results')} />
         </ListGroup>
       )}
+      {results.length > 0 && <MedalTable tally={medalTally(results)} />}
+
 
     </>
   );

@@ -20,12 +20,12 @@ const disciplinesOf: Record<string, string[]> = {
 /** The columns of the participants sheet, in order, with two example rows. */
 export const athleteColumns = ['Club', 'Athlete name', 'Date of birth (DD-MM-YYYY)', 'Gender', 'Weight (kg)', 'Belt', 'Events (Kumite, Kata or Both)'];
 export const athleteExamples = (belts: readonly string[]) => [
-  ['Example Dojo', 'Aiko Tanaka', '14-03-2013', 'Female', '38.5', belts[Math.min(2, belts.length - 1)], 'Both'],
-  ['Example Dojo', 'Ken Sato', '02-11-2011', 'Male', '42', belts[Math.min(3, belts.length - 1)], 'Kumite'],
+  ['Example Club', 'Aiko Tanaka', '14-03-2013', 'Female', '38.5', belts[Math.min(2, belts.length - 1)], 'Both'],
+  ['Example Club', 'Ken Sato', '02-11-2011', 'Male', '42', belts[Math.min(3, belts.length - 1)], 'Kumite'],
 ];
 export const athleteNotes = (belts: readonly string[]) => [
   ['Column', 'What to enter'],
-  ['Club', 'The club or dojo name. One sheet can hold many clubs'],
+  ['Club', 'The club name. One sheet can hold many clubs'],
   ['Athlete name', 'Full name'],
   ['Date of birth', 'DD-MM-YYYY, for example 14-03-2013'],
   ['Gender', 'Male or Female'],

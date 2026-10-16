@@ -20,6 +20,7 @@ export default function EventsLayout() {
       <Stack.Screen name="[id]/submissions/[entryId]" options={{ title: 'Submission' }} />
       <Stack.Screen name="[id]/athlete" options={{ title: 'Participant' }} />
       <Stack.Screen name="[id]/brackets" options={{ title: 'Brackets' }} />
+      <Stack.Screen name="[id]/results" options={{ title: 'Results' }} />
       <Stack.Screen name="[id]/bracket-setup" options={{ title: 'Seed & generate' }} />
       <Stack.Screen name="[id]/bracket" options={{ title: 'Bracket' }} />
       <Stack.Screen name="[id]/schedule" options={{ title: 'Schedule' }} />

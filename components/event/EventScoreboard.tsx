@@ -16,6 +16,7 @@ export function EventScoreboard({ data }: { data: EventData }) {
   const go = (screen: string) => () => router.push({ pathname: `/events/[id]/${screen}` as '/events/[id]/edit', params: { id: event.id } });
   const showBrackets = ['registration_closed', 'in_progress', 'completed'].includes(event.status);
   const nothing = !live && !showBrackets;
+  const finished = data.categories.filter((category) => category.status === 'completed').length;
 
   return (
     <TabScreen title="Scoreboard" subtitle={event.name}>
@@ -39,7 +40,8 @@ export function EventScoreboard({ data }: { data: EventData }) {
       )}
       {showBrackets && (
         <ListGroup title="Results">
-          <ListRow Icon={Network} title="Brackets" subtitle="Draws, results and podiums" onPress={go('brackets')} />
+          <ListRow Icon={Network} title="Brackets" subtitle="Draws and match results" onPress={go('brackets')} />
+          {finished > 0 && <ListRow Icon={Trophy} title="Results" subtitle={`${finished} of ${data.categories.length} categories completed`} onPress={go('results')} />}
         </ListGroup>
       )}
     </TabScreen>

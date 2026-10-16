@@ -24,7 +24,7 @@ const emptyDraft: Draft = { name: '', venue: '', hostClub: '', cover: null, star
 const steps = [
   {
     title: 'Give some basic information about your tournament',
-    hint: 'You can add the information like the name of the tournament, the venue and the club or a dojo.',
+    hint: 'You can add the information like the name of the tournament, the venue and the host club.',
   },
   { title: 'Add a cover image for the tournament', hint: 'You can add an image to get started. You can make changes later' },
   {
