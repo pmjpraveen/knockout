@@ -1158,6 +1158,10 @@ export type Database = {
         Args: { p_athlete_id: string; p_bracket_id: string; p_note: string }
         Returns: undefined
       }
+      withdraw_registration: {
+        Args: { p_reason: string; p_registration_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,12 +1,12 @@
-import type { LucideIcon } from 'lucide-react-native';
 import ArrowDown from 'lucide-react-native/icons/arrow-down';
 import ArrowUp from 'lucide-react-native/icons/arrow-up';
 import X from 'lucide-react-native/icons/x';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
+import { IconAction } from '@/components/IconAction';
 import { ListGroup } from '@/components/ListGroup';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
@@ -15,25 +15,10 @@ import { useEventBelts } from '@/hooks/useEventBelts';
 import { useSubmit } from '@/hooks/useSubmit';
 import { standardBelts } from '@/lib/athlete';
 import { humanize } from '@/lib/events';
-import { pressFeedback } from '@/lib/press';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
 const maxBelts = 20;
-
-function IconAction({ label, Icon, disabled, onPress }: { label: string; Icon: LucideIcon; disabled: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [{ width: theme.touchTarget.minimum, height: theme.touchTarget.minimum, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.3 : 1 }, pressFeedback(pressed)]}
-    >
-      <Icon size={20} color={theme.colors.charcoal} strokeWidth={1.75} />
-    </Pressable>
-  );
-}
 
 export default function Belts() {
   const { id } = useLocalSearchParams<{ id: string }>();

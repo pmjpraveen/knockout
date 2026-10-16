@@ -1,11 +1,19 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import ArrowDown from 'lucide-react-native/icons/arrow-down';
+import ArrowUp from 'lucide-react-native/icons/arrow-up';
+import Trash from 'lucide-react-native/icons/trash';
+import X from 'lucide-react-native/icons/x';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
+import { BottomSheet } from '@/components/BottomSheet';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { FormSection, SectionDivider } from '@/components/FormSection';
+import { IconAction } from '@/components/IconAction';
+import { ListGroup } from '@/components/ListGroup';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
+import { TextField } from '@/components/TextField';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { bracketFormatLabels, bracketFormats } from '@/lib/events';
@@ -18,6 +26,8 @@ export default function BracketSetup() {
   const [format, setFormat] = useState<(typeof bracketFormats)[number]>('single_elim_repechage');
   const [seedIds, setSeedIds] = useState<string[]>([]);
   const [initialised, setInitialised] = useState(false);
+  const [withdrawing, setWithdrawing] = useState<{ id: string; name: string } | null>(null);
+  const [reason, setReason] = useState('');
   const { run, busy, error } = useSubmit();
 
   const { rows: categories } = useFocusQuery(() => supabase.from('categories').select('*').eq('id', categoryId));
@@ -47,8 +57,16 @@ export default function BracketSetup() {
       return next;
     });
 
-  const withdraw = async (registrationId: string) => {
-    if (await run(() => supabase.from('registrations').delete().eq('id', registrationId))) reload();
+  const closeWithdraw = () => {
+    setWithdrawing(null);
+    setReason('');
+  };
+
+  const withdraw = async () => {
+    if (await run(() => supabase.rpc('withdraw_registration', { p_registration_id: withdrawing!.id, p_reason: reason }))) {
+      closeWithdraw();
+      reload();
+    }
   };
 
   const generate = () =>
@@ -60,53 +78,88 @@ export default function BracketSetup() {
       return result;
     });
 
-  const row = (registrationId: string, label: string, caption: string, actions: React.ReactNode) => (
-    <Card key={registrationId}>
-      <Text>{label}</Text>
-      <Text variant="body" color="slateGray">{caption}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>{actions}</View>
-    </Card>
+  const person = (name: string, club: string) => (
+    <View style={{ flex: 1, gap: theme.spacing[4] }}>
+      <Text numberOfLines={1}>{name}</Text>
+      <Text variant="body" color="slateGray" numberOfLines={1}>{club}</Text>
+    </View>
   );
+  const rowStyle = { flexDirection: 'row', alignItems: 'center', gap: theme.spacing[12], paddingLeft: theme.spacing[16], paddingRight: theme.spacing[8], paddingVertical: theme.spacing[8], minHeight: 64 } as const;
 
   return (
-    <Screen>
-      <Text variant="heading">{category?.label}</Text>
-      <Text color="slateGray">
-        {registrations.length} athletes. Seeded athletes are placed first and byes go to the top seeds. Everyone else is drawn at random, keeping club-mates apart in round 1 where possible.
-      </Text>
-      {started && <Text color="warning">Matches have started, so seeds and the draw are locked. Use a withdrawal override on the bracket instead.</Text>}
+    <Screen
+      footer={
+        <>
+          {error && <Text color="danger">{error}</Text>}
+          <Button size="large" title={brackets[0] ? 'Redraw bracket' : 'Generate bracket'} disabled={busy || started || registrations.length < 2} onPress={generate} />
+        </>
+      }
+    >
+      <View style={{ gap: theme.spacing[8] }}>
+        <Text variant="heading">{category?.label}</Text>
+        <Text color="slateGray">{registrations.length} athletes</Text>
+      </View>
+      <Text color="slateGray">Seeded athletes are placed first and byes go to the top seeds. Everyone else is drawn at random, keeping club-mates apart in round 1 where possible.</Text>
+      {started && (
+        <View style={{ padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }}>
+          <Text color="warning">Matches have started, so seeds and the draw are locked. Use a withdrawal override on the bracket instead.</Text>
+        </View>
+      )}
 
       <ChoiceChips label="Format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
 
-      <Text variant="subheading">Seeds</Text>
-      {seeded.length === 0 && <Text color="slateGray">No manual seeds. The whole draw is random.</Text>}
-      {seeded.map((rid, index) => {
-        const r = byId.get(rid)!;
-        return row(rid, `${index + 1}. ${r.athletes?.full_name}`, r.athletes?.club_entries?.club_name ?? '', !started && (
-          <>
-            <Button title="Up" variant="secondary" disabled={index === 0} onPress={() => move(index, -1)} />
-            <Button title="Down" variant="secondary" disabled={index === seeded.length - 1} onPress={() => move(index, 1)} />
-            <Button title="Unseed" variant="secondary" onPress={() => setSeedIds(seeded.filter((s) => s !== rid))} />
-          </>
-        ));
-      })}
+      <SectionDivider />
+      <FormSection title={`Seeds · ${seeded.length}`} hint={seeded.length === 0 ? 'No manual seeds. The whole draw is random.' : undefined}>
+        {seeded.length > 0 && (
+          <ListGroup>
+            {seeded.map((rid, index) => {
+              const r = byId.get(rid)!;
+              return (
+                <View key={rid} style={rowStyle}>
+                  <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text variant="label">{index + 1}</Text>
+                  </View>
+                  {person(r.athletes?.full_name ?? '', r.athletes?.club_entries?.club_name ?? '')}
+                  {!started && (
+                    <View style={{ flexDirection: 'row' }}>
+                      <IconAction label={`Move ${r.athletes?.full_name} up`} Icon={ArrowUp} disabled={index === 0} onPress={() => move(index, -1)} />
+                      <IconAction label={`Move ${r.athletes?.full_name} down`} Icon={ArrowDown} disabled={index === seeded.length - 1} onPress={() => move(index, 1)} />
+                      <IconAction label={`Unseed ${r.athletes?.full_name}`} Icon={X} onPress={() => setSeedIds(seeded.filter((s) => s !== rid))} />
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </ListGroup>
+        )}
+      </FormSection>
 
-      <Text variant="subheading">Unseeded</Text>
-      {unseeded.map((r) =>
-        row(r.id, r.athletes?.full_name ?? '', r.athletes?.club_entries?.club_name ?? '', !started && (
-          <>
-            <Button title="Seed" variant="secondary" onPress={() => setSeedIds([...seeded, r.id])} />
-            <Button title="Withdraw" variant="danger" confirmTitle="Tap again to remove" disabled={busy} onPress={() => withdraw(r.id)} />
-          </>
-        )),
-      )}
-
-      {error && <Text color="danger">{error}</Text>}
-      <Button
-        title={brackets[0] ? 'Redraw bracket' : 'Generate bracket'}
-        disabled={busy || started || registrations.length < 2}
-        onPress={generate}
-      />
+      <SectionDivider />
+      <FormSection title={`Unseeded · ${unseeded.length}`} hint={unseeded.length === 0 ? 'Everyone is seeded.' : undefined}>
+        {unseeded.length > 0 && (
+          <ListGroup>
+            {unseeded.map((r) => (
+              <View key={r.id} style={rowStyle}>
+                {person(r.athletes?.full_name ?? '', r.athletes?.club_entries?.club_name ?? '')}
+                {!started && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[4] }}>
+                    <Button size="medium" title="Seed" variant="secondary" onPress={() => setSeedIds([...seeded, r.id])} />
+                    <IconAction label={`Withdraw ${r.athletes?.full_name}`} Icon={Trash} onPress={() => setWithdrawing({ id: r.id, name: r.athletes?.full_name ?? '' })} />
+                  </View>
+                )}
+              </View>
+            ))}
+          </ListGroup>
+        )}
+      </FormSection>
+      <BottomSheet visible={!!withdrawing} title={`Withdraw ${withdrawing?.name ?? ''}`} onClose={closeWithdraw}>
+        <View style={{ gap: theme.spacing[16] }}>
+          <Text color="slateGray">They are taken out of this category, and the submission records why. Say what happened.</Text>
+          <TextField label="Reason" value={reason} onChangeText={setReason} autoCapitalize="sentences" placeholder="e.g. Injured in warm-up" />
+          {error && <Text color="danger">{error}</Text>}
+          <Button size="large" title="Withdraw athlete" variant="danger" disabled={busy || !reason.trim()} onPress={withdraw} />
+        </View>
+      </BottomSheet>
     </Screen>
   );
 }

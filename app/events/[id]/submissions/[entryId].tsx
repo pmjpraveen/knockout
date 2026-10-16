@@ -42,6 +42,12 @@ function Suggested({ eventId, athlete, plain = false }: { eventId: string; athle
   return <Text variant="body" color={labels.length ? 'success' : 'warning'} numberOfLines={plain ? 1 : undefined}>{labels.length ? `${plain ? '' : 'Suggested: '}${labels.join(' · ')}` : 'No matching category'}</Text>;
 }
 
+type Withdrawal = { athlete_id?: string; athlete_name?: string; category_label?: string };
+type Withdrawn = Map<string, { category?: string; reason: string }>;
+
+const changeTitle = (action: string, details: Withdrawal) =>
+  action === 'add_athlete' ? 'Participant added' : action === 'withdraw_registration' ? `${details.athlete_name ?? 'Participant'} withdrawn from ${details.category_label}` : 'Participant edited';
+
 const views = [
   { value: 'list', label: 'List', Icon: List },
   { value: 'table', label: 'Table', Icon: Table },
@@ -54,7 +60,7 @@ const tableWidth = columns.reduce((sum, [, width]) => sum + width, 0);
 const cell = (width: number) => ({ width, paddingHorizontal: theme.spacing[12] });
 
 /** The participants as a table that scrolls sideways on narrow screens. */
-function ParticipantTable({ eventId, athletes, approved, editable, onEdit }: { eventId: string; athletes: Registered[]; approved: boolean; editable: boolean; onEdit: (athleteId: string) => void }) {
+function ParticipantTable({ eventId, athletes, approved, withdrawn, editable, onEdit }: { eventId: string; athletes: Registered[]; approved: boolean; withdrawn: Withdrawn; editable: boolean; onEdit: (athleteId: string) => void }) {
   return (
     <View style={{ borderWidth: 1, borderColor: theme.colors.mist, borderRadius: theme.radii.card, overflow: 'hidden', backgroundColor: theme.colors.paperWhite }}>
       <ScrollView horizontal showsHorizontalScrollIndicator>
@@ -86,7 +92,9 @@ function ParticipantTable({ eventId, athletes, approved, editable, onEdit }: { e
                   <Text key={columns[index + 1][0]} numberOfLines={1} color="slateGray" style={cell(columns[index + 1][1])}>{value}</Text>
                 ))}
                 <View style={cell(columns[6][1])}>
-                  {approved ? (
+                  {athlete.registrations.length === 0 && withdrawn.has(athlete.id) ? (
+                    <Text variant="body" color="warning" numberOfLines={1}>Withdrawn: {withdrawn.get(athlete.id)!.reason}</Text>
+                  ) : approved ? (
                     <Text variant="body" color="success" numberOfLines={1}>{athlete.registrations.map((r) => r.categories?.label).join(' · ') || 'no category'}</Text>
                   ) : (
                     <Suggested eventId={eventId} athlete={athlete} plain />
@@ -117,6 +125,12 @@ export default function SubmissionDetail() {
   if (!entry) return <SkeletonScreen />;
   const archived = events[0]?.status === 'completed';
   const approved = entry.approval_status === 'approved';
+  const withdrawn: Withdrawn = new Map();
+  for (const change of [...log].reverse()) {
+    if (change.action !== 'withdraw_registration') continue;
+    const details = change.changes as Withdrawal;
+    if (details.athlete_id) withdrawn.set(details.athlete_id, { category: details.category_label, reason: change.reason });
+  }
   const edit = (athleteId?: string) => router.push({ pathname: '/events/[id]/athlete', params: { id, entryId, ...(athleteId && { athleteId }) } });
 
   const people = `${entry.athletes.length} ${entry.athletes.length === 1 ? 'participant' : 'participants'}`;
@@ -149,7 +163,7 @@ export default function SubmissionDetail() {
             <ViewToggle label="View" options={views} value={view} onChange={setView} />
           </View>
           {view === 'table' ? (
-            <ParticipantTable eventId={id} athletes={entry.athletes} approved={approved} editable={!archived} onEdit={edit} />
+            <ParticipantTable eventId={id} athletes={entry.athletes} approved={approved} withdrawn={withdrawn} editable={!archived} onEdit={edit} />
           ) : (
           <ListGroup>
             {entry.athletes.map((athlete) => (
@@ -165,7 +179,9 @@ export default function SubmissionDetail() {
                   <Text variant="bodyLg">{athlete.full_name}</Text>
                   <Text color="slateGray">{[athlete.gender && humanize(athlete.gender), athlete.date_of_birth && formatDate(athlete.date_of_birth), athlete.weight && `${athlete.weight} kg`].filter(Boolean).join(' · ')}</Text>
                   <Text color="slateGray">{[athlete.belt_rank && `${humanize(athlete.belt_rank)} belt`, competeLabels[toDraft(athlete).compete]].filter(Boolean).join(' · ')}</Text>
-                  {approved ? (
+                  {athlete.registrations.length === 0 && withdrawn.has(athlete.id) ? (
+                    <Text variant="body" color="warning">Withdrawn from {withdrawn.get(athlete.id)!.category}: {withdrawn.get(athlete.id)!.reason}</Text>
+                  ) : approved ? (
                     <Text variant="body" color="success">
                       Registered: {athlete.registrations.map((r) => r.categories?.label).join(' · ') || 'no category'}
                     </Text>
@@ -185,7 +201,7 @@ export default function SubmissionDetail() {
         <ListGroup title="Change log">
           {log.map((change) => (
             <View key={change.id} style={{ gap: theme.spacing[4], paddingHorizontal: theme.spacing[16], paddingVertical: theme.spacing[12] }}>
-              <Text>{change.action === 'add_athlete' ? 'Participant added' : 'Participant edited'}</Text>
+              <Text>{changeTitle(change.action, change.changes as Withdrawal)}</Text>
               <Text variant="body" color="slateGray">{change.reason} · {formatDateTime(change.created_at)}</Text>
             </View>
           ))}
