@@ -1,10 +1,9 @@
 import Download from 'lucide-react-native/icons/download';
+import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
 import Upload from 'lucide-react-native/icons/upload';
 import { useState } from 'react';
 import { View } from 'react-native';
-import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
 import { AthleteDraft, toCompete } from '@/lib/athlete';
@@ -67,32 +66,45 @@ export function RosterUpload({ existing, max, belts, onAdd }: { existing: Athlet
       }
     });
 
+  const icon = (Icon: typeof Download, color: string) => <Icon size={18} color={color} strokeWidth={1.75} />;
+
   return (
-    <Card>
-      <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="subheading">Upload your participants list</Text>
-        <Text color="slateGray">Skip typing each athlete. Download the sample sheet, fill in one row per participant, then upload it. You can check and change everyone below before you submit.</Text>
-        <ActionRow>
-          <Button title="Download sample sheet (.xlsx)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('xlsx')} />
-          <Button title="Download sample sheet (.csv)" variant="secondary" icon={<Download size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} disabled={busy} onPress={() => download('csv')} />
-          <Button title="Upload your list (.xlsx or .csv)" icon={<Upload size={18} color={theme.colors.paperWhite} strokeWidth={1.75} />} disabled={busy} onPress={upload} />
-        </ActionRow>
-        {error && <Text color="danger">{error}</Text>}
-        {outcome && (
-          <View style={{ gap: theme.spacing[4] }}>
-            <Text color={outcome.added > 0 ? 'success' : 'warning'}>
-              {outcome.added > 0 ? `${outcome.added} ${outcome.added === 1 ? 'participant' : 'participants'} added below from ${outcome.file}.` : `No participants were added from ${outcome.file}.`}
-            </Text>
-            {outcome.duplicates > 0 && <Text variant="body" color="slateGray">{outcome.duplicates} already in your list, so skipped.</Text>}
-            {outcome.overflow > 0 && <Text variant="body" color="warning">A registration holds up to {max} participants, so {outcome.overflow} were left out. Submit this one, then register the rest separately.</Text>}
-            {outcome.problems.slice(0, 10).map((problem) => (
-              <Text key={problem.line} variant="body" color="warning">Line {problem.line}: {problem.message}</Text>
-            ))}
-            {outcome.problems.length > 10 && <Text variant="body" color="slateGray">and {outcome.problems.length - 10} more rows need fixing.</Text>}
-            {outcome.problems.length > 0 && <Text variant="body" color="slateGray">Rows with problems were skipped. Fix them in your sheet and upload it again; anyone already added is left out the second time.</Text>}
+    <View style={{ gap: theme.spacing[12], marginBottom: theme.spacing[16] }}>
+      <View style={{ borderWidth: 1, borderColor: theme.colors.mist, borderRadius: theme.radii.card, overflow: 'hidden' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[16], padding: theme.spacing[16] }}>
+          <View style={{ width: theme.touchTarget.minimum, height: theme.touchTarget.minimum, borderRadius: theme.touchTarget.minimum / 2, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>
+            <FileSpreadsheet size={22} color={theme.colors.inkBlack} strokeWidth={1.75} />
           </View>
-        )}
+          <View style={{ flex: 1, gap: theme.spacing[4] }}>
+            <Text variant="bodyLg">Upload your participants</Text>
+            <Text color="slateGray">Download the sample sheet, fill in one row per participant, then upload it. You can check everyone below before you submit.</Text>
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row', gap: theme.spacing[12], padding: theme.spacing[16], backgroundColor: theme.colors.cloud }}>
+          <View style={{ flex: 1 }}>
+            <Button size="medium" variant="secondary" title="Excel" icon={icon(Download, theme.colors.inkBlack)} disabled={busy} onPress={() => download('xlsx')} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button size="medium" variant="secondary" title="CSV" icon={icon(Download, theme.colors.inkBlack)} disabled={busy} onPress={() => download('csv')} />
+          </View>
+        </View>
       </View>
-    </Card>
+      <Button title="Upload your list (.xlsx or .csv)" icon={icon(Upload, theme.colors.paperWhite)} disabled={busy} onPress={upload} />
+    {error && <Text color="danger">{error}</Text>}
+    {outcome && (
+      <View style={{ gap: theme.spacing[4] }}>
+        <Text color={outcome.added > 0 ? 'success' : 'warning'}>
+          {outcome.added > 0 ? `${outcome.added} ${outcome.added === 1 ? 'participant' : 'participants'} added below from ${outcome.file}.` : `No participants were added from ${outcome.file}.`}
+        </Text>
+        {outcome.duplicates > 0 && <Text variant="body" color="slateGray">{outcome.duplicates} already in your list, so skipped.</Text>}
+        {outcome.overflow > 0 && <Text variant="body" color="warning">A registration holds up to {max} participants, so {outcome.overflow} were left out. Submit this one, then register the rest separately.</Text>}
+        {outcome.problems.slice(0, 10).map((problem) => (
+          <Text key={problem.line} variant="body" color="warning">Line {problem.line}: {problem.message}</Text>
+        ))}
+        {outcome.problems.length > 10 && <Text variant="body" color="slateGray">and {outcome.problems.length - 10} more rows need fixing.</Text>}
+        {outcome.problems.length > 0 && <Text variant="body" color="slateGray">Rows with problems were skipped. Fix them in your sheet and upload it again; anyone already added is left out the second time.</Text>}
+      </View>
+    )}
+    </View>
   );
 }

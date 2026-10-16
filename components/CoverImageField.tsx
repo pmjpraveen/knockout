@@ -30,7 +30,7 @@ export function CoverImageField({ value, onChange }: { value: Pick<Cover, 'image
           <Image accessibilityLabel="Tournament cover image" source={{ uri: value.image }} style={{ width: '100%', aspectRatio: coverAspect, borderRadius: theme.radii.card }} />
           <ActionRow>
             <Button title="Change image" variant="secondary" disabled={busy} onPress={choose} />
-            <Button title="Remove image" variant="ghost" onPress={() => onChange(null)} />
+            <Button title="Remove image" variant="danger" onPress={() => onChange(null)} />
           </ActionRow>
         </>
       ) : (

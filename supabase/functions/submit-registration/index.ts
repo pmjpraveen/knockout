@@ -44,6 +44,10 @@ function parseDisciplines(raw: unknown) {
   return chosen as string[];
 }
 
+const tenDigits = /^\d{10}$/;
+const mobileMessage = 'Enter a 10-digit mobile number without the country code.';
+const digits = (value: unknown) => (typeof value === 'string' ? value.replace(/\D/g, '') : '');
+
 async function resolveLink(token: unknown) {
   const { data: link } = await admin
     .from('registration_links')
@@ -88,11 +92,21 @@ async function handle(body: any) {
       return { entry, open };
     }
 
+    case 'find': {
+      const mobile = typeof body.mobile === 'string' ? body.mobile : '';
+      if (!tenDigits.test(mobile)) throw new HttpError(400, mobileMessage);
+      // ponytail: scans the event's entries; index a normalised mobile column if events ever hold thousands
+      const { data: entries } = await admin.from('club_entries').select('id, club_contact').eq('event_id', event.id).order('submitted_at', { ascending: false });
+      const match = entries?.find((e) => digits(e.club_contact).endsWith(mobile));
+      return { reference: match?.id ?? null };
+    }
+
     case 'save': {
       if (!open) throw new HttpError(403, 'Registration is closed for this event.');
       if (!Array.isArray(body.athletes) || body.athletes.length < 1 || body.athletes.length > 400) {
         throw new HttpError(400, 'Add between 1 and 400 participants.');
       }
+      if (!tenDigits.test(String(body.club_contact))) throw new HttpError(400, mobileMessage);
       const { data, error } = await admin.rpc('save_club_entry', {
         p_event_id: event.id,
         p_reference: body.reference ?? null,
