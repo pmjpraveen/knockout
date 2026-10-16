@@ -72,7 +72,7 @@ export default function PublicSchedulePage() {
         Times are estimates and update live. Refreshed {new Date(schedule.updated_at).toLocaleTimeString()}.
       </Text>
       {error && <Text color="warning">Could not refresh. Showing the last update.</Text>}
-      {days.length > 1 && day && <ChoiceChips label="Day" options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
+      {days.length > 1 && day && <ChoiceChips label="Day" hideLabel options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
       <CardGrid>
       {schedule.tatamis.map((tatami) => (
         <TatamiQueueCard

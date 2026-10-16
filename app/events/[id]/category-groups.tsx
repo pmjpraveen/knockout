@@ -40,7 +40,7 @@ export default function CategoryGroups() {
   const { rows: tatamis } = useFocusQuery(() => supabase.from('tatamis').select('id, name').eq('event_id', id).order('name'), [id]);
 
   const total = groups.reduce((sum, group) => sum + (group.registrations[0]?.count ?? 0), 0);
-  const base = groups[0]?.label.replace(/ · Group [A-Z]$/, '') ?? '';
+  const base = groups[0]?.label.replace(/ · (?:Group|Pool) [A-Z]$/, '') ?? '';
   const maxGroups = Math.max(1, Math.floor(total / 2));
   const count = Math.min(wanted ?? groups.length, maxGroups);
   const sizes = sizesOf(total, count);
@@ -69,31 +69,31 @@ export default function CategoryGroups() {
       return { error: null };
     });
 
-  const label = count === groups.length ? (count === 1 ? 'Keep as one group' : 'Reshuffle the athletes') : count === 1 ? 'Merge back into one group' : `Split into ${count} groups`;
+  const label = count === groups.length ? (count === 1 ? 'Keep as one pool' : 'Reshuffle the athletes') : count === 1 ? 'Merge back into one pool' : `Split into ${count} pools`;
   const changes = count !== groups.length || count > 1;
 
   return (
     <Screen>
       <Text variant="heading">{base}</Text>
       <Text color="slateGray">
-        {total} athletes. Split them into groups that run at the same time, each with its own bracket and its own 1st, 2nd and 3rd. Athletes are dealt at random and club-mates are kept in different groups. Seeds are cleared.
+        {total} athletes. Split them into pools that run at the same time, each with its own bracket and its own 1st, 2nd and 3rd. Athletes are dealt at random and club-mates are kept in different pools. Seeds are cleared.
       </Text>
       {!isOrganizer && <Text color="warning">Only the organizer can split a category.</Text>}
-      {started && <Text color="warning">Matches have started, so the groups are locked.</Text>}
+      {started && <Text color="warning">Matches have started, so the pools are locked.</Text>}
 
       <ChoiceChips
-        label="Number of groups"
+        label="Number of pools"
         options={Array.from({ length: Math.min(maxGroups, maxChips) }, (_, index) => String(index + 1))}
         value={String(count)}
         onChange={(next) => { setWanted(Number(next)); setPerGroup(''); setRings({}); }}
       />
-      <TextField label="Or athletes per group" value={perGroup} placeholder="e.g. 8" keyboardType="number-pad" onChangeText={(text) => { setPerGroup(text); setRings({}); if (Number(text) >= 2) setWanted(Math.ceil(total / Number(text))); }} />
-      <Text color="charcoal">{count === 1 ? `One group of ${total}` : `${count} groups of ${sizes.join(', ')}`}</Text>
+      <TextField label="Or athletes per pool" value={perGroup} placeholder="e.g. 8" keyboardType="number-pad" onChangeText={(text) => { setPerGroup(text); setRings({}); if (Number(text) >= 2) setWanted(Math.ceil(total / Number(text))); }} />
+      <Text color="charcoal">{count === 1 ? `One pool of ${total}` : `${count} pools of ${sizes.join(', ')}`}</Text>
 
       {count > 1 && tatamis.length > 0 && Array.from({ length: count }, (_, index) => (
         <ChoiceChips
           key={index}
-          label={`Group ${String.fromCharCode(65 + index)} runs on`}
+          label={`Pool ${String.fromCharCode(65 + index)} runs on`}
           options={['none', ...tatamis.map((tatami) => tatami.id)]}
           value={ringOf(index)}
           labels={{ none: 'Any', ...Object.fromEntries(tatamis.map((tatami) => [tatami.id, tatami.name])) }}
@@ -111,7 +111,7 @@ export default function CategoryGroups() {
 
       {groups.length > 1 && (
         <>
-          <Text variant="subheading">Groups</Text>
+          <Text variant="subheading">Pools</Text>
           {groups.map((group) => (
             <Card key={group.id}>
               <Text variant="bodyLg">{group.label}</Text>
@@ -127,7 +127,7 @@ export default function CategoryGroups() {
               <Podium categoryId={group.id} />
             </Card>
           ))}
-          {isOrganizer && <Button title="Draw every group" disabled={busy || started} onPress={drawAll} />}
+          {isOrganizer && <Button title="Draw every pool" disabled={busy || started} onPress={drawAll} />}
         </>
       )}
     </Screen>

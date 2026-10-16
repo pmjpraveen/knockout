@@ -54,7 +54,7 @@ export default function Schedule() {
       {canOverride && (
         <Button title="Tatamis, timing & public link" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/tatamis', params: { id } })} />
       )}
-      {days.length > 1 && day && <ChoiceChips label="Day" options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
+      {days.length > 1 && day && <ChoiceChips label="Day" hideLabel options={days} value={day} labels={dayLabels(days)} onChange={setPicked} />}
       {!running && <Text color="slateGray">This day has not started. Its queues show the running order; call times appear once it does.</Text>}
       {stale && <Text color="warning">Offline: showing the schedule as last synced. Times are estimates from that moment.</Text>}
       {loadingTatamis && <SkeletonList count={2} />}

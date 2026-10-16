@@ -41,7 +41,7 @@ select is(cardinality(set_category_groups('33333333-3333-3333-3333-333333333301'
 select is((select array_agg(n order by n) from (select count(*)::int n from registrations r join categories c on c.id = r.category_id
            where c.id = '33333333-3333-3333-3333-333333333301' or c.split_root = '33333333-3333-3333-3333-333333333301' group by c.id) x), array[3, 3, 4], 'ten athletes make groups of 4, 3 and 3');
 select is((select array_agg(label order by split_index) from categories where id = '33333333-3333-3333-3333-333333333301' or split_root = '33333333-3333-3333-3333-333333333301'),
-          array['Kumite Male · Group A', 'Kumite Male · Group B', 'Kumite Male · Group C'], 'the groups are lettered');
+          array['Kumite Male · Pool A', 'Kumite Male · Pool B', 'Kumite Male · Pool C'], 'the pools are lettered');
 select is((select count(*)::int from (select r.category_id, lower(ce.club_name) from registrations r join athletes a on a.id = r.athlete_id join club_entries ce on ce.id = a.club_entry_id
            where r.category_id in (select id from categories where id = '33333333-3333-3333-3333-333333333301' or split_root = '33333333-3333-3333-3333-333333333301')
            group by 1, 2 having count(*) > 1) d), 0, 'club-mates land in different groups');

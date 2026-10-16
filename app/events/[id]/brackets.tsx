@@ -1,10 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Platform } from 'react-native';
-import { ActionRow } from '@/components/ActionRow';
+import Trophy from 'lucide-react-native/icons/trophy';
+import { Platform, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { SkeletonList } from '@/components/Skeleton';
 import { StatusPill } from '@/components/StatusPill';
@@ -13,6 +14,7 @@ import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useMyRoles } from '@/hooks/useMyRoles';
 import { humanize } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/theme/tokens';
 
 const drawn = ['bracket_generated', 'in_progress', 'completed'];
 const filters = ['all', 'in_progress', 'completed'] as const;
@@ -33,45 +35,50 @@ export default function Brackets() {
   const visible = isScorekeeperOnly ? allCategories.filter((c) => myTatamis.has(c.tatami_id)) : allCategories;
   const categories = filter === 'all' ? visible : visible.filter((c) => c.status === filter);
 
+  const go = (pathname: '/events/[id]/bracket' | '/events/[id]/bracket-setup' | '/events/[id]/category-groups', categoryId: string) => () => router.push({ pathname, params: { id, categoryId } });
+
   return (
     <Screen>
       {pending > 0 && (
-        <Text color="warning">
-          {pending} submission(s) are not approved. Their athletes are not in any draw.
-        </Text>
+        <View style={{ padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }}>
+          <Text color="warning">{pending} {pending === 1 ? 'submission is' : 'submissions are'} not approved. Their athletes are not in any draw.</Text>
+        </View>
       )}
-      <ChoiceChips label="Status" options={filters} value={filter} onChange={setFilter} labels={filterLabels} wrap={Platform.OS !== 'web'} />
+      <ChoiceChips label="Status" hideLabel options={filters} value={filter} onChange={setFilter} labels={filterLabels} wrap={Platform.OS !== 'web'} />
       {error && <Text color="danger">{error}</Text>}
       {loading && <SkeletonList />}
+      {!loading && categories.length === 0 && (
+        <EmptyState
+          Icon={Trophy}
+          title={visible.length === 0 ? 'No categories yet' : 'Nothing here'}
+          text={visible.length === 0 ? 'Brackets are drawn per category. Add categories first.' : 'No brackets match this filter.'}
+        />
+      )}
       {categories.map((category) => {
         const athletes = category.registrations[0]?.count ?? 0;
         const ready = category.status === 'closed' || drawn.includes(category.status);
+        const canManage = isOrganizer && ready && category.status !== 'completed';
         return (
           <Card key={category.id}>
-            <Text variant="bodyLg">{category.label}</Text>
-            <StatusPill status={category.status} />
-            <Text variant="body" color="slateGray">
-              {athletes} athletes · {humanize(category.bracket_format ?? 'no format')}
-            </Text>
-            {!ready && <Text variant="body" color="slateGray">Close registration to draw this category.</Text>}
-            <ActionRow>
-              {isOrganizer && ready && category.status !== 'completed' && (
-                <Button title="Split into groups" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/category-groups', params: { id, categoryId: category.id } })} />
+            <View style={{ gap: theme.spacing[16] }}>
+              <View style={{ gap: theme.spacing[8] }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: theme.spacing[12] }}>
+                  <Text variant="bodyLg" style={{ flex: 1 }}>{category.label}</Text>
+                  <StatusPill status={category.status} />
+                </View>
+                <Text color="slateGray">
+                  {athletes} {athletes === 1 ? 'athlete' : 'athletes'} · {humanize(category.bracket_format ?? 'no format')}
+                </Text>
+                {!ready && <Text variant="body" color="slateGray">Close registration to draw this category.</Text>}
+              </View>
+              {drawn.includes(category.status) && <Button title="View bracket" onPress={go('/events/[id]/bracket', category.id)} />}
+              {canManage && (
+                <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+                  <View style={{ flex: 1 }}><Button title="Split pools" variant="secondary" onPress={go('/events/[id]/category-groups', category.id)} /></View>
+                  <View style={{ flex: 1 }}><Button title={drawn.includes(category.status) ? 'Redraw' : 'Seed & draw'} variant="secondary" onPress={go('/events/[id]/bracket-setup', category.id)} /></View>
+                </View>
               )}
-              {isOrganizer && ready && category.status !== 'completed' && (
-                <Button
-                  title={drawn.includes(category.status) ? 'Seed & redraw' : 'Seed & generate'}
-                  variant="secondary"
-                  onPress={() => router.push({ pathname: '/events/[id]/bracket-setup', params: { id, categoryId: category.id } })}
-                />
-              )}
-              {drawn.includes(category.status) && (
-                <Button
-                  title="View bracket"
-                  onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id, categoryId: category.id } })}
-                />
-              )}
-            </ActionRow>
+            </View>
           </Card>
         );
       })}

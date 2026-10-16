@@ -17,12 +17,14 @@ type Props<T extends string> = {
   labels?: Partial<Record<T, string>>;
   /** False keeps every chip on one row (no wrapping). Defaults to true. */
   wrap?: boolean;
+  /** For chips that act as tabs or filters on a page: `label` is then read by screen readers only. */
+  hideLabel?: boolean;
 };
 
-export function ChoiceChips<T extends string>({ label, options, value, onChange, labels, wrap = true }: Props<T>) {
+export function ChoiceChips<T extends string>({ label, options, value, onChange, labels, wrap = true, hideLabel = false }: Props<T>) {
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.spacing[4] }}>
-      <Text>{label}</Text>
+      {!hideLabel && <Text>{label}</Text>}
       <View style={{ flexDirection: 'row', flexWrap: wrap ? 'wrap' : 'nowrap', columnGap: theme.spacing[8], rowGap: chipRowGap }}>
         {options.map((option) => {
           const selected = option === value;

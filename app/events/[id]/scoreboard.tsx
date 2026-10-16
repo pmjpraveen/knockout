@@ -48,7 +48,7 @@ export default function Scoreboard() {
       {stale && <Text color="warning">Offline: showing the queue as last synced.</Text>}
       {error && <Text color="danger">{error}</Text>}
       {canOverride && (
-        <ChoiceChips label="Tatami" options={tatamis.map((t) => t.id)} value={tatamiId} labels={Object.fromEntries(tatamis.map((t) => [t.id, t.name]))} onChange={setChosen} />
+        <ChoiceChips label="Tatami" hideLabel options={tatamis.map((t) => t.id)} value={tatamiId} labels={Object.fromEntries(tatamis.map((t) => [t.id, t.name]))} onChange={setChosen} />
       )}
       {!tatamiId && <EmptyState Icon={MapPinOff} title="No tatami assigned" text="You are not assigned to a tatami yet. Ask the organizer to assign you." />}
       {loading && tatamiId && <SkeletonList count={2} />}
