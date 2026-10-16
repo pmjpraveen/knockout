@@ -1,7 +1,15 @@
 import { useRouter } from 'expo-router';
 import ChevronDown from 'lucide-react-native/icons/chevron-down';
+import Copy from 'lucide-react-native/icons/copy';
+import Ellipsis from 'lucide-react-native/icons/ellipsis';
+import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
+import Layers from 'lucide-react-native/icons/layers';
+import Plus from 'lucide-react-native/icons/plus';
+import Split from 'lucide-react-native/icons/split';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
+import { ActionSheet, SheetAction } from '@/components/ActionSheet';
+import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { TabScreen } from '@/components/event/TabScreen';
 import type { EventData } from '@/components/event/useEventData';
@@ -13,20 +21,69 @@ import { humanize, isEditable } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
+/** Nothing added yet: what categories are for, and for the organizer the way to add the first one. */
+function EmptyCategories({ canAdd, onAdd }: { canAdd: boolean; onAdd: () => void }) {
+  return (
+    <View style={{ alignItems: 'center', gap: theme.spacing[16], paddingVertical: theme.spacing[48] }}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>
+        <Layers size={32} color={theme.colors.charcoal} strokeWidth={1.5} />
+      </View>
+      <View style={{ alignItems: 'center', gap: theme.spacing[4] }}>
+        <Text variant="subheading">No categories yet</Text>
+        <Text color="slateGray" style={{ textAlign: 'center' }}>
+          {canAdd ? 'Categories group athletes by age, weight and belt. Add the first one so clubs have somewhere to register.' : 'The organizer has not added any categories yet.'}
+        </Text>
+      </View>
+      {canAdd && <Button size="large" title="Add category" onPress={onAdd} />}
+    </View>
+  );
+}
+
 /** The event's categories. Each opens to show who is registered in it and, for the organizer, its settings. */
 export function EventCategories({ data }: { data: EventData }) {
   const { event, categories, registrations, isOrganizer, canOverride, loadingCategories, categoriesError } = data;
   const router = useRouter();
   const [open, setOpen] = useState<string | null>(null);
+  const [manageOpen, setManageOpen] = useState(false);
   const editable = isOrganizer && isEditable(event.status);
   const go = (screen: string) => () => router.push({ pathname: `/events/[id]/${screen}` as '/events/[id]/edit', params: { id: event.id } });
   const participantsOf = (categoryId: string) => registrations.filter((registration) => registration.category_id === categoryId);
 
+  const addCategory = () => router.push({ pathname: '/events/[id]/categories/new', params: { id: event.id } });
+  const draft = event.status === 'draft';
+  const manageActions: SheetAction[] = [
+    { title: 'Add category', description: 'Create one category by hand', Icon: Plus, onPress: addCategory },
+    { title: 'Copy categories from another event', description: 'Reuse the setup of a past event', Icon: Copy, onPress: go('clone') },
+    {
+      title: 'Import categories from a sheet',
+      description: draft ? 'Add many at once from Excel or CSV' : 'Only available while the event is a draft',
+      Icon: FileSpreadsheet,
+      onPress: go('import-categories'),
+    },
+    ...(event.status === 'registration_closed' ? [{ title: 'Merge or split categories', description: 'Combine or divide categories before the draw', Icon: Split, onPress: go('restructure') }] : []),
+  ];
+
   return (
-    <TabScreen title="Categories" subtitle={event.name}>
+    <TabScreen
+      title="Categories"
+      subtitle={event.name}
+      action={
+        editable ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Manage categories"
+            onPress={() => setManageOpen(true)}
+            style={({ pressed }) => [{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }, pressFeedback(pressed)]}
+          >
+            <Ellipsis size={20} color={theme.colors.inkBlack} strokeWidth={1.75} />
+          </Pressable>
+        ) : undefined
+      }
+    >
+      <ActionSheet visible={manageOpen} title="Manage categories" actions={manageActions} onClose={() => setManageOpen(false)} />
       {categoriesError && <Text color="danger">{categoriesError}</Text>}
       {loadingCategories && <SkeletonList count={3} />}
-      {!loadingCategories && categories.length === 0 && !categoriesError && <Text color="slateGray">No categories yet.</Text>}
+      {!loadingCategories && categories.length === 0 && !categoriesError && <EmptyCategories canAdd={editable} onAdd={addCategory} />}
 
       {categories.map((category) => {
         const people = participantsOf(category.id);
@@ -89,14 +146,6 @@ export function EventCategories({ data }: { data: EventData }) {
         );
       })}
 
-      {editable && (
-        <ListGroup title="Manage categories">
-          <ListRow title="Add category" onPress={() => router.push({ pathname: '/events/[id]/categories/new', params: { id: event.id } })} />
-          <ListRow title="Copy categories from another event" onPress={go('clone')} />
-          {event.status === 'draft' && <ListRow title="Import categories from a sheet" onPress={go('import-categories')} />}
-          {event.status === 'registration_closed' && <ListRow title="Merge or split categories" onPress={go('restructure')} />}
-        </ListGroup>
-      )}
     </TabScreen>
   );
 }

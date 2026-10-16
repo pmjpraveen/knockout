@@ -133,11 +133,13 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
-      {wide && (
+      {wide ? (
         <View style={[frame, { maxWidth: 1200, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: theme.spacing[16] + theme.spacing[4] }]}>
           <LogoLockup />
           {saveButton}
         </View>
+      ) : (
+        <View style={[frame, { maxWidth: 640, alignItems: 'flex-start', paddingHorizontal: theme.spacing[24], paddingTop: insets.top + theme.spacing[8], paddingBottom: theme.spacing[8] }]}>{saveButton}</View>
       )}
       <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" automaticallyAdjustKeyboardInsets>
         <View
@@ -146,13 +148,11 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
             {
               maxWidth: wide ? 680 : 640,
               padding: wide ? 0 : theme.spacing[24],
-              paddingTop: wide ? theme.spacing[32] * 2 - theme.spacing[4] : insets.top + theme.spacing[8],
+              paddingTop: wide ? theme.spacing[32] * 2 - theme.spacing[4] : theme.spacing[8],
               gap: theme.spacing[24],
             },
           ]}
         >
-          {!wide && <View style={{ alignSelf: 'flex-start' }}>{saveButton}</View>}
-
           <View style={{ gap: theme.spacing[8], marginTop: wide ? 0 : theme.spacing[8], marginBottom: wide ? theme.spacing[4] : 0 }}>
             <Text variant="label" style={{ textTransform: 'uppercase' }}>Step {step + 1}</Text>
             <Text variant="subheading">{steps[step].title}</Text>

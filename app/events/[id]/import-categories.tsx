@@ -24,22 +24,24 @@ export default function ImportCategories() {
     return { error, summary: result ? `${result.inserted} ${result.inserted === 1 ? 'category' : 'categories'} imported${skipped}.` : undefined };
   };
 
-  return (
-    <Screen>
-      {event.status === 'draft' ? (
-        <SheetImport
-          kind="categories"
-          belts={belts}
-          intro="Fill in one row per category, then upload it to create them all at once. Categories can only be imported while the event is a draft."
-          noun={['category', 'categories']}
-          parse={(sheetRows) => parseCategoryRows(sheetRows, belts)}
-          describe={(category) => category.label}
-          send={send}
-          onDone={() => router.back()}
-        />
-      ) : (
+  if (event.status !== 'draft') {
+    return (
+      <Screen>
         <Text color="slateGray">Categories can only be imported while the event is a draft.</Text>
-      )}
-    </Screen>
+      </Screen>
+    );
+  }
+
+  return (
+    <SheetImport
+      kind="categories"
+      belts={belts}
+      intro="Fill in one row per category, then upload it to create them all at once. Categories can only be imported while the event is a draft."
+      noun={['category', 'categories']}
+      parse={(sheetRows) => parseCategoryRows(sheetRows, belts)}
+      describe={(category) => category.label}
+      send={send}
+      onDone={() => router.back()}
+    />
   );
 }

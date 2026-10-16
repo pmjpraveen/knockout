@@ -6,22 +6,27 @@ import { useTabBarSpace } from '@/components/GlassTabBar';
 import { Text } from '@/components/Text';
 import { theme } from '@/theme/tokens';
 
-/** A tab without a cover: the back button and title on top, then the tab's content in a centred column. */
-export function TabScreen({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
+const column = { width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: theme.spacing[24] } as const;
+
+/** A tab without a cover: the back button and title (with an optional action at the right) stay fixed on top while the tab's content scrolls beneath, in a centred column. */
+export function TabScreen({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const space = useTabBarSpace();
   return (
-    <ScrollView contentContainerStyle={{ paddingTop: Math.max(insets.top, theme.spacing[16]) + theme.spacing[8], paddingBottom: space }}>
-      <View style={{ width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: theme.spacing[24], gap: theme.spacing[16] }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[16] }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
+      <View style={{ paddingTop: Math.max(insets.top, theme.spacing[16]) + theme.spacing[8], paddingBottom: theme.spacing[8], backgroundColor: theme.colors.paperWhite, zIndex: 1 }}>
+        <View style={[column, { flexDirection: 'row', alignItems: 'center', gap: theme.spacing[16] }]}>
           <BackButton />
           <View style={{ flex: 1 }}>
             <Text variant="headingSm">{title}</Text>
             {subtitle ? <Text variant="body" color="slateGray" numberOfLines={1}>{subtitle}</Text> : null}
           </View>
+          {action}
         </View>
-        {children}
       </View>
-    </ScrollView>
+      <ScrollView contentContainerStyle={{ paddingTop: theme.spacing[8], paddingBottom: space }}>
+        <View style={[column, { gap: theme.spacing[16] }]}>{children}</View>
+      </ScrollView>
+    </View>
   );
 }

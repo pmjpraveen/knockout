@@ -4,6 +4,11 @@ import { humanize } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
+// Chips look 36pt tall but keep the 48pt tap target: the hit area reaches past the chip, and the row gap stops neighbours' areas overlapping.
+const slop = (theme.touchTarget.minimum - theme.touchTarget.medium) / 2;
+const chipRowGap = theme.spacing[12];
+const selectedFill = theme.gradients.primary[1]; // #444444, the light end of the primary button's gradient
+
 type Props<T extends string> = {
   label: string;
   options: readonly T[];
@@ -18,7 +23,7 @@ export function ChoiceChips<T extends string>({ label, options, value, onChange,
   return (
     <View accessibilityRole="radiogroup" accessibilityLabel={label} style={{ gap: theme.spacing[4] }}>
       <Text>{label}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: wrap ? 'wrap' : 'nowrap', gap: theme.spacing[8] }}>
+      <View style={{ flexDirection: 'row', flexWrap: wrap ? 'wrap' : 'nowrap', columnGap: theme.spacing[8], rowGap: chipRowGap }}>
         {options.map((option) => {
           const selected = option === value;
           return (
@@ -26,15 +31,14 @@ export function ChoiceChips<T extends string>({ label, options, value, onChange,
               key={option}
               accessibilityRole="radio"
               aria-checked={selected}
+              hitSlop={{ top: slop, bottom: slop }}
               onPress={() => onChange(option)}
               style={({ pressed }) => [{
-                minHeight: theme.touchTarget.minimum,
-                paddingHorizontal: theme.spacing[16],
+                minHeight: theme.touchTarget.medium,
+                paddingHorizontal: theme.spacing[12],
                 borderRadius: theme.radii.button,
                 justifyContent: 'center',
-                backgroundColor: selected ? theme.colors.inkBlack : theme.colors.paperWhite,
-                borderWidth: 1,
-                borderColor: selected ? theme.colors.inkBlack : theme.colors.mist,
+                backgroundColor: selected ? selectedFill : theme.colors.cloud,
               }, pressFeedback(pressed)]}
             >
               <Text color={selected ? 'paperWhite' : 'inkBlack'}>

@@ -28,22 +28,24 @@ export default function ImportAthletes() {
     return { error, summary: `${parts.join('. ')}.` };
   };
 
-  return (
-    <Screen>
-      {event.status === 'registration_open' ? (
-        <SheetImport
-          kind="participants"
-          belts={belts}
-          intro="Fill in one row per participant, with their club, then upload it. Each club becomes an approved submission, and participants are registered in the categories that match their age, gender, weight and belt."
-          noun={['participant', 'participants']}
-          parse={(sheetRows) => parseAthleteRows(sheetRows, belts)}
-          describe={(a) => `${a.full_name} · ${a.club_name} · ${formatDate(a.date_of_birth)} · ${a.weight} kg · ${a.belt_rank} · ${a.disciplines.length === 2 ? 'kumite + kata' : a.disciplines[0]}`}
-          send={send}
-          onDone={() => router.back()}
-        />
-      ) : (
+  if (event.status !== 'registration_open') {
+    return (
+      <Screen>
         <Text color="slateGray">Participants can only be imported while registration is open.</Text>
-      )}
-    </Screen>
+      </Screen>
+    );
+  }
+
+  return (
+    <SheetImport
+      kind="participants"
+      belts={belts}
+      intro="Fill in one row per participant, with their club, then upload it. Each club becomes an approved submission, and participants are registered in the categories that match their age, gender, weight and belt."
+      noun={['participant', 'participants']}
+      parse={(sheetRows) => parseAthleteRows(sheetRows, belts)}
+      describe={(a) => `${a.full_name} · ${a.club_name} · ${formatDate(a.date_of_birth)} · ${a.weight} kg · ${a.belt_rank} · ${a.disciplines.length === 2 ? 'kumite + kata' : a.disciplines[0]}`}
+      send={send}
+      onDone={() => router.back()}
+    />
   );
 }

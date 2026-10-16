@@ -1,27 +1,42 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useEventBelts } from '@/hooks/useEventBelts';
 import { useEventDays } from '@/hooks/useEventDays';
+import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { defaultLabel } from '@/lib/categoryLabel';
+import { categoryProblem, labelTaken } from '@/lib/categoryRules';
 import { dayLabels } from '@/lib/schedule';
 import { bracketFormatLabels, bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
-type Props = { eventId: string; category?: CategoryRow; initialStatus?: string };
+type Props = { eventId: string; category?: CategoryRow; initialStatus?: string; header?: ReactNode };
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={{ gap: theme.spacing[24] }}>
+      <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>{title}</Text>
+      {children}
+    </View>
+  );
+}
+
+const Divider = () => <View style={{ height: 1, marginVertical: theme.spacing[8], backgroundColor: theme.colors.mist }} />;
 
 const text = (value: number | string | null | undefined) => (value === null || value === undefined ? '' : String(value));
 
-export function CategoryForm({ eventId, category, initialStatus }: Props) {
+export function CategoryForm({ eventId, category, initialStatus, header }: Props) {
   const router = useRouter();
   const belts = useEventBelts(eventId);
-  const beltOptions = ['', ...belts];
+  const single = belts.length === 1; // "Any" would just repeat the only belt
+  const beltOptions = single ? belts : ['', ...belts];
   const beltLabels = { '': 'Any' };
   const [label, setLabel] = useState(category?.label ?? '');
   const [discipline, setDiscipline] = useState<(typeof disciplines)[number]>((category?.discipline as (typeof disciplines)[number]) ?? 'kumite');
@@ -41,6 +56,11 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
   const day = pickedDay ?? days[0] ?? null;
   const [invalid, setInvalid] = useState<string | null>(null);
   const { run, busy, error } = useSubmit();
+  const { rows: siblings } = useFocusQuery(() => supabase.from('categories').select('id, label').eq('event_id', eventId), [eventId]);
+  const others = siblings.filter((sibling) => sibling.id !== category?.id);
+  const { rows: entered } = useFocusQuery(() => supabase.from('registrations').select('id').eq('category_id', category!.id), [category?.id], undefined, !!category);
+  const hasBracket = ['bracket_generated', 'in_progress', 'completed'].includes(category?.status ?? '');
+  const loses = [entered.length ? `${entered.length} ${entered.length === 1 ? 'participant' : 'participants'}` : null, hasBracket ? 'its bracket' : null].filter(Boolean).join(' and ');
 
   const criteria = {
     discipline,
@@ -56,22 +76,16 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
   const modes = scoringModes[discipline];
   const mode = (modes as readonly string[]).includes(scoringMode) ? scoringMode : modes[0];
 
-  const problem = () => {
-    const numbers = [criteria.age_min, criteria.age_max, criteria.weight_min, criteria.weight_max];
-    if (numbers.some((n) => n !== null && Number.isNaN(n))) return 'Age and weight must be numbers.';
-    if (criteria.age_min !== null && criteria.age_max !== null && criteria.age_min > criteria.age_max) return 'Minimum age is above the maximum.';
-    if (criteria.weight_min !== null && criteria.weight_max !== null && criteria.weight_min > criteria.weight_max) return 'Minimum weight is above the maximum.';
-    return null;
-  };
-
   const save = () => {
-    const found = problem();
+    const found = categoryProblem(criteria, belts);
     setInvalid(found);
     if (found) return;
     const seconds = toNumber(matchSeconds);
     if (seconds !== null && !(seconds > 0)) return setInvalid('Match time must be a number of seconds.');
+    const finalLabel = label.trim() || suggested;
+    if (labelTaken(finalLabel, others)) return setInvalid(`This event already has a category called "${finalLabel}". Change the label or the limits.`);
     const fields = {
-      ...criteria, label: label.trim() || suggested, bracket_format: format,
+      ...criteria, label: finalLabel, bracket_format: format,
       scoring_mode: mode, judge_panel: Number(panel), match_seconds: seconds,
       ...(day && { event_day: day }),
     };
@@ -92,7 +106,7 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
     });
 
   const pair = (a: [string, (v: string) => void, string], b: [string, (v: string) => void, string]) => (
-    <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+    <View style={{ flexDirection: 'row', gap: theme.spacing[16] }}>
       {[a, b].map(([value, set, name]) => (
         <View key={name} style={{ flex: 1 }}>
           <TextField label={name} value={value} onChangeText={set} keyboardType="numeric" />
@@ -102,22 +116,36 @@ export function CategoryForm({ eventId, category, initialStatus }: Props) {
   );
 
   return (
-    <>
-      <TextField label="Label" value={label} onChangeText={setLabel} autoCapitalize="sentences" placeholder={suggested} />
-      <ChoiceChips label="Discipline" options={disciplines} value={discipline} onChange={setDiscipline} />
-      <ChoiceChips label="Gender" options={genders} value={gender} onChange={setGender} />
-      {pair([ageMin, setAgeMin, 'Age min'], [ageMax, setAgeMax, 'Age max'])}
-      {pair([weightMin, setWeightMin, 'Weight min (kg)'], [weightMax, setWeightMax, 'Weight max (kg)'])}
-      <ChoiceChips label="Belt from" options={beltOptions} value={beltMin} onChange={setBeltMin} labels={beltLabels} />
-      <ChoiceChips label="Belt to" options={beltOptions} value={beltMax} onChange={setBeltMax} labels={beltLabels} />
-      {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
-      <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
-      <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
-      {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}
-      <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />
-      {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}
-      <Button title={category ? 'Save changes' : 'Add category'} disabled={busy} onPress={save} />
-      {category && <Button title="Delete category" variant="danger" confirmTitle="Tap again to delete" disabled={busy} onPress={remove} />}
-    </>
+    <Screen
+      footer={
+        <>
+          {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}
+          <Button size="large" title={category ? 'Save changes' : 'Add category'} disabled={busy} onPress={save} />
+        </>
+      }
+    >
+      {header && <View style={{ marginBottom: theme.spacing[8] }}>{header}</View>}
+      <Section title="Category">
+        <TextField label="Label" value={label} onChangeText={setLabel} autoCapitalize="sentences" placeholder={suggested} />
+        <ChoiceChips label="Discipline" options={disciplines} value={discipline} onChange={setDiscipline} />
+        <ChoiceChips label="Gender" options={genders} value={gender} onChange={setGender} />
+      </Section>
+      <Divider />
+      <Section title="Who can enter">
+        {pair([ageMin, setAgeMin, 'Age min'], [ageMax, setAgeMax, 'Age max'])}
+        {pair([weightMin, setWeightMin, 'Weight min (kg)'], [weightMax, setWeightMax, 'Weight max (kg)'])}
+        <ChoiceChips label="Belt from" options={beltOptions} value={single ? belts[0] : beltMin} onChange={setBeltMin} labels={beltLabels} />
+        <ChoiceChips label="Belt to" options={beltOptions} value={single ? belts[0] : beltMax} onChange={setBeltMax} labels={beltLabels} />
+      </Section>
+      <Divider />
+      <Section title="How it runs">
+        {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
+        <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
+        <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
+        {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}
+        <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />
+      </Section>
+      {category && <Button title="Delete category" variant="danger" confirmTitle={loses ? `Tap again: this also deletes ${loses}` : 'Tap again to delete'} disabled={busy} onPress={remove} />}
+    </Screen>
   );
 }

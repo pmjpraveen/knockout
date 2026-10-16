@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 export function useEventData(id: string) {
   const roles = useMyRoles(id);
   const event = useFocusQuery(() => supabase.from('events').select('*').eq('id', id));
-  const categories = useFocusQuery(() => supabase.from('categories').select('*').eq('event_id', id).order('created_at'));
+  const categories = useFocusQuery(() => supabase.from('categories').select('*').eq('event_id', id).order('created_at').order('label'));
   const entries = useFocusQuery(() => supabase.from('club_entries').select('id, approval_status').eq('event_id', id));
   const athletes = useFocusQuery(() =>
     supabase.from('athletes').select('id, club_entries!inner(event_id, approval_status)').eq('club_entries.event_id', id).eq('club_entries.approval_status', 'approved'),

@@ -281,14 +281,19 @@ export function EventHome({ data }: { data: EventData }) {
   );
 
   if (Platform.OS === 'web' && width >= twoColumnBreakpoint) {
+    const frame = { width: '100%', maxWidth: wideColumn, alignSelf: 'center', paddingHorizontal: theme.spacing[24] } as const;
     return (
-      <ScrollView contentContainerStyle={{ paddingBottom: space }}>
-        <View style={{ width: '100%', maxWidth: wideColumn, alignSelf: 'center', paddingHorizontal: theme.spacing[24] }}>
-          <TopBar />
-          <View style={{ alignSelf: 'flex-start', marginTop: theme.spacing[24] }}>
-            <BackButton />
+      <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
+        <View style={{ backgroundColor: theme.colors.paperWhite, zIndex: 1 }}>
+          <View style={frame}>
+            <TopBar />
+            <View style={{ alignSelf: 'flex-start', marginTop: theme.spacing[8], marginBottom: theme.spacing[8] }}>
+              <BackButton />
+            </View>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing[48], paddingTop: theme.spacing[24] }}>
+        </View>
+        <ScrollView contentContainerStyle={{ paddingBottom: space }}>
+          <View style={[frame, { flexDirection: 'row', alignItems: 'flex-start', gap: theme.spacing[48], paddingTop: theme.spacing[16] }]}>
             <View style={{ flex: 3, aspectRatio: coverAspect, borderRadius: theme.radii.scorePanel + theme.spacing[8], overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
               <Image accessibilityLabel="Tournament cover image" source={coverSource(data.cover)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
               <View style={{ position: 'absolute', left: theme.spacing[16], top: theme.spacing[16] }}>
@@ -303,8 +308,8 @@ export function EventHome({ data }: { data: EventData }) {
               {body}
             </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     );
   }
 
