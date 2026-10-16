@@ -8,7 +8,7 @@ import { TextField } from '@/components/TextField';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { Cover, saveCover } from '@/lib/coverImage';
-import { dateOf, eventFields, EventRow, validateEventDates } from '@/lib/events';
+import { dateOf, eventFields, EventRow, isDate, isoToDate, validateEventDates } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 
 export function EventForm({ event }: { event: EventRow }) {
@@ -46,9 +46,9 @@ export function EventForm({ event }: { event: EventRow }) {
       <TextField label="Venue" value={venue} onChangeText={setVenue} autoCapitalize="words" />
       <TextField label="Host club" value={hostClub} onChangeText={setHostClub} autoCapitalize="words" />
       <DateField label="Start date" value={startDate} onChange={setStartDate} />
-      <DateField label="End date" value={endDate} onChange={setEndDate} />
-      <DateField label="Registration opens" value={opens} onChange={setOpens} clearable />
-      <DateField label="Registration closes" value={closes} onChange={setCloses} clearable />
+      <DateField label="End date" value={endDate} onChange={setEndDate} minimumDate={isDate(startDate) ? isoToDate(startDate) : undefined} />
+      <DateField label="Registration opens" value={opens} onChange={setOpens} clearable minimumDate={new Date()} />
+      <DateField label="Registration closes" value={closes} onChange={setCloses} clearable minimumDate={new Date()} maximumDate={isDate(endDate) ? isoToDate(endDate) : undefined} />
       <CoverImageField value={cover} onChange={setPickedCover} />
       {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}
       <Button title="Save changes" disabled={busy || !name.trim()} onPress={save} />

@@ -5,13 +5,16 @@ import { supabase } from '@/lib/supabase';
 
 export const coverAspect = 3 / 2;
 
+/** The largest cover we keep, and so the size worth uploading. */
+export const coverSize = { width: 1200, height: 800 };
+
 /** A cover as JPEG data URIs: the full image for the event page and a small copy for lists. */
 export type Cover = { image: string; thumb: string };
 
 // The most characters the event_covers checks allow. A busy photo can exceed them at the first quality, so each
 // size is tried from best to smallest until one fits.
 const maxChars = { image: 400_000, thumb: 150_000 };
-const imageAttempts: Attempt[] = [{ edge: 1200, quality: 0.6 }, { edge: 1000, quality: 0.5 }, { edge: 800, quality: 0.45 }, { edge: 640, quality: 0.4 }];
+const imageAttempts: Attempt[] = [{ edge: coverSize.width, quality: 0.6 }, { edge: 1000, quality: 0.5 }, { edge: 800, quality: 0.45 }, { edge: 640, quality: 0.4 }];
 const thumbAttempts: Attempt[] = [{ edge: 720, quality: 0.5 }, { edge: 560, quality: 0.45 }, { edge: 480, quality: 0.4 }];
 
 const jpeg = (uri: string, landscape: boolean) => async ({ edge, quality }: Attempt) => {

@@ -4,7 +4,7 @@ import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
-import { Cover, coverAspect, pickCover } from '@/lib/coverImage';
+import { Cover, coverAspect, coverSize, pickCover } from '@/lib/coverImage';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
@@ -47,6 +47,7 @@ export function CoverImageField({ value, onChange }: { value: Pick<Cover, 'image
           <Text variant="bodyLg">Add image</Text>
         </Pressable>
       )}
+      <Text variant="body" color="slateGray">Use a landscape photo (3:2), at least {coverSize.width} × {coverSize.height} px. Other shapes are cropped.</Text>
       {error && <Text color="danger">{error}</Text>}
     </View>
   );

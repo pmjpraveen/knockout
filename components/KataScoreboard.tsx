@@ -3,6 +3,7 @@ import { TextInput, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { ResultConfirm, ScoreboardRow, ScoreButton, ScorePanel } from '@/components/ScoreboardParts';
 import { Text } from '@/components/Text';
+import { inputText } from '@/components/TextField';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { haptic } from '@/lib/haptics';
 import { kataOutcome, kataState, Outcome } from '@/lib/scoring';
@@ -66,7 +67,7 @@ export function KataScoreboard({ row, eventId, onDone }: { row: ScoreboardRow; e
             onEndEditing={() => commit(side, judge)}
             placeholder="5.0–10.0"
             placeholderTextColor={theme.colors.slateGray}
-            style={[theme.type.bodyLg, {
+            style={[inputText, {
               flex: 1, minHeight: theme.touchTarget.minimum, borderRadius: theme.radii.chip, backgroundColor: theme.colors.paperWhite,
               paddingHorizontal: theme.spacing[8], color: theme.colors.inkBlack, fontFamily: theme.fonts.sans.regular,
               borderWidth: 2, borderColor: drafts[`${side}${judge}`] !== undefined && !valid(drafts[`${side}${judge}`]) ? theme.colors.danger : 'transparent',

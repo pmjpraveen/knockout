@@ -1,56 +1,58 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
-import { Button } from '@/components/Button';
+import { Pressable } from 'react-native';
+import { CalendarSheet } from '@/components/CalendarSheet';
+import { ClearFieldButton } from '@/components/ClearFieldButton';
 import { TextField } from '@/components/TextField';
-import { dateToIso, formatDate, isDate, isoToDate } from '@/lib/events';
-import { theme } from '@/theme/tokens';
+import { formatDate } from '@/lib/events';
 
 export type DateFieldProps = {
   label: string;
   /** ISO date (YYYY-MM-DD), or '' when empty. */
   value: string;
   onChange: (value: string) => void;
+  /** Shows a cross in the field that empties it. */
   clearable?: boolean;
+  /** Earlier days are disabled and the calendar starts at this month. */
+  minimumDate?: Date;
   maximumDate?: Date;
-  /** Where the picker opens when nothing is chosen yet, e.g. a plausible birth year. */
+  /** Where the calendar opens when nothing is chosen yet, e.g. a plausible birth year. */
   startAt?: Date;
 };
 
-/** Native date picker on iOS and Android; the field shows DD-MM-YYYY. (The web version is DateField.web.tsx.) */
-export function DateField({ label, value, onChange, clearable, maximumDate, startAt }: DateFieldProps) {
+/** Tapping the field opens the calendar sheet; the field shows DD-MM-YYYY. (The web version is DateField.web.tsx.) */
+export function DateField({ label, value, onChange, clearable, minimumDate, maximumDate, startAt }: DateFieldProps) {
   const [open, setOpen] = useState(false);
-  const ios = Platform.OS === 'ios';
-  const shownInPicker = isDate(value) ? isoToDate(value) : (startAt ?? maximumDate ?? new Date());
+  const clear = clearable && value ? () => onChange('') : null;
 
   return (
-    <View style={{ gap: theme.spacing[8] }}>
-      <Pressable accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })} accessibilityLabel={`${label}, ${value ? formatDate(value) : 'not set'}`} onPress={() => setOpen((o) => !o)}>
-        <View style={{ pointerEvents: 'none' }}>
-          <TextField label={label} value={formatDate(value)} placeholder="DD-MM-YYYY" editable={false} />
-        </View>
-      </Pressable>
-      {open && (
-        <DateTimePicker
-          mode="date"
-          display={ios ? 'spinner' : 'default'}
-          value={shownInPicker}
-          maximumDate={maximumDate}
-          onChange={(event, date) => {
-            if (!ios) setOpen(false);
-            if (event.type === 'set' && date) onChange(dateToIso(date));
-          }}
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${label}, ${value ? formatDate(value) : 'not set'}`}
+        accessibilityActions={clear ? [{ name: 'clear', label: `Clear ${label}` }] : undefined}
+        onAccessibilityAction={clear ?? undefined}
+        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        onPress={() => setOpen(true)}
+      >
+        <TextField
+          label={label}
+          value={formatDate(value)}
+          placeholder="DD-MM-YYYY"
+          editable={false}
+          pointerEvents="none"
+          trailing={clear ? <ClearFieldButton label={label} onPress={clear} /> : undefined}
         />
-      )}
-      {open && ios && <Button
-          title="Done"
-          variant="secondary"
-          onPress={() => {
-            if (!isDate(value)) onChange(dateToIso(shownInPicker)); // closing on the date the spinner shows accepts it
-            setOpen(false);
-          }}
-        />}
-      {clearable && value ? <Button title="Clear date" variant="secondary" onPress={() => onChange('')} /> : null}
-    </View>
+      </Pressable>
+      <CalendarSheet
+        visible={open}
+        title={label}
+        value={value}
+        minimumDate={minimumDate}
+        maximumDate={maximumDate}
+        startAt={startAt}
+        onSelect={(iso) => { onChange(iso); setOpen(false); }}
+        onClose={() => setOpen(false)}
+      />
+    </>
   );
 }

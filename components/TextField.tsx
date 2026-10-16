@@ -8,9 +8,18 @@ import { theme } from '@/theme/tokens';
 
 type Props = TextInputProps & { label: string; /** A control shown inside the field's right edge, such as a calendar button. */ trailing?: ReactNode };
 
+/** No lineHeight: a fixed line box pushes iOS text below the centre of a single-line field. */
+export const inputText = {
+  fontSize: theme.type.bodyLg.fontSize,
+  letterSpacing: theme.type.bodyLg.letterSpacing,
+  paddingVertical: 0,
+  textAlignVertical: 'center',
+} as const;
+
 export function TextField({ label, trailing, secureTextEntry, onFocus, onBlur, ...rest }: Props) {
   const [revealed, setRevealed] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [trailingWidth, setTrailingWidth] = useState(36);
   const toggle = secureTextEntry ? (
     <Pressable
       accessibilityRole="button"
@@ -30,7 +39,7 @@ export function TextField({ label, trailing, secureTextEntry, onFocus, onBlur, .
     <View style={{ gap: theme.spacing[4] }}>
       <Text importantForAccessibility="no" accessibilityElementsHidden>{label}</Text>
       {/* Outer ring: a soft halo around the input's own solid border, offset by a constant gap so it never shifts layout. */}
-      <View style={{ borderWidth: ringGap, borderRadius: theme.radii.card + ringGap, borderColor: focused ? theme.colors.aoTint : 'transparent' }}>
+      <View style={{ marginHorizontal: -ringGap, borderWidth: ringGap, borderRadius: theme.radii.card + ringGap, borderColor: focused ? theme.colors.aoTint : 'transparent' }}>
         <View>
           <TextInput
             accessibilityLabel={label}
@@ -40,7 +49,7 @@ export function TextField({ label, trailing, secureTextEntry, onFocus, onBlur, .
             onFocus={(e) => { setFocused(true); onFocus?.(e); }}
             onBlur={(e) => { setFocused(false); onBlur?.(e); }}
             style={[
-              theme.type.bodyLg,
+              inputText,
               {
                 fontFamily: theme.fonts.sans.regular,
                 minHeight: theme.touchTarget.minimum,
@@ -48,14 +57,18 @@ export function TextField({ label, trailing, secureTextEntry, onFocus, onBlur, .
                 borderColor: focused ? theme.colors.ao : theme.colors.mist,
                 borderRadius: theme.radii.card,
                 paddingHorizontal: theme.spacing[12],
-                paddingRight: shown ? theme.spacing[12] + 40 : theme.spacing[12],
+                paddingRight: shown ? theme.spacing[12] + theme.spacing[4] + trailingWidth : theme.spacing[12],
                 color: theme.colors.inkBlack,
                 outlineStyle: 'none', // the app's own focus border replaces the browser's default outline
               } as object,
             ]}
             {...rest}
           />
-          {shown && <View style={{ position: 'absolute', right: theme.spacing[4], top: 0, bottom: 0, justifyContent: 'center' }}>{shown}</View>}
+          {shown && (
+            <View onLayout={(event) => setTrailingWidth(event.nativeEvent.layout.width)} style={{ position: 'absolute', right: theme.spacing[4], top: 0, bottom: 0, flexDirection: 'row', alignItems: 'center' }}>
+              {shown}
+            </View>
+          )}
         </View>
       </View>
     </View>

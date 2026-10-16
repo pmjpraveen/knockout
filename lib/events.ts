@@ -103,6 +103,7 @@ export function validateEventDates({ startDate, endDate, opens, closes }: Pick<E
   if (![startDate, endDate].every(isDate) || [opens, closes].some((d) => d && !isDate(d))) return 'Enter dates as DD-MM-YYYY.';
   if (endDate < startDate) return 'The end date is before the start date.';
   if (opens && closes && closes < opens) return 'Registration closes before it opens.';
+  if (closes && closes > endDate) return 'Registration closes after the tournament ends.';
   return null;
 }
 

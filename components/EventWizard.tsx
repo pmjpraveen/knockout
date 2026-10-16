@@ -12,7 +12,7 @@ import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useSubmit } from '@/hooks/useSubmit';
 import { Cover, saveCover } from '@/lib/coverImage';
-import { eventFields, isDate, validateEventDates } from '@/lib/events';
+import { eventFields, isDate, isoToDate, validateEventDates } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -136,9 +136,9 @@ export function EventWizard({ userId }: { userId: string }) {
           {step === 2 && (
             <>
               <DateField label="Tournament starts on" value={draft.startDate} onChange={(startDate) => set({ startDate })} />
-              <DateField label="Tournament ends on" value={draft.endDate} onChange={(endDate) => set({ endDate })} />
-              <DateField label="Registration starts on" value={draft.opens} onChange={(opens) => set({ opens })} clearable />
-              <DateField label="Registration ends on" value={draft.closes} onChange={(closes) => set({ closes })} clearable />
+              <DateField label="Tournament ends on" value={draft.endDate} onChange={(endDate) => set({ endDate })} minimumDate={isDate(draft.startDate) ? isoToDate(draft.startDate) : undefined} />
+              <DateField label="Registration starts on" value={draft.opens} onChange={(opens) => set({ opens })} clearable minimumDate={new Date()} />
+              <DateField label="Registration ends on" value={draft.closes} onChange={(closes) => set({ closes })} clearable minimumDate={new Date()} maximumDate={isDate(draft.endDate) ? isoToDate(draft.endDate) : undefined} />
             </>
           )}
           {(invalid ?? error) && <Text color="danger">{invalid ?? error}</Text>}
