@@ -18,6 +18,7 @@ export function useEventData(id: string) {
       .eq('categories.event_id', id),
   );
   const cover = useFocusQuery(() => supabase.from('event_covers').select('image').eq('event_id', id));
+  const link = useFocusQuery(() => supabase.from('registration_links').select('id, token, is_active').eq('event_id', id));
   const conflicts = useFocusQuery(() => supabase.from('scoring_conflicts').select('id').eq('event_id', id).is('resolved_at', null));
 
   const status = event.rows[0]?.status ?? '';
@@ -31,6 +32,8 @@ export function useEventData(id: string) {
     reloadCategories: categories.reload,
     registrations: registrations.rows,
     cover: cover.rows[0]?.image,
+    registrationLink: link.rows[0],
+    reloadLink: link.reload,
     unresolvedConflicts: conflicts.rows.length,
     counts: {
       categories: categories.rows.length,

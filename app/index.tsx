@@ -11,9 +11,11 @@ import { Text } from '@/components/Text';
 import { useAccountType } from '@/hooks/useAccountType';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
+import { useUnfinishedDrafts } from '@/hooks/useUnfinishedDrafts';
 import { EventRow } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { supabase } from '@/lib/supabase';
+import { setUnfinished } from '@/lib/unfinishedDrafts';
 import { theme } from '@/theme/tokens';
 
 const phoneWidth = 640;
@@ -81,6 +83,7 @@ export default function Events() {
   const columns = width >= 1000 ? 3 : wide ? 2 : 1;
   const columnWidth = (inner - gap * (columns - 1)) / columns;
   const [tab, setTab] = useState<Tab>('upcoming');
+  const unfinished = useUnfinishedDrafts();
   const { isOrganizerAccount, loading: loadingAccount } = useAccountType();
   const { rows: events, error, loading: loadingEvents, reload } = useFocusQuery(() =>
     supabase.from('events').select('*').order('created_at', { ascending: false }),
@@ -92,7 +95,10 @@ export default function Events() {
   if (isOrganizerAccount && !loading && !error && events.length === 0) return <EmptyEvents />;
 
   const thumbs = new Map(covers.map((cover) => [cover.event_id, cover.thumb]));
-  const open = (event: EventRow) => () => router.push({ pathname: '/events/[id]', params: { id: event.id } });
+  const open = (event: EventRow) => () =>
+    event.status === 'draft' && unfinished[event.id] !== undefined
+      ? router.push({ pathname: '/events/new', params: { draft: event.id } })
+      : router.push({ pathname: '/events/[id]', params: { id: event.id } });
   const byTab: Record<Tab, EventRow[]> = {
     upcoming: events.filter((e) => running.includes(e.status)).sort(byStart),
     drafts: events.filter((e) => e.status === 'draft'),
@@ -100,7 +106,10 @@ export default function Events() {
   };
   const shown = byTab[tab];
   const deleteDraft = async (event: EventRow) => {
-    if (await run(() => supabase.from('events').delete().eq('id', event.id))) reload();
+    if (await run(() => supabase.from('events').delete().eq('id', event.id))) {
+      setUnfinished(event.id, null);
+      reload();
+    }
   };
 
   return (

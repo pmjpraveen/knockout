@@ -1,14 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import { StatusBar } from 'expo-status-bar';
-import Building from 'lucide-react-native/icons/building';
-import CalendarRange from 'lucide-react-native/icons/calendar-range';
 import UserCheck from 'lucide-react-native/icons/user-check';
-import { ReactNode, useRef, useState } from 'react';
-import { Animated, NativeScrollEvent, NativeSyntheticEvent, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Fragment, ReactNode, useRef, useState } from 'react';
+import { Animated, Image, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { CoverBackButton, EventCover, useCoverHeader } from '@/components/event/EventCover';
 import type { EventData } from '@/components/event/useEventData';
+import { LinkCard } from '@/components/LinkCard';
 import { ListGroup, ListRow } from '@/components/ListGroup';
 import { wideBreakpoint } from '@/components/LoginArtwork';
 import { StatusPill } from '@/components/StatusPill';
@@ -17,6 +17,8 @@ import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
 import { coverAspect } from '@/lib/coverImage';
 import { dateOf, formatDate, formatDateRange, humanize, nextEventStep } from '@/lib/events';
+import { pressFeedback } from '@/lib/press';
+import { ensureRegistrationLink, registrationUrl } from '@/lib/registration';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -25,18 +27,50 @@ const Divider = () => <View style={{ height: 1, backgroundColor: theme.colors.mi
 function InfoRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[16], paddingVertical: theme.spacing[16] }}>
-      <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+      <View style={{ width: 40, height: 40, borderRadius: 20, overflow: 'hidden', backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
       <View style={{ flex: 1 }}>{children}</View>
     </View>
   );
 }
 
-function Stat({ label, value, warn }: { label: string; value: number; warn?: boolean }) {
+type StatItem = { label: string; value: number; warn?: boolean };
+
+function Stat({ label, value, warn }: StatItem) {
   return (
-    <View style={{ flex: 1, minWidth: 132, gap: theme.spacing[4], padding: theme.spacing[12], borderRadius: theme.radii.card, backgroundColor: warn ? theme.colors.warningTint : theme.colors.cloud }}>
+    <View style={{ flex: 1, alignItems: 'center', gap: theme.spacing[4], paddingVertical: theme.spacing[4] }}>
       <Text variant="headingSm" color={warn ? 'warning' : 'inkBlack'}>{value}</Text>
       <Text variant="label" color={warn ? 'warning' : 'charcoal'}>{label}</Text>
     </View>
+  );
+}
+
+/** The counts in one row, each centred, with a short rule between neighbours. */
+function StatRow({ stats }: { stats: StatItem[] }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {stats.map((stat, i) => (
+        <Fragment key={stat.label}>
+          {i > 0 && <View style={{ width: 1, height: 40, backgroundColor: theme.colors.mist }} />}
+          <Stat {...stat} />
+        </Fragment>
+      ))}
+    </View>
+  );
+}
+
+/** Clubs are waiting on the organizer: the first thing to act on, so it sits right under the counts. */
+function PendingBanner({ count, onPress }: { count: number; onPress: () => void }) {
+  const text = `${count} ${count === 1 ? 'submission is' : 'submissions are'} waiting for review`;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={text}
+      onPress={onPress}
+      style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8], minHeight: theme.touchTarget.minimum, paddingHorizontal: theme.spacing[16], paddingVertical: theme.spacing[12], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }, pressFeedback(pressed)]}
+    >
+      <Text variant="bodyLg" color="warning" style={{ flex: 1 }}>{text}</Text>
+      <ChevronRight size={20} color={theme.colors.warning} strokeWidth={1.75} />
+    </Pressable>
   );
 }
 
@@ -70,7 +104,15 @@ export function EventHome({ data }: { data: EventData }) {
         step!.status === 'completed'
           ? await supabase.rpc('complete_event', { p_event_id: event.id })
           : await supabase.from('events').update({ status: step!.status }).eq('id', event.id);
-      await Promise.all([data.reloadEvent(), data.reloadCategories()]);
+      const link = !result.error && step!.status === 'registration_open' ? await ensureRegistrationLink(event.id) : null;
+      await Promise.all([data.reloadEvent(), data.reloadCategories(), data.reloadLink()]);
+      return link?.error ? link : result;
+    });
+
+  const createLink = () =>
+    run(async () => {
+      const result = await ensureRegistrationLink(event.id);
+      await data.reloadLink();
       return result;
     });
 
@@ -85,11 +127,24 @@ export function EventHome({ data }: { data: EventData }) {
           </View>
         </View>
 
+        {canOverride && (
+          <StatRow
+            stats={[
+              { label: 'Categories', value: counts.categories },
+              { label: 'Participants', value: counts.participants },
+              { label: 'Clubs', value: counts.clubs },
+              ...(counts.pending > 0 ? [{ label: 'To review', value: counts.pending, warn: true }] : []),
+            ]}
+          />
+        )}
+
+        {isOrganizer && counts.pending > 0 && <PendingBanner count={counts.pending} onPress={go('submissions')} />}
+
         <View>
           {(event.host_club || event.venue) && (
             <>
               <Divider />
-              <InfoRow icon={<Building size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
+              <InfoRow icon={<Image source={require('@/assets/images/location-pin.png')} accessible={false} style={{ width: 64, height: 64 }} />}>
                 {event.host_club ? <Text>Hosted by <Text>{event.host_club}</Text></Text> : <Text>{event.venue}</Text>}
                 {event.host_club && event.venue ? <Text color="slateGray">{event.venue}</Text> : null}
               </InfoRow>
@@ -98,7 +153,7 @@ export function EventHome({ data }: { data: EventData }) {
           {(opens || closes) && (
             <>
               <Divider />
-              <InfoRow icon={<CalendarRange size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
+              <InfoRow icon={<Image source={require('@/assets/images/registration-clipboard.png')} accessible={false} resizeMode="contain" style={{ width: 28, height: 28 }} />}>
                 <Text>Registration</Text>
                 <Text color="slateGray">{opens && closes ? formatDateRange(opens, closes) : opens ? `Opens ${formatDate(opens)}` : `Closes ${formatDate(closes)}`}</Text>
               </InfoRow>
@@ -118,17 +173,15 @@ export function EventHome({ data }: { data: EventData }) {
           <Divider />
         </View>
 
-        {canOverride && (
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>
-            <Stat label="Categories" value={counts.categories} />
-            <Stat label="Participants" value={counts.participants} />
-            <Stat label="Clubs" value={counts.clubs} />
-            {counts.pending > 0 && <Stat label="To review" value={counts.pending} warn />}
-          </View>
-        )}
-
         {event.status === 'completed' && <Text color="warning">Archived and read-only. All data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>}
         {isOrganizer && missingDates && <Text color="warning">Add the tournament dates in Configure before opening registration.</Text>}
+        {isOrganizer && event.status === 'registration_open' && (
+          data.registrationLink ? (
+            <LinkCard url={registrationUrl(data.registrationLink.token)} note={data.registrationLink.is_active ? undefined : 'This link is turned off, so clubs cannot register with it.'} />
+          ) : (
+            <Button title="Create registration link" variant="secondary" disabled={busy} onPress={createLink} />
+          )
+        )}
         {isOrganizer && step ? (
           <Button
             size="large"

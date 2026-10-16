@@ -1,5 +1,5 @@
 import { webBaseUrl } from '@/lib/hosts';
-import { supabaseUrl } from '@/lib/supabase';
+import { supabase, supabaseUrl } from '@/lib/supabase';
 
 const endpoint = `${supabaseUrl}/functions/v1/submit-registration`;
 
@@ -19,3 +19,10 @@ export const registrationUrl = (token: string, reference?: string) =>
   `${webBaseUrl()}/register/${token}${reference ? `?ref=${reference}` : ''}`;
 
 export const scheduleUrl = (token: string) => `${webBaseUrl()}/schedule/${token}`;
+
+/** Creates the event's registration link if it has none. A link that exists is left alone: regenerating would replace its token and break links already shared. */
+export async function ensureRegistrationLink(eventId: string) {
+  const { data, error } = await supabase.from('registration_links').select('id').eq('event_id', eventId);
+  if (error || data.length) return { error };
+  return supabase.rpc('regenerate_registration_link', { p_event_id: eventId });
+}
