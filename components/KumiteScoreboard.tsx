@@ -9,7 +9,7 @@ import { Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Pop, Reveal } from '@/components/Motion';
-import { clockHeight, MatchClock, ResultConfirm, ScoreboardRow, SyncBanner } from '@/components/ScoreboardParts';
+import { clockHeight, MatchClock, ResultConfirm, ScoreboardRow, MatchDone, WinnerHeader } from '@/components/ScoreboardParts';
 import { Text } from '@/components/Text';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
@@ -233,38 +233,45 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
 
   const overlay = (content: ReactNode) => (
     <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15,17,21,0.55)' }}>
-      <Reveal y={16} style={{ width: 380, maxWidth: '90%', gap: theme.spacing[12], padding: theme.spacing[16], backgroundColor: theme.colors.paperWhite, borderRadius: theme.radii.card }}>{content}</Reveal>
+      <Reveal y={16} style={{ width: 420, maxWidth: '92%', gap: theme.spacing[16], padding: theme.spacing[16], backgroundColor: theme.colors.paperWhite, borderRadius: theme.radii.card }}>{content}</Reveal>
     </View>
   );
 
   let prompt: ReactNode = null;
   if (scoring.finalized) {
-    prompt = overlay(
-      <>
-        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
-        <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
-        <SyncBanner />
-        <Button title="Back to the queue" onPress={onDone} />
-      </>,
-    );
+    prompt = overlay(<MatchDone winner={names[scoring.finalized.winner]} onDone={onDone} />);
   } else if (confirming) {
-    prompt = overlay(<ResultConfirm outcome={confirming} names={names} onCancel={() => setConfirming(null)} onConfirm={async () => { await scoring.finalize(confirming.winner, confirming.method, confirming.note); }} />);
+    prompt = overlay(<ResultConfirm framed={false} outcome={confirming} names={names} onCancel={() => setConfirming(null)} onConfirm={async () => { await scoring.finalize(confirming.winner, confirming.method, confirming.note); }} />);
   } else if (outcome) {
     prompt = overlay(
       <>
-        <Text variant="subheading">{names[outcome.winner]} wins by {outcome.note ? outcome.note.split(':')[0] : outcome.method === 'lead' ? 'an 8-point lead' : outcome.method}.</Text>
-        <Button title="Review result" onPress={() => setConfirming(outcome)} />
-        <Button title="Undo last" variant="secondary" disabled={!undoTarget} onPress={() => scoring.record('void', null, null, null, undoTarget!.id)} />
+        <WinnerHeader
+          eyebrow="Match decided"
+          name={names[outcome.winner]}
+          line={`wins by ${outcome.note ? outcome.note.split(':')[0] : outcome.method === 'lead' ? 'an 8-point lead' : outcome.method}`}
+        />
+        <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+          <View style={{ flex: 1 }}><Button size="large" title="Undo last" variant="secondary" disabled={!undoTarget} onPress={() => scoring.record('void', null, null, null, undoTarget!.id)} /></View>
+          <View style={{ flex: 1 }}><Button size="large" title="Review result" onPress={() => setConfirming(outcome)} /></View>
+        </View>
       </>,
     );
   } else if (timeUp) {
     prompt = overlay(
       <>
-        <Text>Time is up and the score is level, with no Senshu. Record the referee&apos;s decision.</Text>
-        {[a, b].map((id) => (
-          <Button key={id} title={`Decision: ${names[id]}`} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
-        ))}
-        <Button title="Undo last" variant="secondary" disabled={!undoTarget} onPress={() => scoring.record('void', null, null, null, undoTarget!.id)} />
+        <View style={{ gap: theme.spacing[4] }}>
+          <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>Time is up</Text>
+          <Text variant="subheading">The score is level</Text>
+          <Text color="slateGray">There is no Senshu. Record the referee&apos;s decision.</Text>
+        </View>
+        <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+          {[a, b].map((id) => (
+            <View key={id} style={{ flex: 1 }}>
+              <Button size="large" title={names[id]} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
+            </View>
+          ))}
+        </View>
+        <Button title="Undo last" variant="ghost" disabled={!undoTarget} onPress={() => scoring.record('void', null, null, null, undoTarget!.id)} />
       </>,
     );
   }

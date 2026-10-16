@@ -1,3 +1,4 @@
+import Trophy from 'lucide-react-native/icons/trophy';
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { PixelRatio, Pressable, View } from 'react-native';
 import { Path, Svg } from 'react-native-svg';
@@ -149,22 +150,59 @@ export function SyncBanner() {
 
 const methodLabel = (method: string) => humanize(method).toLowerCase();
 
+/** Who won and how: a trophy badge, a small caption, the winner's name and the way they won. */
+export function WinnerHeader({ eyebrow, name, line }: { eyebrow: string; name: string; line: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[12] }}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
+        <Trophy size={22} color={theme.colors.success} strokeWidth={1.75} />
+      </View>
+      <View style={{ flex: 1, gap: theme.spacing[4] }}>
+        <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>{eyebrow}</Text>
+        <Text variant="subheading" numberOfLines={1}>{name}</Text>
+        <Text color="slateGray">{line}</Text>
+      </View>
+    </View>
+  );
+}
+
+/** The match is over: who won, that it is saved on this device, the sync state and the way back to the queue. */
+export function MatchDone({ winner, onDone }: { winner: string; onDone: () => void }) {
+  return (
+    <View style={{ alignItems: 'center', gap: theme.spacing[16] }}>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: theme.colors.successTint, alignItems: 'center', justifyContent: 'center' }}>
+        <Trophy size={30} color={theme.colors.success} strokeWidth={1.75} />
+      </View>
+      <View style={{ alignItems: 'center', gap: theme.spacing[4] }}>
+        <Text variant="heading" style={{ textAlign: 'center' }}>{winner} wins</Text>
+        <Text color="slateGray" style={{ textAlign: 'center' }}>Recorded on this device. It syncs when a connection is available.</Text>
+      </View>
+      <View style={{ alignSelf: 'stretch' }}><SyncBanner /></View>
+      <View style={{ alignSelf: 'stretch' }}><Button size="large" title="Back to the queue" onPress={onDone} /></View>
+    </View>
+  );
+}
+
 /** The confirm step: nothing finalizes or advances the bracket until this is accepted. */
-export function ResultConfirm({ outcome, names, onConfirm, onCancel, busy }: {
+export function ResultConfirm({ outcome, names, onConfirm, onCancel, busy, framed = true }: {
   outcome: Outcome;
   names: Record<string, string>;
   onConfirm: () => void;
   onCancel: () => void;
   busy?: boolean;
+  /** False when it already sits inside a card (the scoring overlay), so it adds no border of its own. */
+  framed?: boolean;
 }) {
+  const frame = framed ? { borderWidth: 1, borderColor: theme.colors.mist, borderRadius: theme.radii.card, padding: theme.spacing[16], backgroundColor: theme.colors.paperWhite } : {};
   return (
-    <Reveal y={16} style={{ borderWidth: 1, borderColor: theme.colors.inkBlack, borderRadius: theme.radii.card, padding: theme.spacing[16], gap: theme.spacing[12] }}>
-      <Text variant="subheading">Confirm result</Text>
-      <Text variant="bodyLg">{names[outcome.winner]} wins by {methodLabel(outcome.method)}.</Text>
+    <Reveal y={16} style={{ gap: theme.spacing[16], ...frame }}>
+      <WinnerHeader eyebrow="Confirm result" name={names[outcome.winner]} line={`wins by ${methodLabel(outcome.method)}`} />
       {outcome.note ? <Text color="slateGray">{outcome.note}</Text> : null}
       <Text variant="body" color="slateGray">This ends the match and advances the bracket.</Text>
-      <Button title="Confirm result" variant="success" disabled={busy} onPress={() => { haptic.success(); onConfirm(); }} />
-      <Button title="Back to scoring" variant="secondary" onPress={onCancel} />
+      <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+        <View style={{ flex: 1 }}><Button size="large" title="Back" variant="secondary" onPress={onCancel} /></View>
+        <View style={{ flex: 2 }}><Button size="large" title="Confirm result" variant="success" disabled={busy} onPress={() => { haptic.success(); onConfirm(); }} /></View>
+      </View>
     </Reveal>
   );
 }

@@ -155,11 +155,11 @@ export default function CategoryGroups() {
                   )}
                   {drawnIds.has(group.id) && (
                     <View style={{ flex: 1 }}>
-                      <Button title="View bracket" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id, categoryId: group.id } })} />
+                      <Button title={group.status === 'completed' ? 'Show results' : 'View bracket'} variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id, categoryId: group.id } })} />
                     </View>
                   )}
                 </View>
-                <Podium categoryId={group.id} />
+                <Podium compact categoryId={group.id} />
               </View>
             </Card>
           ))}

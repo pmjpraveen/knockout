@@ -71,7 +71,7 @@ export default function Brackets() {
                 </Text>
                 {!ready && <Text variant="body" color="slateGray">Close registration to draw this category.</Text>}
               </View>
-              {drawn.includes(category.status) && <Button title="View bracket" onPress={go('/events/[id]/bracket', category.id)} />}
+              {drawn.includes(category.status) && <Button title={category.status === 'completed' ? 'Show results' : 'View bracket'} onPress={go('/events/[id]/bracket', category.id)} />}
               {canManage && (
                 <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
                   <View style={{ flex: 1 }}><Button title="Split pools" variant="secondary" onPress={go('/events/[id]/category-groups', category.id)} /></View>

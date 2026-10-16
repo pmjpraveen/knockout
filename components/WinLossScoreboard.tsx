@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '@/components/Button';
-import { ResultConfirm, ScoreboardRow, ScoreButton, ScorePanel } from '@/components/ScoreboardParts';
+import { MatchDone, ResultConfirm, ScoreboardRow, ScoreButton, ScorePanel } from '@/components/ScoreboardParts';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
@@ -17,15 +17,7 @@ export function WinLossScoreboard({ row, eventId, onDone }: { row: ScoreboardRow
   const { athlete_a_id: a, athlete_b_id: b } = row;
   const names = { [a]: row.athlete_a, [b]: row.athlete_b };
 
-  if (scoring.finalized) {
-    return (
-      <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
-        <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
-        <Button title="Back to the queue" onPress={onDone} />
-      </View>
-    );
-  }
+  if (scoring.finalized) return <MatchDone winner={names[scoring.finalized.winner]} onDone={onDone} />;
 
   const pick = (id: string) => setConfirming({ winner: id, method: 'win_loss', note: note.trim() || null });
 

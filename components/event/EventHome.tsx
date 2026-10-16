@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import ChevronRight from 'lucide-react-native/icons/chevron-right';
 import Circle from 'lucide-react-native/icons/circle';
 import CircleCheck from 'lucide-react-native/icons/circle-check';
+import Crown from 'lucide-react-native/icons/crown';
 import { StatusBar } from 'expo-status-bar';
 import UserCheck from 'lucide-react-native/icons/user-check';
 import { Fragment, ReactNode, useRef, useState } from 'react';
@@ -19,6 +20,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { useTabBarSpace } from '@/components/GlassTabBar';
 import { Text } from '@/components/Text';
 import { TopBar } from '@/components/TopBar';
+import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { coverAspect } from '@/lib/coverImage';
 import { dateOf, formatDate, formatDateRange, humanize, nextEventStep, registrationCue } from '@/lib/events';
@@ -66,9 +68,8 @@ function StatRow({ stats }: { stats: StatItem[] }) {
   );
 }
 
-/** Clubs are waiting on the organizer: the first thing to act on, so it sits right under the counts. */
-function PendingBanner({ count, onPress }: { count: number; onPress: () => void }) {
-  const text = `${count} ${count === 1 ? 'submission is' : 'submissions are'} waiting for review`;
+/** Something needs the organizer: a warning-tinted bar that opens the place to deal with it. */
+function AttentionBanner({ text, onPress }: { text: string; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -79,6 +80,18 @@ function PendingBanner({ count, onPress }: { count: number; onPress: () => void 
       <Text variant="bodyLg" color="warning" style={{ flex: 1 }}>{text}</Text>
       <ChevronRight size={20} color={theme.colors.warning} strokeWidth={1.75} />
     </Pressable>
+  );
+}
+
+/** How far through the event it is: a slim bar and "4 of 10 categories completed". */
+function Progress({ done, total }: { done: number; total: number }) {
+  return (
+    <View accessible accessibilityLabel={`${done} of ${total} categories completed`} style={{ gap: theme.spacing[8] }}>
+      <View style={{ height: 8, borderRadius: 4, backgroundColor: theme.colors.mist, overflow: 'hidden' }}>
+        <View style={{ width: `${total ? (done / total) * 100 : 0}%`, height: 8, borderRadius: 4, backgroundColor: theme.colors.success }} />
+      </View>
+      <Text variant="body" color="slateGray">{done} of {total} categories completed</Text>
+    </View>
   );
 }
 
@@ -108,10 +121,11 @@ function SetupChecklist({ steps }: { steps: SetupStep[] }) {
 }
 
 /** What an organizer should do at this stage, above the main button. */
-function StagePrompt({ text, action }: { text: string; action: { title: string; onPress: () => void } }) {
+function StagePrompt({ text, action, children }: { text: string; action: { title: string; onPress: () => void }; children?: ReactNode }) {
   return (
     <View style={{ gap: theme.spacing[12], padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.cloud }}>
       <Text>{text}</Text>
+      {children}
       <Button title={action.title} variant="secondary" onPress={action.onPress} />
     </View>
   );
@@ -140,6 +154,20 @@ export function EventHome({ data }: { data: EventData }) {
   const missingDates = !event.start_date || !event.end_date; // only a saved draft can lack them
   const go = (screen: string) => () => router.push({ pathname: `/events/[id]/${screen}` as '/events/[id]/edit', params: { id: event.id } });
   const [opens, closes] = [event.registration_opens_at, event.registration_closes_at].map((at) => dateOf(at));
+  const finished = data.categories.filter((category) => category.status === 'completed');
+  const { rows: champions } = useFocusQuery(
+    () =>
+      Promise.all(finished.map((category) => supabase.rpc('category_podium', { p_category_id: category.id }))).then((results) => ({
+        data: results.flatMap((result, index) =>
+          (result.data ?? []).filter((row) => row.place === 1).map((row) => ({ categoryId: finished[index].id, category: finished[index].label, athlete: row.athlete_name, club: row.club_name })),
+        ),
+        error: results.find((result) => result.error)?.error ?? null,
+      })),
+    [finished.map((category) => category.id).join()],
+    undefined,
+    finished.length > 0,
+  );
+  const allFinished = data.categories.length > 0 && finished.length === data.categories.length;
 
   const advance = () =>
     run(async () => {
@@ -157,7 +185,7 @@ export function EventHome({ data }: { data: EventData }) {
     event.status === 'registration_closed'
       ? { text: 'Registration is closed. Review any last submissions, then draw the brackets.', action: { title: 'Draw brackets', onPress: go('brackets') } }
       : event.status === 'in_progress'
-        ? { text: 'The event is running. Follow the matches on the scoreboard.', action: { title: 'Open scoreboard', onPress: go('scoreboard') } }
+        ? { text: 'The event is running. Follow the matches on the scoreboard.', action: { title: 'Open scoreboard', onPress: go('scoreboard') }, progress: true }
         : null;
 
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -199,7 +227,9 @@ export function EventHome({ data }: { data: EventData }) {
         />
       )}
 
-      {isOrganizer && counts.pending > 0 && <PendingBanner count={counts.pending} onPress={go('submissions')} />}
+      {isOrganizer && counts.pending > 0 && <AttentionBanner text={`${counts.pending} ${counts.pending === 1 ? 'submission is' : 'submissions are'} waiting for review`} onPress={go('submissions')} />}
+      {canOverride && unresolvedConflicts > 0 && <AttentionBanner text={`${unresolvedConflicts} scoring ${unresolvedConflicts === 1 ? 'conflict needs' : 'conflicts need'} review`} onPress={go('conflicts')} />}
+
 
       <View>
         {(event.host_club || event.venue) && (
@@ -239,7 +269,12 @@ export function EventHome({ data }: { data: EventData }) {
         <Divider />
       </View>
 
-      {event.status === 'completed' && <Text color="warning">Archived and read-only. All data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>}
+      {event.status === 'completed' && (
+        <View style={{ gap: theme.spacing[4], padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }}>
+          <Text variant="bodyLg" color="warning">This event is complete</Text>
+          <Text variant="body" color="slateGray">It is archived and read-only. All its data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>
+        </View>
+      )}
       {isOrganizer && missingDates && <Text color="warning">Add the tournament dates in Configure before opening registration.</Text>}
       {isOrganizer && event.status === 'registration_open' && (
         data.registrationLink ? (
@@ -249,10 +284,15 @@ export function EventHome({ data }: { data: EventData }) {
         )
       )}
       {isOrganizer && event.status === 'draft' && <SetupChecklist steps={setupSteps} />}
-      {isOrganizer && prompt && <StagePrompt {...prompt} />}
+      {isOrganizer && prompt && (
+        <StagePrompt text={prompt.text} action={prompt.action}>
+          {'progress' in prompt && data.categories.length > 0 && <Progress done={finished.length} total={data.categories.length} />}
+        </StagePrompt>
+      )}
       {isOrganizer && step ? (
         <Button
           size="large"
+          variant={step.status === 'completed' && !allFinished ? 'secondary' : 'primary'}
           title={step.action}
           confirmTitle={step.status === 'completed' ? 'Tap again: data is deleted in 7 days' : undefined}
           disabled={busy || (step.status === 'registration_open' && missingDates)}
@@ -263,11 +303,20 @@ export function EventHome({ data }: { data: EventData }) {
       )}
       {error && <Text color="danger">{error}</Text>}
 
-      <ListGroup>
-        {canOverride && unresolvedConflicts > 0 && <ListRow title="Scoring conflicts" detail={`${unresolvedConflicts} unresolved`} tone="warning" onPress={go('conflicts')} />}
-        {isOrganizer && event.status !== 'completed' && <ListRow title="Registration link" onPress={go('link')} />}
-        {isOrganizer && <ListRow title="Review submissions" detail={counts.pending ? `${counts.pending} pending` : undefined} tone="warning" onPress={go('submissions')} />}
-      </ListGroup>
+      {champions.length > 0 && (
+        <ListGroup title={`Champions · ${champions.length}`}>
+          {champions.map((champion) => (
+            <ListRow
+              key={champion.categoryId}
+              Icon={Crown}
+              title={champion.athlete}
+              subtitle={[champion.category, champion.club].filter(Boolean).join(' · ')}
+              onPress={() => router.push({ pathname: '/events/[id]/bracket', params: { id: event.id, categoryId: champion.categoryId } })}
+            />
+          ))}
+        </ListGroup>
+      )}
+
     </>
   );
 

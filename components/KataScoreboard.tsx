@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TextInput, View } from 'react-native';
 import { Button } from '@/components/Button';
-import { ResultConfirm, ScoreboardRow, ScoreButton, ScorePanel } from '@/components/ScoreboardParts';
+import { MatchDone, ResultConfirm, ScoreboardRow, ScoreButton, ScorePanel } from '@/components/ScoreboardParts';
 import { Text } from '@/components/Text';
 import { inputText } from '@/components/TextField';
 import { useMatchScoring } from '@/hooks/useMatchScoring';
@@ -27,15 +27,7 @@ export function KataScoreboard({ row, eventId, onDone }: { row: ScoreboardRow; e
   const judges = Array.from({ length: panel }, (_, i) => i + 1);
   const editable = scoring.started && !scoring.finalized;
 
-  if (scoring.finalized) {
-    return (
-      <View style={{ gap: theme.spacing[12] }}>
-        <Text variant="heading">{names[scoring.finalized.winner]} wins</Text>
-        <Text color="slateGray">Recorded on this device. It syncs when a connection is available.</Text>
-        <Button title="Back to the queue" onPress={onDone} />
-      </View>
-    );
-  }
+  if (scoring.finalized) return <MatchDone winner={names[scoring.finalized.winner]} onDone={onDone} />;
 
   const commit = (side: 'a' | 'b', judge: number) => {
     const key = `${side}${judge}`;
@@ -93,11 +85,15 @@ export function KataScoreboard({ row, eventId, onDone }: { row: ScoreboardRow; e
       {!scoring.started && <Button title="Start match" onPress={() => { haptic.start(); scoring.start(); }} />}
       {scoring.started && outcome && !confirming && <Button title="Review result" onPress={() => setConfirming(outcome)} />}
       {scoring.started && !outcome && !flags && state.totals.a !== null && state.totals.a === state.totals.b && (
-        <View style={{ gap: theme.spacing[8] }}>
-          <Text>Totals are level. Record the judges&apos; decision.</Text>
-          {[a, b].map((id) => (
-            <Button key={id} title={`Decision: ${names[id]}`} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
-          ))}
+        <View style={{ gap: theme.spacing[12], padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }}>
+          <Text color="warning">Totals are level. Record the judges&apos; decision.</Text>
+          <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+            {[a, b].map((id) => (
+              <View key={id} style={{ flex: 1 }}>
+                <Button size="large" title={names[id]} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
+              </View>
+            ))}
+          </View>
         </View>
       )}
       {confirming && <ResultConfirm outcome={confirming} names={names} onCancel={() => setConfirming(null)} onConfirm={async () => { await scoring.finalize(confirming.winner, confirming.method); }} />}
