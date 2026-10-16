@@ -1,5 +1,5 @@
 begin;
-select plan(30);
+select plan(32);
 
 insert into auth.users (id, instance_id, aud, role, email) values
   ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'org@test.dev'),
@@ -75,6 +75,16 @@ select is((select estimated_call_time from event_schedule('11111111-1111-1111-11
   'kumite matches are 2 minutes each');
 select is((select estimated_call_time from event_schedule('11111111-1111-1111-1111-111111111111') where tatami_name = 'Tatami 2' and queue_position = 2), now() + interval '90 seconds',
   'kata matches are 1.5 minutes each');
+reset role;
+update categories set match_seconds = 60 where id = '33333333-3333-3333-3333-333333333302';
+set local role authenticated;
+select is((select estimated_call_time from event_schedule('11111111-1111-1111-1111-111111111111') where tatami_name = 'Tatami 2' and queue_position = 2), now() + interval '60 seconds',
+  'a category''s own match time replaces the event default in the estimate');
+reset role;
+update categories set match_seconds = null where id = '33333333-3333-3333-3333-333333333302';
+set local role authenticated;
+select is((select estimated_call_time from event_schedule('11111111-1111-1111-1111-111111111111') where tatami_name = 'Tatami 2' and queue_position = 2), now() + interval '90 seconds',
+  'clearing it goes back to the event default');
 
 -- conflicts: the double-entered athlete opens both rings
 select is((select count(*)::int from event_schedule('11111111-1111-1111-1111-111111111111') where conflict), 2, 'the double-booked athlete flags both matches');

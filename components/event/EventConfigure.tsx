@@ -1,4 +1,11 @@
 import { useRouter } from 'expo-router';
+import Award from 'lucide-react-native/icons/award';
+import ClipboardCheck from 'lucide-react-native/icons/clipboard-check';
+import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
+import Link from 'lucide-react-native/icons/link';
+import Pencil from 'lucide-react-native/icons/pencil';
+import Timer from 'lucide-react-native/icons/timer';
+import Users from 'lucide-react-native/icons/users';
 import { Button } from '@/components/Button';
 import { goBack } from '@/components/event/EventCover';
 import { TabScreen } from '@/components/event/TabScreen';
@@ -25,20 +32,20 @@ export function EventConfigure({ data }: { data: EventData }) {
     <TabScreen title="Configure" subtitle={event.name}>
       {!active && <Text color="slateGray">This event is archived and read-only.</Text>}
       <ListGroup title="Event">
-        {isOrganizer && isEditable(event.status) && <ListRow title="Edit event details" onPress={go('edit')} />}
+        {isOrganizer && isEditable(event.status) && <ListRow Icon={Pencil} title="Edit event details" subtitle="Name, venue, cover and dates" onPress={go('edit')} />}
       </ListGroup>
       {isOrganizer && (
         <ListGroup title="Registration">
-          {active && <ListRow title="Belt system" detail={`${event.belts.length} belts`} onPress={go('belts')} />}
-          {active && <ListRow title="Registration link" onPress={go('link')} />}
-          {event.status === 'registration_open' && <ListRow title="Import participants from a sheet" onPress={go('import-athletes')} />}
-          <ListRow title="Review submissions" detail={counts.pending ? `${counts.pending} pending` : undefined} tone="warning" onPress={go('submissions')} />
+          {active && <ListRow Icon={Award} title="Belt system" subtitle="Who can register, by belt" detail={`${event.belts.length} ${event.belts.length === 1 ? 'belt' : 'belts'}`} onPress={go('belts')} />}
+          {active && <ListRow Icon={Link} title="Registration link" subtitle="Share with clubs, no account" onPress={go('link')} />}
+          {event.status === 'registration_open' && <ListRow Icon={FileSpreadsheet} title="Import participants" subtitle="From an Excel or CSV sheet" onPress={go('import-athletes')} />}
+          <ListRow Icon={ClipboardCheck} title="Review submissions" subtitle="Approve or flag entries" detail={counts.pending ? `${counts.pending} pending` : undefined} tone="warning" onPress={go('submissions')} />
         </ListGroup>
       )}
       {active && (
         <ListGroup title="Team and rings">
-          {isOrganizer && <ListRow title="Staff" onPress={go('staff')} />}
-          <ListRow title="Tatamis and timing" onPress={go('tatamis')} />
+          {isOrganizer && <ListRow Icon={Users} title="Staff" subtitle="Directors and scorekeepers" onPress={go('staff')} />}
+          <ListRow Icon={Timer} title="Tatamis and timing" subtitle="Rings, durations, public schedule" onPress={go('tatamis')} />
         </ListGroup>
       )}
       {isOrganizer && event.status === 'draft' && (

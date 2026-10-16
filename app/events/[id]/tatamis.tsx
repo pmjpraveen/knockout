@@ -89,7 +89,7 @@ export default function Tatamis() {
 
       {isOrganizer && <SectionDivider />}
       {isOrganizer && (
-        <FormSection title="Match duration" hint="Drives the estimated call times.">
+        <FormSection title="Match duration" hint="The default for every category. It drives the estimated call times, and a category can set its own match time.">
           {disciplines.map(([key, label]) => (
             <TextField key={key} label={label} value={minutes[key] ?? ''} onChangeText={(value) => setMinutes((m) => ({ ...m, [key]: value }))} keyboardType="numeric" />
           ))}
