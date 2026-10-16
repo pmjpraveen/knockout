@@ -1,13 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
-import { EventForm } from '@/components/EventForm';
-import { Screen } from '@/components/Screen';
+import { EventWizard } from '@/components/EventWizard';
 import { SkeletonScreen } from '@/components/Skeleton';
-import { useFocusQuery } from '@/hooks/useFocusQuery';
-import { supabase } from '@/lib/supabase';
+import { useSession } from '@/hooks/useSession';
 
 export default function EditEvent() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { rows } = useFocusQuery(() => supabase.from('events').select('*').eq('id', id));
+  const session = useSession();
 
-  return rows[0] ? <Screen><EventForm event={rows[0]} /></Screen> : <SkeletonScreen />;
+  return session ? <EventWizard userId={session.user.id} resumeId={id} editing /> : <SkeletonScreen />;
 }

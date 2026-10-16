@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
+import Trophy from 'lucide-react-native/icons/trophy';
+import { EmptyState } from '@/components/EmptyState';
 import { TabScreen } from '@/components/event/TabScreen';
 import type { EventData } from '@/components/event/useEventData';
 import { ListGroup, ListRow } from '@/components/ListGroup';
-import { Text } from '@/components/Text';
 
 /** Where the event is run: the scoreboard, the schedule and the brackets. What is available follows the event's stage. */
 export function EventScoreboard({ data }: { data: EventData }) {
@@ -15,7 +16,11 @@ export function EventScoreboard({ data }: { data: EventData }) {
   return (
     <TabScreen title="Scoreboard" subtitle={event.name}>
       {nothing && (
-        <Text color="slateGray">The scoreboard, schedule and brackets appear once registration closes. Until then, set up categories and registrations from the other tabs.</Text>
+        <EmptyState
+          Icon={Trophy}
+          title="Nothing to run yet"
+          text="The scoreboard, schedule and brackets appear once registration closes. Until then, set up categories and registrations from the other tabs."
+        />
       )}
       <ListGroup>
         {live && memberships.length > 0 && <ListRow title="Scoreboard" onPress={go('scoreboard')} />}

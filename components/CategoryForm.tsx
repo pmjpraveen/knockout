@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react';
 import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { FormSection, SectionDivider } from '@/components/FormSection';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
@@ -18,17 +19,6 @@ import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
 type Props = { eventId: string; category?: CategoryRow; initialStatus?: string; header?: ReactNode };
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <View style={{ gap: theme.spacing[24] }}>
-      <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-const Divider = () => <View style={{ height: 1, marginVertical: theme.spacing[8], backgroundColor: theme.colors.mist }} />;
 
 const text = (value: number | string | null | undefined) => (value === null || value === undefined ? '' : String(value));
 
@@ -125,26 +115,26 @@ export function CategoryForm({ eventId, category, initialStatus, header }: Props
       }
     >
       {header && <View style={{ marginBottom: theme.spacing[8] }}>{header}</View>}
-      <Section title="Category">
+      <FormSection title="Category">
         <TextField label="Label" value={label} onChangeText={setLabel} autoCapitalize="sentences" placeholder={suggested} />
         <ChoiceChips label="Discipline" options={disciplines} value={discipline} onChange={setDiscipline} />
         <ChoiceChips label="Gender" options={genders} value={gender} onChange={setGender} />
-      </Section>
-      <Divider />
-      <Section title="Who can enter">
+      </FormSection>
+      <SectionDivider />
+      <FormSection title="Who can enter">
         {pair([ageMin, setAgeMin, 'Age min'], [ageMax, setAgeMax, 'Age max'])}
         {pair([weightMin, setWeightMin, 'Weight min (kg)'], [weightMax, setWeightMax, 'Weight max (kg)'])}
         <ChoiceChips label="Belt from" options={beltOptions} value={single ? belts[0] : beltMin} onChange={setBeltMin} labels={beltLabels} />
         <ChoiceChips label="Belt to" options={beltOptions} value={single ? belts[0] : beltMax} onChange={setBeltMax} labels={beltLabels} />
-      </Section>
-      <Divider />
-      <Section title="How it runs">
+      </FormSection>
+      <SectionDivider />
+      <FormSection title="How it runs">
         {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
         <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
         <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
         {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}
         <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />
-      </Section>
+      </FormSection>
       {category && <Button title="Delete category" variant="danger" confirmTitle={loses ? `Tap again: this also deletes ${loses}` : 'Tap again to delete'} disabled={busy} onPress={remove} />}
     </Screen>
   );

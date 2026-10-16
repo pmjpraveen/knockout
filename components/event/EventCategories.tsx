@@ -11,6 +11,7 @@ import { Pressable, View } from 'react-native';
 import { ActionSheet, SheetAction } from '@/components/ActionSheet';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
 import { TabScreen } from '@/components/event/TabScreen';
 import type { EventData } from '@/components/event/useEventData';
 import { ListGroup, ListRow } from '@/components/ListGroup';
@@ -24,18 +25,13 @@ import { theme } from '@/theme/tokens';
 /** Nothing added yet: what categories are for, and for the organizer the way to add the first one. */
 function EmptyCategories({ canAdd, onAdd }: { canAdd: boolean; onAdd: () => void }) {
   return (
-    <View style={{ alignItems: 'center', gap: theme.spacing[16], paddingVertical: theme.spacing[48] }}>
-      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: theme.colors.cloud, alignItems: 'center', justifyContent: 'center' }}>
-        <Layers size={32} color={theme.colors.charcoal} strokeWidth={1.5} />
-      </View>
-      <View style={{ alignItems: 'center', gap: theme.spacing[4] }}>
-        <Text variant="subheading">No categories yet</Text>
-        <Text color="slateGray" style={{ textAlign: 'center' }}>
-          {canAdd ? 'Categories group athletes by age, weight and belt. Add the first one so clubs have somewhere to register.' : 'The organizer has not added any categories yet.'}
-        </Text>
-      </View>
+    <EmptyState
+      Icon={Layers}
+      title="No categories yet"
+      text={canAdd ? 'Categories group athletes by age, weight and belt. Add the first one so clubs have somewhere to register.' : 'The organizer has not added any categories yet.'}
+    >
       {canAdd && <Button size="large" title="Add category" onPress={onAdd} />}
-    </View>
+    </EmptyState>
   );
 }
 

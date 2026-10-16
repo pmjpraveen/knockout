@@ -1,8 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import MapPinOff from 'lucide-react-native/icons/map-pin-off';
+import Swords from 'lucide-react-native/icons/swords';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { ChoiceChips } from '@/components/ChoiceChips';
+import { EmptyState } from '@/components/EmptyState';
 import { Screen } from '@/components/Screen';
 import { SkeletonList } from '@/components/Skeleton';
 import { SyncBanner } from '@/components/ScoreboardParts';
@@ -47,9 +50,9 @@ export default function Scoreboard() {
       {canOverride && (
         <ChoiceChips label="Tatami" options={tatamis.map((t) => t.id)} value={tatamiId} labels={Object.fromEntries(tatamis.map((t) => [t.id, t.name]))} onChange={setChosen} />
       )}
-      {!tatamiId && <Text color="slateGray">You are not assigned to a tatami. Ask the organizer.</Text>}
+      {!tatamiId && <EmptyState Icon={MapPinOff} title="No tatami assigned" text="You are not assigned to a tatami yet. Ask the organizer to assign you." />}
       {loading && tatamiId && <SkeletonList count={2} />}
-      {!loading && queue.length === 0 && tatamiId && <Text color="slateGray">Nothing ready to score.</Text>}
+      {!loading && queue.length === 0 && tatamiId && <EmptyState Icon={Swords} title="Nothing to score yet" text="Matches appear here once brackets are drawn and the next fight on this tatami is ready." />}
       {queue.map((row, index) => (
         <Card key={row.match_id}>
           <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>

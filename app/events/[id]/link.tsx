@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { ActionRow } from '@/components/ActionRow';
+import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { LinkCard } from '@/components/LinkCard';
 import { Screen } from '@/components/Screen';
@@ -8,6 +8,7 @@ import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { registrationUrl } from '@/lib/registration';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/theme/tokens';
 
 export default function RegistrationLink() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,31 +32,14 @@ export default function RegistrationLink() {
       <Text color="slateGray">
         Share one link with every club. It needs no account. Clubs can edit their submission from the same link until you approve it.
       </Text>
-      {link ? (
-        <>
-          <LinkCard
-            url={registrationUrl(link.token)}
-            note={`${link.is_active ? 'Active' : 'Deactivated'} · regenerated ${link.regenerated_count}×`}
-          />
-          <ActionRow>
-            <Button
-              title={link.is_active ? 'Deactivate link' : 'Reactivate link'}
-              variant="secondary"
-              disabled={busy}
-              onPress={() => setActive(!link.is_active)}
-            />
-            <Button
-              title="Regenerate link"
-              variant="danger"
-              confirmTitle="Tap again: the old link stops working"
-              disabled={busy}
-              onPress={generate}
-            />
-          </ActionRow>
-        </>
-      ) : (
-        <Button title="Generate registration link" disabled={busy} onPress={generate} />
+      {link && <LinkCard url={registrationUrl(link.token)} note={`${link.is_active ? 'Active' : 'Deactivated'} · regenerated ${link.regenerated_count}×`} />}
+      {link && (
+        <View style={{ gap: theme.spacing[12] }}>
+          <Button title={link.is_active ? 'Deactivate link' : 'Reactivate link'} variant="secondary" disabled={busy} onPress={() => setActive(!link.is_active)} />
+          <Button title="Regenerate link" variant="danger" confirmTitle="Tap again: the old link stops working" disabled={busy} onPress={generate} />
+        </View>
       )}
+      {!link && <Button title="Generate registration link" disabled={busy} onPress={generate} />}
       {error && <Text color="danger">{error}</Text>}
     </Screen>
   );

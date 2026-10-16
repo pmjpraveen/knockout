@@ -1,8 +1,9 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActionRow } from '@/components/ActionRow';
+import { View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { FormSection, SectionDivider } from '@/components/FormSection';
 import { LinkCard } from '@/components/LinkCard';
 import { Screen } from '@/components/Screen';
 import { Text } from '@/components/Text';
@@ -13,6 +14,7 @@ import { useSubmit } from '@/hooks/useSubmit';
 import { toNumber } from '@/lib/events';
 import { scheduleUrl } from '@/lib/registration';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/theme/tokens';
 
 const disciplines = [
   ['kumite_minutes', 'Kumite (minutes per match)'],
@@ -47,38 +49,47 @@ export default function Tatamis() {
 
   return (
     <Screen>
-      <Text variant="subheading">Tatamis</Text>
-      {tatamis.map((tatami) => (
-        <Card key={tatami.id}>
-          <TextField label="Label" value={names[tatami.id] ?? tatami.name} onChangeText={(value) => setNames((n) => ({ ...n, [tatami.id]: value }))} autoCapitalize="words" />
-          <ActionRow>
-            <Button
-              title="Rename"
-              variant="secondary"
-              disabled={busy || !(names[tatami.id] ?? tatami.name).trim() || (names[tatami.id] ?? tatami.name) === tatami.name}
-              onPress={() => act(() => supabase.from('tatamis').update({ name: names[tatami.id].trim() }).eq('id', tatami.id))}
-            />
-            <Button
-              title="Delete"
-              variant="danger"
-              confirmTitle="Tap again: its categories become unassigned"
-              disabled={busy}
-              onPress={() => act(() => supabase.from('tatamis').delete().eq('id', tatami.id))}
-            />
-          </ActionRow>
-        </Card>
-      ))}
-      <TextField label="New tatami" value={newName} onChangeText={setNewName} placeholder="Tatami 1, Ring A…" autoCapitalize="words" />
-      <Button
-        title="Add tatami"
-        disabled={busy || !newName.trim()}
-        onPress={async () => { if (await act(() => supabase.from('tatamis').insert({ event_id: id, name: newName.trim() }))) setNewName(''); }}
-      />
+      <FormSection title="Tatamis" hint="One per ring. Categories are assigned to a tatami and scored there.">
+        {tatamis.map((tatami) => {
+          const name = names[tatami.id] ?? tatami.name;
+          return (
+            <Card key={tatami.id}>
+              <View style={{ gap: theme.spacing[12] }}>
+                <TextField label="Label" value={name} onChangeText={(value) => setNames((n) => ({ ...n, [tatami.id]: value }))} autoCapitalize="words" />
+                <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Rename"
+                      variant="secondary"
+                      disabled={busy || !name.trim() || name === tatami.name}
+                      onPress={() => act(() => supabase.from('tatamis').update({ name: name.trim() }).eq('id', tatami.id))}
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Delete"
+                      variant="danger"
+                      confirmTitle="Tap again: its categories become unassigned"
+                      disabled={busy}
+                      onPress={() => act(() => supabase.from('tatamis').delete().eq('id', tatami.id))}
+                    />
+                  </View>
+                </View>
+              </View>
+            </Card>
+          );
+        })}
+        <TextField label="New tatami" value={newName} onChangeText={setNewName} placeholder="Tatami 1, Ring A…" autoCapitalize="words" />
+        <Button
+          title="Add tatami"
+          disabled={busy || !newName.trim()}
+          onPress={async () => { if (await act(() => supabase.from('tatamis').insert({ event_id: id, name: newName.trim() }))) setNewName(''); }}
+        />
+      </FormSection>
 
+      {isOrganizer && <SectionDivider />}
       {isOrganizer && (
-        <>
-          <Text variant="subheading">Match duration</Text>
-          <Text color="slateGray">Drives the estimated call times.</Text>
+        <FormSection title="Match duration" hint="Drives the estimated call times.">
           {disciplines.map(([key, label]) => (
             <TextField key={key} label={label} value={minutes[key] ?? ''} onChangeText={(value) => setMinutes((m) => ({ ...m, [key]: value }))} keyboardType="numeric" />
           ))}
@@ -88,13 +99,17 @@ export default function Tatamis() {
             disabled={busy || invalidMinutes}
             onPress={() => act(() => supabase.from('events').update({ kumite_minutes: Number(minutes.kumite_minutes), kata_minutes: Number(minutes.kata_minutes), team_minutes: Number(minutes.team_minutes) }).eq('id', id))}
           />
+        </FormSection>
+      )}
 
-          <Text variant="subheading">Public schedule</Text>
-          <Text color="slateGray">
-            Anyone with this link sees upcoming matches, rings and estimated call times, without an account. Athlete names are shown; dates of birth, weights and clubs are not.
-          </Text>
+      {isOrganizer && <SectionDivider />}
+      {isOrganizer && (
+        <FormSection
+          title="Public schedule"
+          hint="Anyone with this link sees upcoming matches, rings and estimated call times, without an account. Athlete names are shown; dates of birth, weights and clubs are not."
+        >
           {publicScheduleUrl && <LinkCard url={publicScheduleUrl} />}
-          <ActionRow>
+          <View style={{ gap: theme.spacing[12] }}>
             <Button
               title={publicScheduleUrl ? 'Regenerate link' : 'Create public schedule link'}
               variant={publicScheduleUrl ? 'danger' : 'primary'}
@@ -105,8 +120,8 @@ export default function Tatamis() {
             {publicScheduleUrl && (
               <Button title="Turn off public link" variant="secondary" disabled={busy} onPress={() => act(() => supabase.from('events').update({ schedule_token: null }).eq('id', id))} />
             )}
-          </ActionRow>
-        </>
+          </View>
+        </FormSection>
       )}
       {error && <Text color="danger">{error}</Text>}
     </Screen>

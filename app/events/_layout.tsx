@@ -6,7 +6,7 @@ export default function EventsLayout() {
     <Stack screenOptions={stackScreenOptions}>
       <Stack.Screen name="new" options={{ headerShown: false }} />
       <Stack.Screen name="[id]/index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]/edit" options={{ title: 'Edit event' }} />
+      <Stack.Screen name="[id]/edit" options={{ headerShown: false }} />
       <Stack.Screen name="[id]/belts" options={{ title: 'Belts' }} />
       <Stack.Screen name="[id]/staff" options={{ title: 'Staff' }} />
       <Stack.Screen name="[id]/import-categories" options={{ title: 'Import categories' }} />

@@ -35,9 +35,10 @@ const steps = [
 
 /**
  * Creating an event, three steps at a time. "Save & exit" keeps what is filled in as a draft event and remembers the
- * step, so `resumeId` reopens that draft here, where it was left, instead of as a finished event.
+ * step, so `resumeId` reopens that draft here, where it was left, instead of as a finished event. With `editing` the
+ * same steps open on an existing event from the first one, and the last button saves rather than creates.
  */
-export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: string }) {
+export function EventWizard({ userId, resumeId, editing = false }: { userId: string; resumeId?: string; editing?: boolean }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const wide = useWindowDimensions().width >= wideBreakpoint;
@@ -70,10 +71,10 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
           closes: dateOf(event.registration_closes_at),
         });
       }
-      setStep(saved[resumeId] ?? 0);
+      setStep(editing ? 0 : (saved[resumeId] ?? 0));
       setLoadingDraft(false);
     })();
-  }, [resumeId]);
+  }, [resumeId, editing]);
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
@@ -103,7 +104,7 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
         id = data.id;
         setEventId(id);
       }
-      await setUnfinished(id, created ? null : step);
+      await setUnfinished(id, created || editing ? null : step);
       if (draft.cover) {
         const { error: failure } = await saveCover(id, draft.cover);
         if (failure) return { error: { message: `Your tournament was saved, but the cover image could not be saved. ${failure.message}` } };
@@ -114,6 +115,7 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
 
   const saveAndExit = () => {
     if (!eventId && JSON.stringify(draft) === JSON.stringify(emptyDraft)) return leave();
+    if (editing && !draft.name.trim()) return setInvalid('Enter the tournament name to continue.');
     if (isDate(draft.startDate) && isDate(draft.endDate) && draft.endDate < draft.startDate) return setInvalid('The end date is before the start date.');
     return save({ ...eventFields(draft), name: draft.name.trim() || untitledEvent });
   };
@@ -196,7 +198,7 @@ export function EventWizard({ userId, resumeId }: { userId: string; resumeId?: s
       >
         <View>{step > 0 && <Button title="Back" variant="ghost" onPress={() => goTo(step - 1)} />}</View>
         <View style={{ minWidth: 128 }}>
-          <Button title={last ? 'Create' : 'Next'} size="large" disabled={busy} onPress={advance} />
+          <Button title={last ? (editing ? 'Save changes' : 'Create') : 'Next'} size="large" disabled={busy} onPress={advance} />
         </View>
       </View>
     </View>

@@ -198,7 +198,7 @@ export default function Gallery() {
         <Text color="slateGray">
           Screen-specific or data-bound components aren&apos;t included: PageHeader (rendered by the
           navigator/root layout, not standalone), Podium (fetches live results), KumiteScoreboard /
-          KataScoreboard / WinLossScoreboard (live match state), EventWizard / EventForm / CategoryForm /
+          KataScoreboard / WinLossScoreboard (live match state), EventWizard / CategoryForm /
           RosterUpload / SheetImport / CoverImageField (bound to Supabase mutations and file pickers), Splash and
           LoginArtwork (full-screen launch/auth backdrops), and the `event/*` screens (each composes several of
           the above with real event data).
