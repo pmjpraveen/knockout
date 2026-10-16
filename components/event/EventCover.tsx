@@ -20,15 +20,30 @@ export function BackButton({ onCover }: { onCover?: boolean }) {
   );
 }
 
-/** The event's cover image, full width, with the back button over its top-left corner. */
+/** The event's cover image, full width. */
 export function EventCover({ image, height }: { image?: string; height: number }) {
-  const insets = useSafeAreaInsets();
   return (
     <View style={{ width: '100%', height, backgroundColor: theme.colors.cloud }}>
       <Image accessibilityLabel="Tournament cover image" source={coverSource(image)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
-      <View style={{ position: 'absolute', left: theme.spacing[24], top: Math.max(insets.top, theme.spacing[16]) + theme.spacing[8] }}>
-        <BackButton onCover />
-      </View>
+    </View>
+  );
+}
+
+const backButtonSize = 40;
+
+/** Where the back button sits, and how tall the strip is that keeps scrolling content from running under it. */
+export function useCoverHeader() {
+  const insets = useSafeAreaInsets();
+  const buttonTop = Math.max(insets.top, theme.spacing[16]) + theme.spacing[8];
+  return { buttonTop, height: buttonTop + backButtonSize + theme.spacing[8] };
+}
+
+/** The back button over the cover's top-left corner. Its own layer, so it stays tappable above a scroll view that covers the image. */
+export function CoverBackButton() {
+  const { buttonTop } = useCoverHeader();
+  return (
+    <View style={{ position: 'absolute', left: theme.spacing[24], top: buttonTop }}>
+      <BackButton onCover />
     </View>
   );
 }

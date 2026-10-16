@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router';
 import Building from 'lucide-react-native/icons/building';
 import CalendarRange from 'lucide-react-native/icons/calendar-range';
 import UserCheck from 'lucide-react-native/icons/user-check';
-import { ReactNode } from 'react';
-import { ScrollView, useWindowDimensions, View } from 'react-native';
+import { ReactNode, useRef } from 'react';
+import { Animated, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Button } from '@/components/Button';
-import { EventCover } from '@/components/event/EventCover';
+import { CoverBackButton, EventCover, useCoverHeader } from '@/components/event/EventCover';
 import type { EventData } from '@/components/event/useEventData';
 import { ListGroup, ListRow } from '@/components/ListGroup';
 import { wideBreakpoint } from '@/components/LoginArtwork';
@@ -13,6 +13,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { useTabBarSpace } from '@/components/GlassTabBar';
 import { Text } from '@/components/Text';
 import { useSubmit } from '@/hooks/useSubmit';
+import { coverAspect } from '@/lib/coverImage';
 import { dateOf, formatDate, formatDateRange, humanize, nextEventStep } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
@@ -41,7 +42,15 @@ function Stat({ label, value, warn }: { label: string; value: number; warn?: boo
 export function EventHome({ data }: { data: EventData }) {
   const { event, isOrganizer, canOverride, memberships, counts, live, unresolvedConflicts } = data;
   const router = useRouter();
-  const wide = useWindowDimensions().width >= wideBreakpoint;
+  const { width } = useWindowDimensions();
+  const wide = width >= wideBreakpoint;
+  const coverHeight = wide ? 400 : width / coverAspect;
+  const header = useCoverHeader();
+  const scrollY = useRef(new Animated.Value(0)).current;
+  // The cover is gone, and the strip behind the back button solid, by the time the card's top edge reaches that strip.
+  const fadeEnd = Math.max(1, coverHeight - theme.radii.sheetTop - header.height);
+  const coverOpacity = scrollY.interpolate({ inputRange: [0, fadeEnd], outputRange: [1, 0], extrapolate: 'clamp' });
+  const stripOpacity = scrollY.interpolate({ inputRange: [fadeEnd * 0.7, fadeEnd], outputRange: [0, 1], extrapolate: 'clamp' });
   const space = useTabBarSpace();
   const { run, busy, error } = useSubmit();
   const step = nextEventStep[event.status];
@@ -59,83 +68,110 @@ export function EventHome({ data }: { data: EventData }) {
       return result;
     });
 
-  return (
-    <ScrollView contentContainerStyle={{ paddingBottom: space }}>
-      <EventCover image={data.cover} height={wide ? 280 : 218} />
-      <View style={{ marginTop: -theme.radii.sheetTop, borderTopLeftRadius: theme.radii.sheetTop, borderTopRightRadius: theme.radii.sheetTop, backgroundColor: theme.colors.paperWhite, paddingTop: theme.spacing[32] }}>
-        <View style={{ width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: theme.spacing[24], gap: theme.spacing[16] }}>
-          <View style={{ alignItems: 'center', gap: theme.spacing[8] }}>
-            <Text variant="headingSm" style={{ textAlign: 'center' }}>{event.name}</Text>
-            <Text color="charcoal">{formatDateRange(event.start_date, event.end_date)}</Text>
-            <View style={{ alignSelf: 'center' }}>
-              <StatusPill status={event.status} />
-            </View>
+  const card = (
+    <View style={{ borderTopLeftRadius: theme.radii.sheetTop, borderTopRightRadius: theme.radii.sheetTop, backgroundColor: theme.colors.paperWhite, paddingTop: theme.spacing[32] }}>
+      <View style={{ width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: theme.spacing[24], gap: theme.spacing[16] }}>
+        <View style={{ alignItems: 'center', gap: theme.spacing[8] }}>
+          <Text variant="headingSm" style={{ textAlign: 'center' }}>{event.name}</Text>
+          <Text color="charcoal">{formatDateRange(event.start_date, event.end_date)}</Text>
+          <View style={{ alignSelf: 'center' }}>
+            <StatusPill status={event.status} />
           </View>
-
-          <View>
-            {(event.host_club || event.venue) && (
-              <>
-                <Divider />
-                <InfoRow icon={<Building size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  {event.host_club ? <Text>Hosted by <Text>{event.host_club}</Text></Text> : <Text>{event.venue}</Text>}
-                  {event.host_club && event.venue ? <Text color="slateGray">{event.venue}</Text> : null}
-                </InfoRow>
-              </>
-            )}
-            {(opens || closes) && (
-              <>
-                <Divider />
-                <InfoRow icon={<CalendarRange size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  <Text>Registration</Text>
-                  <Text color="slateGray">{opens && closes ? formatDateRange(opens, closes) : opens ? `Opens ${formatDate(opens)}` : `Closes ${formatDate(closes)}`}</Text>
-                </InfoRow>
-              </>
-            )}
-            {!isOrganizer && memberships.length > 0 && (
-              <>
-                <Divider />
-                <InfoRow icon={<UserCheck size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
-                  <Text>Your role</Text>
-                  {memberships.map((m, index) => (
-                    <Text key={index} color="slateGray">{humanize(m.role)}{m.tatamis ? ` · ${m.tatamis.name}` : ''}</Text>
-                  ))}
-                </InfoRow>
-              </>
-            )}
-            <Divider />
-          </View>
-
-          {canOverride && (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>
-              <Stat label="Categories" value={counts.categories} />
-              <Stat label="Participants" value={counts.participants} />
-              <Stat label="Clubs" value={counts.clubs} />
-              {counts.pending > 0 && <Stat label="To review" value={counts.pending} warn />}
-            </View>
-          )}
-
-          {event.status === 'completed' && <Text color="warning">Archived and read-only. All data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>}
-          {isOrganizer && missingDates && <Text color="warning">Add the tournament dates in Configure before opening registration.</Text>}
-          {isOrganizer && step ? (
-            <Button
-              size="large"
-              title={step.action}
-              confirmTitle={step.status === 'completed' ? 'Tap again: data is deleted in 7 days' : undefined}
-              disabled={busy || (step.status === 'registration_open' && missingDates)}
-              onPress={advance}
-            />
-          ) : (
-            live && memberships.length > 0 && <Button size="large" title="Open scoreboard" onPress={go('scoreboard')} />
-          )}
-          {error && <Text color="danger">{error}</Text>}
-
-          <ListGroup>
-            {canOverride && unresolvedConflicts > 0 && <ListRow title="Scoring conflicts" detail={`${unresolvedConflicts} unresolved`} tone="warning" onPress={go('conflicts')} />}
-            {isOrganizer && event.status !== 'completed' && <ListRow title="Registration link" onPress={go('link')} />}
-            {isOrganizer && <ListRow title="Review submissions" detail={counts.pending ? `${counts.pending} pending` : undefined} tone="warning" onPress={go('submissions')} />}
-          </ListGroup>
         </View>
+
+        <View>
+          {(event.host_club || event.venue) && (
+            <>
+              <Divider />
+              <InfoRow icon={<Building size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
+                {event.host_club ? <Text>Hosted by <Text>{event.host_club}</Text></Text> : <Text>{event.venue}</Text>}
+                {event.host_club && event.venue ? <Text color="slateGray">{event.venue}</Text> : null}
+              </InfoRow>
+            </>
+          )}
+          {(opens || closes) && (
+            <>
+              <Divider />
+              <InfoRow icon={<CalendarRange size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
+                <Text>Registration</Text>
+                <Text color="slateGray">{opens && closes ? formatDateRange(opens, closes) : opens ? `Opens ${formatDate(opens)}` : `Closes ${formatDate(closes)}`}</Text>
+              </InfoRow>
+            </>
+          )}
+          {!isOrganizer && memberships.length > 0 && (
+            <>
+              <Divider />
+              <InfoRow icon={<UserCheck size={20} color={theme.colors.charcoal} strokeWidth={1.75} />}>
+                <Text>Your role</Text>
+                {memberships.map((m, index) => (
+                  <Text key={index} color="slateGray">{humanize(m.role)}{m.tatamis ? ` · ${m.tatamis.name}` : ''}</Text>
+                ))}
+              </InfoRow>
+            </>
+          )}
+          <Divider />
+        </View>
+
+        {canOverride && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[8] }}>
+            <Stat label="Categories" value={counts.categories} />
+            <Stat label="Participants" value={counts.participants} />
+            <Stat label="Clubs" value={counts.clubs} />
+            {counts.pending > 0 && <Stat label="To review" value={counts.pending} warn />}
+          </View>
+        )}
+
+        {event.status === 'completed' && <Text color="warning">Archived and read-only. All data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>}
+        {isOrganizer && missingDates && <Text color="warning">Add the tournament dates in Configure before opening registration.</Text>}
+        {isOrganizer && step ? (
+          <Button
+            size="large"
+            title={step.action}
+            confirmTitle={step.status === 'completed' ? 'Tap again: data is deleted in 7 days' : undefined}
+            disabled={busy || (step.status === 'registration_open' && missingDates)}
+            onPress={advance}
+          />
+        ) : (
+          live && memberships.length > 0 && <Button size="large" title="Open scoreboard" onPress={go('scoreboard')} />
+        )}
+        {error && <Text color="danger">{error}</Text>}
+
+        <ListGroup>
+          {canOverride && unresolvedConflicts > 0 && <ListRow title="Scoring conflicts" detail={`${unresolvedConflicts} unresolved`} tone="warning" onPress={go('conflicts')} />}
+          {isOrganizer && event.status !== 'completed' && <ListRow title="Registration link" onPress={go('link')} />}
+          {isOrganizer && <ListRow title="Review submissions" detail={counts.pending ? `${counts.pending} pending` : undefined} tone="warning" onPress={go('submissions')} />}
+        </ListGroup>
       </View>
-    </ScrollView>
+    </View>
+  );
+
+  if (Platform.OS === 'web') {
+    return (
+      <ScrollView contentContainerStyle={{ paddingBottom: space }}>
+        <View>
+          <EventCover image={data.cover} height={wide ? 280 : 218} />
+          <CoverBackButton />
+        </View>
+        <View style={{ marginTop: -theme.radii.sheetTop }}>{card}</View>
+      </ScrollView>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
+      <Animated.View style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: coverOpacity }}>
+        <EventCover image={data.cover} height={coverHeight} />
+      </Animated.View>
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: space }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+      >
+        <View style={{ height: coverHeight - theme.radii.sheetTop }} />
+        {card}
+      </Animated.ScrollView>
+      <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: header.height, backgroundColor: theme.colors.paperWhite, opacity: stripOpacity }} />
+      <CoverBackButton />
+    </View>
   );
 }
