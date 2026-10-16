@@ -1,9 +1,11 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import Building from 'lucide-react-native/icons/building';
 import CalendarRange from 'lucide-react-native/icons/calendar-range';
 import UserCheck from 'lucide-react-native/icons/user-check';
-import { ReactNode, useRef } from 'react';
-import { Animated, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
+import { ReactNode, useRef, useState } from 'react';
+import { Animated, NativeScrollEvent, NativeSyntheticEvent, Platform, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { CoverBackButton, EventCover, useCoverHeader } from '@/components/event/EventCover';
 import type { EventData } from '@/components/event/useEventData';
@@ -45,12 +47,16 @@ export function EventHome({ data }: { data: EventData }) {
   const { width } = useWindowDimensions();
   const wide = width >= wideBreakpoint;
   const coverHeight = wide ? 400 : width / coverAspect;
+  const cardRadius = Platform.OS === 'web' ? theme.radii.sheetTop : 32; // rounder than the shared sheet radius on native; web is unchanged
   const header = useCoverHeader();
   const scrollY = useRef(new Animated.Value(0)).current;
   // The cover is gone, and the strip behind the back button solid, by the time the card's top edge reaches that strip.
-  const fadeEnd = Math.max(1, coverHeight - theme.radii.sheetTop - header.height);
+  const fadeEnd = Math.max(1, coverHeight - cardRadius - header.height);
   const coverOpacity = scrollY.interpolate({ inputRange: [0, fadeEnd], outputRange: [1, 0], extrapolate: 'clamp' });
   const stripOpacity = scrollY.interpolate({ inputRange: [fadeEnd * 0.7, fadeEnd], outputRange: [0, 1], extrapolate: 'clamp' });
+  // Over a photo the status bar is light, on a soft dark scrim so it reads on any picture; once the page has faded to white it is dark.
+  const hasCover = !!data.cover;
+  const [overCover, setOverCover] = useState(true);
   const space = useTabBarSpace();
   const { run, busy, error } = useSubmit();
   const step = nextEventStep[event.status];
@@ -69,7 +75,7 @@ export function EventHome({ data }: { data: EventData }) {
     });
 
   const card = (
-    <View style={{ borderTopLeftRadius: theme.radii.sheetTop, borderTopRightRadius: theme.radii.sheetTop, backgroundColor: theme.colors.paperWhite, paddingTop: theme.spacing[32] }}>
+    <View style={{ borderTopLeftRadius: cardRadius, borderTopRightRadius: cardRadius, backgroundColor: theme.colors.paperWhite, paddingTop: theme.spacing[32] }}>
       <View style={{ width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: theme.spacing[24], gap: theme.spacing[16] }}>
         <View style={{ alignItems: 'center', gap: theme.spacing[8] }}>
           <Text variant="headingSm" style={{ textAlign: 'center' }}>{event.name}</Text>
@@ -152,22 +158,27 @@ export function EventHome({ data }: { data: EventData }) {
           <EventCover image={data.cover} height={wide ? 280 : 218} />
           <CoverBackButton />
         </View>
-        <View style={{ marginTop: -theme.radii.sheetTop }}>{card}</View>
+        <View style={{ marginTop: -cardRadius }}>{card}</View>
       </ScrollView>
     );
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
+      <StatusBar style={hasCover && overCover ? 'light' : 'dark'} />
       <Animated.View style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: coverOpacity }}>
         <EventCover image={data.cover} height={coverHeight} />
+        {hasCover && <LinearGradient pointerEvents="none" colors={['rgba(15,17,21,0.5)', 'rgba(15,17,21,0)']} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: header.height + theme.spacing[24] }} />}
       </Animated.View>
       <Animated.ScrollView
         contentContainerStyle={{ paddingBottom: space }}
         scrollEventThrottle={16}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: true,
+          listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => setOverCover(event.nativeEvent.contentOffset.y < fadeEnd * 0.6),
+        })}
       >
-        <View style={{ height: coverHeight - theme.radii.sheetTop }} />
+        <View style={{ height: coverHeight - cardRadius }} />
         {card}
       </Animated.ScrollView>
       <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: header.height, backgroundColor: theme.colors.paperWhite, opacity: stripOpacity }} />

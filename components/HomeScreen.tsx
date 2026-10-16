@@ -13,9 +13,9 @@ import { theme } from '@/theme/tokens';
 export const wideColumn = 1272;
 
 /**
- * The signed-in home layout: the greeting and account menu (with the logo on wide screens), then
- * `children` in a centred column. `footer` stays pinned to the bottom, outside the scroll. On wide screens the
- * greeting can be dropped (`greeting={false}`) once there is content to show; phones always keep it.
+ * The signed-in home layout: the greeting and account menu (with the logo on wide screens) pinned at the top, then
+ * `children` in a centred column that scrolls beneath them. `footer` stays pinned to the bottom, outside the scroll.
+ * On wide screens the greeting can be dropped (`greeting={false}`) once there is content to show; phones always keep it.
  */
 export function HomeScreen({ children, footer, contentWidth = 400, greeting = true }: { children: ReactNode; footer?: ReactNode; contentWidth?: number; greeting?: boolean }) {
   const insets = useSafeAreaInsets();
@@ -29,8 +29,8 @@ export function HomeScreen({ children, footer, contentWidth = 400, greeting = tr
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.paperWhite }}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + theme.spacing[8], paddingBottom: theme.spacing[32] }}>
-        <View style={[column, { maxWidth: wide ? wideColumn : contentWidth, zIndex: 1 }]}>
+      <View style={{ paddingTop: insets.top + theme.spacing[8], backgroundColor: theme.colors.paperWhite, zIndex: 1 }}>
+        <View style={[column, { maxWidth: wide ? wideColumn : contentWidth }]}>
           {wide && (
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', height: 72 }}>
               <LogoLockup />
@@ -47,6 +47,8 @@ export function HomeScreen({ children, footer, contentWidth = 400, greeting = tr
             </View>
           )}
         </View>
+      </View>
+      <ScrollView contentContainerStyle={{ paddingBottom: theme.spacing[32] }}>
         <View style={[column, { maxWidth: contentWidth }]}>{children}</View>
       </ScrollView>
       {footer && <View style={[column, { maxWidth: 400, paddingTop: theme.spacing[8], paddingBottom: wide ? theme.spacing[48] : insets.bottom + theme.spacing[16] }]}>{footer}</View>}

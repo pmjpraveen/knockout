@@ -76,7 +76,7 @@ export default function Events() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const wide = width >= wideBreakpoint;
-  const gap = wide ? theme.spacing[24] : theme.spacing[16];
+  const gap = theme.spacing[32];
   const inner = Math.min(width, wide ? wideColumn : phoneWidth) - theme.spacing[24] * 2;
   const columns = width >= 1000 ? 3 : wide ? 2 : 1;
   const columnWidth = (inner - gap * (columns - 1)) / columns;

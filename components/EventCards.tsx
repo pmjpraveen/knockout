@@ -2,6 +2,7 @@ import Trash from 'lucide-react-native/icons/trash';
 import { useEffect, useState } from 'react';
 import { Image, ImageSourcePropType, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
+import { coverAspect } from '@/lib/coverImage';
 import { EventRow, formatDateRange, humanize } from '@/lib/events';
 import { haptic } from '@/lib/haptics';
 import { pressFeedback } from '@/lib/press';
@@ -32,17 +33,20 @@ type CardProps = { event: EventRow; thumb?: string | null; onPress: () => void; 
 function Caption({ event }: { event: EventRow }) {
   return (
     <View style={{ gap: theme.spacing[4] }}>
-      <Text variant="bodyLg" weight="medium" numberOfLines={1}>{event.name}</Text>
+      <Text variant="subheading" weight="medium" numberOfLines={1}>{event.name}</Text>
       <Text color="charcoal">{formatDateRange(event.start_date, event.end_date)}</Text>
     </View>
   );
 }
 
+// iOS's continuous curve is the 60% corner smoothing; other platforms draw a plain rounded corner.
+const tileRadius = theme.radii.scorePanel + theme.spacing[8];
+
 /** A grid card for an event: cover, status pill, name and dates. */
 export function EventHeroCard({ event, thumb, onPress, onDelete }: CardProps) {
   return (
     <Pressable accessibilityRole="button" style={({ pressed }) => [{ gap: theme.spacing[12] }, pressFeedback(pressed)]} onPress={onPress}>
-      <View style={{ aspectRatio: 1.25, borderRadius: theme.radii.scorePanel, overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
+      <View style={{ aspectRatio: coverAspect, borderRadius: tileRadius, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: theme.colors.cloud }}>
         <Image accessibilityLabel={`${event.name} cover`} source={coverSource(thumb)} resizeMode="cover" style={{ width: '100%', height: '100%' }} />
         <View style={{ position: 'absolute', left: theme.spacing[12], bottom: theme.spacing[12] }}>
           <StatusBadge status={event.status} />
