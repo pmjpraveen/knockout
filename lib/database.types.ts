@@ -572,16 +572,19 @@ export type Database = {
       profiles: {
         Row: {
           account_type: string
+          avatar: string | null
           created_at: string
           user_id: string
         }
         Insert: {
           account_type?: string
+          avatar?: string | null
           created_at?: string
           user_id: string
         }
         Update: {
           account_type?: string
+          avatar?: string | null
           created_at?: string
           user_id?: string
         }
@@ -1084,6 +1087,10 @@ export type Database = {
           p_tatami_ids?: string[]
         }
         Returns: string[]
+      }
+      set_avatar: {
+        Args: { p_image: string }
+        Returns: undefined
       }
       set_event_belts: {
         Args: { p_belts: string[]; p_event_id: string }

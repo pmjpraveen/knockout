@@ -33,7 +33,7 @@ export function EventScoreboard({ data }: { data: EventData }) {
         </ListGroup>
       )}
       {live && (
-        <ListGroup title="Run the event">
+        <ListGroup title="Run the tournament">
           {memberships.length > 0 && <ListRow Icon={Swords} title="Scoreboard" subtitle="Score your tatami's matches" onPress={go('scoreboard')} />}
           <ListRow Icon={CalendarClock} title="Schedule" subtitle="Queues and call times" onPress={go('schedule')} />
         </ListGroup>

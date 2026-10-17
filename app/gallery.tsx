@@ -176,7 +176,7 @@ export default function Gallery() {
         <BracketTree matches={sampleMatches} />
       </Section>
 
-      <Section title="AccountMenu">
+      <Section title="AccountMenu (opens the profile)">
         <View style={{ alignItems: 'flex-end' }}>
           <AccountMenu name="Sample User" />
         </View>

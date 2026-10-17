@@ -49,10 +49,10 @@ export function EventCategories({ data }: { data: EventData }) {
   const draft = event.status === 'draft';
   const manageActions: SheetAction[] = [
     { title: 'Add category', description: 'Create one category by hand', Icon: Plus, onPress: addCategory },
-    { title: 'Copy categories from another event', description: 'Reuse the setup of a past event', Icon: Copy, onPress: go('clone') },
+    { title: 'Copy categories from another tournament', description: 'Reuse the setup of a past tournament', Icon: Copy, onPress: go('clone') },
     {
       title: 'Import categories from a sheet',
-      description: draft ? 'Add many at once from Excel or CSV' : 'Only available while the event is a draft',
+      description: draft ? 'Add many at once from Excel or CSV' : 'Only available while the tournament is a draft',
       Icon: FileSpreadsheet,
       onPress: go('import-categories'),
     },

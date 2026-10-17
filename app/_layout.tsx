@@ -50,8 +50,9 @@ export default function RootLayout() {
       <StatusBar style={showSplash ? 'light' : 'dark'} />
       <Stack screenOptions={stackScreenOptions}>
         <Stack.Protected guard={signedIn}>
-          <Stack.Screen name="index" options={{ title: 'Events' }} />
+          <Stack.Screen name="index" options={{ title: 'Tournaments' }} />
           <Stack.Screen name="events" options={{ headerShown: false }} />
+          <Stack.Screen name="profile" options={{ title: 'Profile' }} />
           <Stack.Screen name="delete-account" options={{ title: 'Account deletion' }} />
         </Stack.Protected>
         <Stack.Protected guard={!session}>

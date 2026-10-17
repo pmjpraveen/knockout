@@ -176,7 +176,7 @@ export function EventHome({ data }: { data: EventData }) {
     event.status === 'registration_closed'
       ? { text: 'Registration is closed. Review any last submissions, then draw the brackets.', action: { title: 'Draw brackets', onPress: go('brackets') } }
       : event.status === 'in_progress'
-        ? { text: 'The event is running. Follow the matches on the scoreboard.', action: { title: 'Open scoreboard', onPress: go('scoreboard') }, progress: true }
+        ? { text: 'The tournament is running. Follow the matches on the scoreboard.', action: { title: 'Open scoreboard', onPress: go('scoreboard') }, progress: true }
         : null;
 
   const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -184,8 +184,8 @@ export function EventHome({ data }: { data: EventData }) {
     { title: 'Tournament dates', hint: 'Required', detail: formatDateRange(event.start_date, event.end_date), done: !missingDates, onPress: go('edit') },
     { title: 'Categories', hint: 'Needed for registration', detail: count(counts.categories, 'category', 'categories'), done: counts.categories > 0, onPress: () => router.push({ pathname: '/events/[id]/categories/new', params: { id: event.id } }) },
     { title: 'Belt system', hint: 'Review', detail: count(event.belts.length, 'belt', 'belts'), done: event.belts.length > 0, onPress: go('belts') },
-    { title: 'Tatamis', hint: 'Before the event', detail: count(counts.tatamis, 'tatami', 'tatamis'), done: counts.tatamis > 0, onPress: go('tatamis') },
-    { title: 'Staff', hint: 'Before the event', detail: count(counts.staff, 'person', 'people'), done: counts.staff > 0, onPress: go('staff') },
+    { title: 'Tatamis', hint: 'Before the tournament', detail: count(counts.tatamis, 'tatami', 'tatamis'), done: counts.tatamis > 0, onPress: go('tatamis') },
+    { title: 'Staff', hint: 'Before the tournament', detail: count(counts.staff, 'person', 'people'), done: counts.staff > 0, onPress: go('staff') },
   ];
 
   const createLink = () =>
@@ -262,7 +262,7 @@ export function EventHome({ data }: { data: EventData }) {
 
       {event.status === 'completed' && (
         <View style={{ gap: theme.spacing[4], padding: theme.spacing[16], borderRadius: theme.radii.card, backgroundColor: theme.colors.warningTint }}>
-          <Text variant="bodyLg" color="warning">This event is complete</Text>
+          <Text variant="bodyLg" color="warning">This tournament is complete</Text>
           <Text variant="body" color="slateGray">It is archived and read-only. All its data is deleted on {formatDate(dateOf(event.purge_at))}.</Text>
         </View>
       )}

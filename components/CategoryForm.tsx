@@ -73,7 +73,7 @@ export function CategoryForm({ eventId, category, initialStatus, header }: Props
     const seconds = toNumber(matchSeconds);
     if (seconds !== null && !(seconds > 0)) return setInvalid('Match time must be a number of seconds.');
     const finalLabel = label.trim() || suggested;
-    if (labelTaken(finalLabel, others)) return setInvalid(`This event already has a category called "${finalLabel}". Change the label or the limits.`);
+    if (labelTaken(finalLabel, others)) return setInvalid(`This tournament already has a category called "${finalLabel}". Change the label or the limits.`);
     const fields = {
       ...criteria, label: finalLabel, bracket_format: format,
       scoring_mode: mode, judge_panel: Number(panel), match_seconds: seconds,

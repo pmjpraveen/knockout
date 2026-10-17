@@ -23,7 +23,7 @@ export default function NewCategory() {
       <View style={{ gap: theme.spacing[4] }}>
         <Text variant="bodyLg" weight="medium">Adding several categories?</Text>
         <Text color="slateGray">
-          {draft ? 'Fill in one row per category in an Excel (.xlsx) or CSV sheet and import them all at once.' : 'Importing from an Excel (.xlsx) or CSV sheet is only available while the event is a draft.'}
+          {draft ? 'Fill in one row per category in an Excel (.xlsx) or CSV sheet and import them all at once.' : 'Importing from an Excel (.xlsx) or CSV sheet is only available while the tournament is a draft.'}
         </Text>
       </View>
       <Button title="Import from a sheet" variant="secondary" disabled={!draft} onPress={() => router.push({ pathname: '/events/[id]/import-categories', params: { id } })} />

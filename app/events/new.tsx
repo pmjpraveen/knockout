@@ -15,7 +15,7 @@ export default function NewEvent() {
   if (isOrganizerAccount) return <EventWizard userId={session.user.id} resumeId={draft} />;
   return (
     <Screen>
-      <Text color="slateGray">Only organizer accounts can create events. Ask an organizer to add you to theirs.</Text>
+      <Text color="slateGray">Only organizer accounts can create tournaments. Ask an organizer to add you to theirs.</Text>
     </Screen>
   );
 }

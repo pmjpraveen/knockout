@@ -29,7 +29,7 @@ export default function CloneCategories() {
       if (source.error) return source;
       if (existing.error) return existing;
       const fresh = source.data.filter((c) => !labelTaken(c.label, existing.data));
-      if (fresh.length === 0) return { error: { message: source.data.length ? 'This event already has all of those categories.' : 'That event has no categories to copy.' } };
+      if (fresh.length === 0) return { error: { message: source.data.length ? 'This tournament already has all of those categories.' : 'That tournament has no categories to copy.' } };
       const copied = await supabase.from('categories').insert(fresh.map((c) => ({ ...c, event_id: id, status })));
       if (!copied.error) router.back();
       return copied;
@@ -37,7 +37,7 @@ export default function CloneCategories() {
 
   return (
     <Screen>
-      <Text color="slateGray">Pick an event to copy its categories from. Athletes are not copied, and categories this event already has are skipped.</Text>
+      <Text color="slateGray">Pick a tournament to copy its categories from. Athletes are not copied, and categories this tournament already has are skipped.</Text>
       {error && <Text color="danger">{error}</Text>}
       {loading && <SkeletonList />}
       {events

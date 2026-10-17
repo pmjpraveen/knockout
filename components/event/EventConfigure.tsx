@@ -3,6 +3,7 @@ import Award from 'lucide-react-native/icons/award';
 import ClipboardCheck from 'lucide-react-native/icons/clipboard-check';
 import FileSpreadsheet from 'lucide-react-native/icons/file-spreadsheet';
 import Link from 'lucide-react-native/icons/link';
+import ScrollText from 'lucide-react-native/icons/scroll-text';
 import Pencil from 'lucide-react-native/icons/pencil';
 import Timer from 'lucide-react-native/icons/timer';
 import Users from 'lucide-react-native/icons/users';
@@ -30,9 +31,10 @@ export function EventConfigure({ data }: { data: EventData }) {
 
   return (
     <TabScreen title="Configure" subtitle={event.name}>
-      {!active && <Text color="slateGray">This event is archived and read-only.</Text>}
+      {!active && <Text color="slateGray">This tournament is archived and read-only.</Text>}
       <ListGroup title="Event">
-        {isOrganizer && isEditable(event.status) && <ListRow Icon={Pencil} title="Edit event details" subtitle="Name, venue, cover and dates" onPress={go('edit')} />}
+        {isOrganizer && <ListRow Icon={ScrollText} title="Activity" subtitle="Every change, newest first" onPress={go('activity')} />}
+        {isOrganizer && isEditable(event.status) && <ListRow Icon={Pencil} title="Edit tournament details" subtitle="Name, venue, cover and dates" onPress={go('edit')} />}
       </ListGroup>
       {isOrganizer && (
         <ListGroup title="Registration">

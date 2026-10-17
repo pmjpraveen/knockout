@@ -30,7 +30,7 @@ export const athleteNotes = (belts: readonly string[]) => [
   ['Date of birth', 'DD-MM-YYYY, for example 14-03-2013'],
   ['Gender', 'Male or Female'],
   ['Weight (kg)', 'A number, for example 38.5'],
-  ['Belt', `One of this event's belts: ${belts.join(', ')}`],
+  ['Belt', `One of this tournament's belts: ${belts.join(', ')}`],
   ['Events', 'Kumite, Kata or Both. Empty means both'],
   ['Note', 'Delete the two example rows before you upload'],
 ];
@@ -54,7 +54,7 @@ function parseRow({ cells }: SheetRow, today: string, clubRequired: boolean, bel
   const weight = Number(pick(cells, ['weightkg', 'weight']));
   if (!(weight > 0 && weight < 300)) return 'Weight must be a number between 0 and 300 kg.';
   const belt_rank = matchBelt(pick(cells, ['belt', 'beltrank']), belts);
-  if (!belt_rank) return `Belt must be from this event's list: ${belts.join(', ')}.`;
+  if (!belt_rank) return `Belt must be from this tournament's list: ${belts.join(', ')}.`;
   const disciplines = disciplinesOf[simplify(pick(cells, ['eventskumitekataorboth', 'events', 'compete', 'discipline']))];
   if (!disciplines) return 'Events must be Kumite, Kata or Both.';
   return { club_name, full_name, date_of_birth, gender, weight, belt_rank, disciplines };

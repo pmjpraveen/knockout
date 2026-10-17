@@ -117,7 +117,7 @@ export default function Events() {
       {(error ?? deleteError) && <Text color="danger">{error ?? deleteError}</Text>}
       {loading && <SkeletonList />}
       {!loading && events.length === 0 && !error && (
-        <Text color="slateGray" style={{ marginTop: theme.spacing[32] }}>No events yet. An organizer will add you to their event.</Text>
+        <Text color="slateGray" style={{ marginTop: theme.spacing[32] }}>No tournaments yet. An organizer will add you to theirs.</Text>
       )}
       {!loading && events.length > 0 && (
         <View style={{ gap: theme.spacing[16], marginTop: theme.spacing[32] }}>

@@ -15,6 +15,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
 import { ViewToggle } from '@/components/ViewToggle';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
+import { activityTitle } from '@/lib/activity';
 import { competeLabels, toDraft } from '@/lib/athlete';
 import { formatDate, formatDateTime, humanize } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
@@ -44,9 +45,6 @@ function Suggested({ eventId, athlete, plain = false }: { eventId: string; athle
 
 type Withdrawal = { athlete_id?: string; athlete_name?: string; category_label?: string };
 type Withdrawn = Map<string, { category?: string; reason: string }>;
-
-const changeTitle = (action: string, details: Withdrawal) =>
-  action === 'add_athlete' ? 'Participant added' : action === 'withdraw_registration' ? `${details.athlete_name ?? 'Participant'} withdrawn from ${details.category_label}` : 'Participant edited';
 
 const views = [
   { value: 'list', label: 'List', Icon: List },
@@ -201,7 +199,7 @@ export default function SubmissionDetail() {
         <ListGroup title="Change log">
           {log.map((change) => (
             <View key={change.id} style={{ gap: theme.spacing[4], paddingHorizontal: theme.spacing[16], paddingVertical: theme.spacing[12] }}>
-              <Text>{changeTitle(change.action, change.changes as Withdrawal)}</Text>
+              <Text>{activityTitle(change.action, change.changes)}</Text>
               <Text variant="body" color="slateGray">{change.reason} · {formatDateTime(change.created_at)}</Text>
             </View>
           ))}

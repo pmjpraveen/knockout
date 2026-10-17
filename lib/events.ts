@@ -28,8 +28,8 @@ export const criteriaColumns =
 export const nextEventStep: Partial<Record<string, { status: string; action: string }>> = {
   draft: { status: 'registration_open', action: 'Open registration' },
   registration_open: { status: 'registration_closed', action: 'Close registration' },
-  registration_closed: { status: 'in_progress', action: 'Start event' },
-  in_progress: { status: 'completed', action: 'Complete event' },
+  registration_closed: { status: 'in_progress', action: 'Start tournament' },
+  in_progress: { status: 'completed', action: 'Complete tournament' },
 };
 
 /** Structure can change until the event starts; after that it is running or archived. */

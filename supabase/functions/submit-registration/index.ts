@@ -32,7 +32,7 @@ function parseAthlete(raw: any, belts: string[]): Athlete {
   const gender = raw?.gender;
   if (gender !== 'male' && gender !== 'female') throw new HttpError(400, 'Gender must be male or female.');
   const belt = text(raw?.belt_rank, 'Belt', 40).toLowerCase();
-  if (!belts.includes(belt)) throw new HttpError(400, 'Choose a belt from the list for this event.');
+  if (!belts.includes(belt)) throw new HttpError(400, 'Choose a belt from the list for this tournament.');
   return { full_name: text(raw?.full_name, 'Athlete name', 120), date_of_birth: dob, gender, weight, belt_rank: belt, disciplines: parseDisciplines(raw?.disciplines) };
 }
 
@@ -102,7 +102,7 @@ async function handle(body: any) {
     }
 
     case 'save': {
-      if (!open) throw new HttpError(403, 'Registration is closed for this event.');
+      if (!open) throw new HttpError(403, 'Registration is closed for this tournament.');
       if (!Array.isArray(body.athletes) || body.athletes.length < 1 || body.athletes.length > 400) {
         throw new HttpError(400, 'Add between 1 and 400 participants.');
       }

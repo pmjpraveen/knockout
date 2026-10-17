@@ -67,7 +67,7 @@ export default function Staff() {
         </Card>
       ))}
       <Text variant="subheading">Create a login</Text>
-      <Text color="slateGray">They sign in with this email and password. Share the password with them yourself. You can create logins until the event is completed.</Text>
+      <Text color="slateGray">They sign in with this email and password. Share the password with them yourself. You can create logins until the tournament is completed.</Text>
       <TextField label="Staff email" value={email} onChangeText={setEmail} keyboardType="email-address" autoComplete="off" />
       <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="off" placeholder="At least 8 characters" />
       <ChoiceChips label="Role" options={staffRoles} value={role} onChange={setRole} />

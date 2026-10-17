@@ -47,7 +47,7 @@ export const categoryNotes = (belts: readonly string[]) => [
   ['Gender', 'Male, Female or Mixed. Leave empty for any gender'],
   ['Age min / Age max', 'Whole years on the first day of the tournament. Leave empty for no limit'],
   ['Weight min / max (kg)', 'Numbers. Leave empty for no limit'],
-  ['Belt min / max', `One of this event's belts, lowest first: ${belts.join(', ')}. Leave empty for any belt`],
+  ['Belt min / max', `One of this tournament's belts, lowest first: ${belts.join(', ')}. Leave empty for any belt`],
   ['Bracket format', 'Single elimination, Single elimination (no repechage), Round robin or Double elimination. Empty means single elimination'],
   ['Label (optional)', 'The name shown for the category. Empty builds one from the other columns'],
   ['Note', 'Delete the two example rows before you upload'],
@@ -78,7 +78,7 @@ function parseRow({ cells }: SheetRow, belts: readonly string[]): CategoryImport
 
   const typedBelts = [pick(cells, ['beltmin']), pick(cells, ['beltmax'])];
   const [beltMin, beltMax] = typedBelts.map((text) => (text ? matchBelt(text, belts) : null));
-  if (typedBelts.some((text, index) => text && [beltMin, beltMax][index] === null)) return `Belts must be from this event's list: ${belts.join(', ')}.`;
+  if (typedBelts.some((text, index) => text && [beltMin, beltMax][index] === null)) return `Belts must be from this tournament's list: ${belts.join(', ')}.`;
   if (beltMin && beltMax && belts.indexOf(beltMin) > belts.indexOf(beltMax)) return 'Belt min is above belt max.';
 
   const bracket_format = formatOf[simplify(pick(cells, ['bracketformat', 'format']))];

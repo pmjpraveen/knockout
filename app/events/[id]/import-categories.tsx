@@ -27,7 +27,7 @@ export default function ImportCategories() {
   if (event.status !== 'draft') {
     return (
       <Screen>
-        <Text color="slateGray">Categories can only be imported while the event is a draft.</Text>
+        <Text color="slateGray">Categories can only be imported while the tournament is a draft.</Text>
       </Screen>
     );
   }
@@ -36,7 +36,7 @@ export default function ImportCategories() {
     <SheetImport
       kind="categories"
       belts={belts}
-      intro="Fill in one row per category, then upload it to create them all at once. Categories can only be imported while the event is a draft."
+      intro="Fill in one row per category, then upload it to create them all at once. Categories can only be imported while the tournament is a draft."
       noun={['category', 'categories']}
       parse={(sheetRows) => parseCategoryRows(sheetRows, belts)}
       describe={(category) => category.label}
