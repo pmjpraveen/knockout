@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { activeEvents, clockState, kataOutcome, kataState, kumiteOutcome, kumiteState, nextPenaltyLevel, winLossOutcome, type ScoreEvent } from './scoring.ts';
+import { activeEvents, clockState, scoredThisPause, kataOutcome, kataState, kumiteOutcome, kumiteState, nextPenaltyLevel, winLossOutcome, type ScoreEvent } from './scoring.ts';
 
 let n = 0;
 const ev = (type: ScoreEvent['type'], athlete: string | null, value: number | null, extra: Partial<ScoreEvent> = {}): ScoreEvent => ({
@@ -8,12 +8,15 @@ const ev = (type: ScoreEvent['type'], athlete: string | null, value: number | nu
 
 // kumite totals, undo, penalties
 const yuko = ev('yuko', 'A', 1);
-const events = [ev('ippon', 'A', 3), yuko, ev('waza_ari', 'B', 2), ev('void', null, null, { voids: yuko.id }), ev('penalty', 'B', 0, { detail: { category: 1 } })];
+const resume = () => ev('clock', null, 100, { detail: { action: 'resume' } });
+const pen = (id: string) => ev('penalty', id, 0, { detail: { category: 1 } });
+const events = [ev('ippon', 'A', 3), yuko, ev('waza_ari', 'B', 2), ev('void', null, null, { voids: yuko.id }), pen('B')];
 assert.equal(activeEvents(events).length, 3, 'a void removes itself and its target');
 const state = kumiteState(events, 'A', 'B');
 assert.deepEqual(state.points, { a: 3, b: 2 });
-assert.deepEqual(state.penalties.b, { 1: 1, 2: 0 });
-assert.equal(nextPenaltyLevel(1), 'Keikoku');
+assert.deepEqual(state.penalties, { a: 0, b: 1 });
+assert.equal(nextPenaltyLevel(0), 'Chui');
+assert.equal(nextPenaltyLevel(3), 'Hansoku chui', 'three Chui, then Hansoku chui (WKF 10.2)');
 assert.equal(nextPenaltyLevel(9), 'Hansoku');
 
 // win conditions
@@ -21,25 +24,43 @@ assert.equal(kumiteOutcome(state, 'A', 'B', 60), null, 'a close match runs on');
 assert.deepEqual(kumiteOutcome(state, 'A', 'B', 0), { winner: 'A', method: 'points' }, 'time up: higher score wins');
 const lead = kumiteState([ev('ippon', 'A', 3), ev('ippon', 'A', 3), ev('waza_ari', 'A', 2)], 'A', 'B');
 assert.deepEqual(kumiteOutcome(lead, 'A', 'B', 100), { winner: 'A', method: 'lead' }, '8-point lead ends the match');
-const dq = kumiteState(Array.from({ length: 4 }, () => ev('penalty', 'A', 0, { detail: { category: 2 } })), 'A', 'B');
-assert.deepEqual(kumiteOutcome(dq, 'A', 'B', 100), { winner: 'B', method: 'disqualification' }, 'Hansoku disqualifies');
+const fourPenalties = kumiteState(Array.from({ length: 4 }, () => pen('A')), 'A', 'B');
+assert.equal(kumiteOutcome(fourPenalties, 'A', 'B', 100), null, 'Hansoku chui is only a warning of disqualification');
+const dq = kumiteState(Array.from({ length: 5 }, () => pen('A')), 'A', 'B');
+assert.deepEqual(kumiteOutcome(dq, 'A', 'B', 100), { winner: 'B', method: 'disqualification' }, 'the fifth penalty is Hansoku and disqualifies');
+assert.deepEqual(kumiteState([pen('A'), ev('penalty', 'A', 0, { detail: { category: 2 } })], 'A', 'B').penalties, { a: 2, b: 0 }, 'penalties logged under the old two categories still count');
 
-// senshu: the first score wins a tie, unless it is undone or forfeited by a Keikoku
+// one score per athlete per pause, and Senshu only for a score the opponent did not answer in the same pause
+const aNow = ev('yuko', 'A', 1);
+assert.equal(scoredThisPause([resume(), aNow], 'A'), true, 'A has scored in this pause');
+assert.equal(scoredThisPause([resume(), aNow], 'B'), false, 'B can still be given a score in the same pause');
+assert.equal(scoredThisPause([resume(), aNow, resume()], 'A'), false, 'resuming the clock frees the next pause');
+assert.equal(scoredThisPause([resume(), aNow, ev('void', null, null, { voids: aNow.id })], 'A'), false, 'undo frees the turn');
+const together = kumiteState([resume(), ev('yuko', 'A', 1), ev('yuko', 'B', 1)], 'A', 'B');
+assert.equal(together.senshu, null, 'both scored in the same pause: nobody has the unopposed score');
+assert.equal(kumiteState([resume(), ev('yuko', 'A', 1), ev('yuko', 'B', 1), resume(), ev('waza_ari', 'B', 2)], 'A', 'B').senshu, 'b', 'a later unopposed score still earns Senshu');
+
+// equal score at time up (WKF 12.2): Senshu, then most Ippon, then most Waza-ari, then a Hantei vote
 const firstA = ev('yuko', 'A', 1);
-const tied = kumiteState([firstA, ev('yuko', 'B', 1)], 'A', 'B');
+const tied = kumiteState([resume(), firstA, resume(), ev('yuko', 'B', 1)], 'A', 'B');
 assert.equal(tied.senshu, 'a');
 assert.deepEqual(kumiteOutcome(tied, 'A', 'B', 60), null, 'Senshu decides nothing while time remains');
 assert.deepEqual(kumiteOutcome(tied, 'A', 'B', 0), { winner: 'A', method: 'decision', note: 'Senshu: first unopposed score' }, 'a tie at time up goes to Senshu');
 assert.equal(kumiteState([], 'A', 'B').senshu, null);
-assert.equal(kumiteOutcome(kumiteState([], 'A', 'B'), 'A', 'B', 0), null, '0-0 with no Senshu still needs a decision');
-const undone = kumiteState([firstA, ev('yuko', 'B', 1), ev('void', null, null, { voids: firstA.id })], 'A', 'B');
+assert.equal(kumiteOutcome(kumiteState([], 'A', 'B'), 'A', 'B', 0), null, '0-0 with no Senshu needs a Hantei');
+const undone = kumiteState([resume(), firstA, resume(), ev('yuko', 'B', 1), ev('void', null, null, { voids: firstA.id })], 'A', 'B');
 assert.equal(undone.senshu, 'b', 'undoing the first score passes Senshu on');
-const forfeited = kumiteState([firstA, ev('yuko', 'B', 1), ev('penalty', 'A', 0, { detail: { category: 1 } }), ev('penalty', 'A', 0, { detail: { category: 1 } })], 'A', 'B');
-assert.equal(forfeited.senshu, null, 'Keikoku forfeits Senshu');
-assert.equal(kumiteOutcome(forfeited, 'A', 'B', 0), null, 'no Senshu, so a referee decides');
-assert.equal(kumiteState([firstA, ev('yuko', 'B', 1), ev('penalty', 'A', 0, { detail: { category: 1 } })], 'A', 'B').senshu, 'a', 'a Chukoku keeps Senshu');
-const ahead = kumiteState([firstA, ev('yuko', 'B', 1), ev('yuko', 'B', 1)], 'A', 'B');
+const annulled = kumiteState([resume(), firstA, resume(), ev('yuko', 'B', 1), ev('penalty', 'A', 0, { detail: { category: 1, kind: 'senshu_annulled' } })], 'A', 'B');
+assert.equal(annulled.senshu, null, 'TORIMASEN takes Senshu away');
+assert.equal(annulled.penalties.a, 0, 'and is not itself a penalty');
+assert.equal(kumiteState([resume(), firstA, resume(), ev('yuko', 'B', 1), pen('A'), pen('A')], 'A', 'B').senshu, 'a', 'penalties alone do not remove Senshu');
+const ahead = kumiteState([resume(), firstA, resume(), ev('yuko', 'B', 1), resume(), ev('yuko', 'B', 1)], 'A', 'B');
 assert.deepEqual(kumiteOutcome(ahead, 'A', 'B', 0), { winner: 'B', method: 'points' }, 'a higher score beats Senshu');
+const noSenshu = (list: ScoreEvent[]) => kumiteState(list, 'A', 'B');
+const byIppon = { ...noSenshu([ev('ippon', 'B', 3), ev('yuko', 'A', 1), ev('yuko', 'A', 1), ev('yuko', 'A', 1)]), senshu: null };
+assert.deepEqual(kumiteOutcome(byIppon, 'A', 'B', 0), { winner: 'B', method: 'decision', note: 'More Ippon (1-0)' }, 'equal points and no Senshu: the most Ippon wins');
+const byWaza = { ...noSenshu([ev('waza_ari', 'A', 2), ev('yuko', 'B', 1), ev('yuko', 'B', 1)]), senshu: null };
+assert.deepEqual(kumiteOutcome(byWaza, 'A', 'B', 0), { winner: 'A', method: 'decision', note: 'More Waza-ari (1-0)' }, 'then the most Waza-ari');
 
 // clock survives a restart: derived from logged events
 const t0 = 5_000_000;

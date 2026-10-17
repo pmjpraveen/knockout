@@ -12,7 +12,7 @@ import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useMyRoles } from '@/hooks/useMyRoles';
-import { humanize } from '@/lib/events';
+import { formatName } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -67,7 +67,7 @@ export default function Brackets() {
                   <StatusPill status={category.status} />
                 </View>
                 <Text color="slateGray">
-                  {athletes} {athletes === 1 ? 'athlete' : 'athletes'} · {humanize(category.bracket_format ?? 'no format')}
+                  {athletes} {athletes === 1 ? 'athlete' : 'athletes'} · {formatName(category.bracket_format)}
                 </Text>
                 {!ready && <Text variant="body" color="slateGray">Close registration to draw this category.</Text>}
               </View>

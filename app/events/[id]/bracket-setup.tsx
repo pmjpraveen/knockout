@@ -16,14 +16,14 @@ import { Text } from '@/components/Text';
 import { TextField } from '@/components/TextField';
 import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
-import { bracketFormatLabels, bracketFormats } from '@/lib/events';
+import { BracketFormat, bracketFormatLabels, formatOptions } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
 export default function BracketSetup() {
   const { id, categoryId } = useLocalSearchParams<{ id: string; categoryId: string }>();
   const router = useRouter();
-  const [format, setFormat] = useState<(typeof bracketFormats)[number]>('single_elim_repechage');
+  const [format, setFormat] = useState<BracketFormat>('single_elim_repechage');
   const [seedIds, setSeedIds] = useState<string[]>([]);
   const [initialised, setInitialised] = useState(false);
   const [withdrawing, setWithdrawing] = useState<{ id: string; name: string } | null>(null);
@@ -106,7 +106,7 @@ export default function BracketSetup() {
         </View>
       )}
 
-      <ChoiceChips label="Format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
+      <ChoiceChips label="Format" options={formatOptions(category?.bracket_format)} value={format} labels={bracketFormatLabels} onChange={setFormat} />
 
       <SectionDivider />
       <FormSection title={`Seeds · ${seeded.length}`} hint={seeded.length === 0 ? 'No manual seeds. The whole draw is random.' : undefined}>

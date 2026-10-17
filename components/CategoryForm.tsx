@@ -14,7 +14,7 @@ import { useSubmit } from '@/hooks/useSubmit';
 import { defaultLabel } from '@/lib/categoryLabel';
 import { categoryProblem, labelTaken } from '@/lib/categoryRules';
 import { dayLabels } from '@/lib/schedule';
-import { bracketFormatLabels, bracketFormats, CategoryRow, disciplines, genders, scoringModes, toNumber } from '@/lib/events';
+import { BracketFormat, bracketFormatLabels, CategoryRow, disciplines, genders, scoringModes, toNumber, formatOptions } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
 
@@ -37,7 +37,7 @@ export function CategoryForm({ eventId, category, initialStatus, header }: Props
   const [weightMax, setWeightMax] = useState(text(category?.weight_max));
   const [beltMin, setBeltMin] = useState(category?.belt_min ?? '');
   const [beltMax, setBeltMax] = useState(category?.belt_max ?? '');
-  const [format, setFormat] = useState<(typeof bracketFormats)[number]>((category?.bracket_format as (typeof bracketFormats)[number]) ?? 'single_elim_repechage');
+  const [format, setFormat] = useState<BracketFormat>((category?.bracket_format as BracketFormat) ?? 'single_elim_repechage');
   const [scoringMode, setScoringMode] = useState(category?.scoring_mode ?? '');
   const [panel, setPanel] = useState(String(category?.judge_panel ?? 5));
   const [matchSeconds, setMatchSeconds] = useState(text(category?.match_seconds));
@@ -130,7 +130,7 @@ export function CategoryForm({ eventId, category, initialStatus, header }: Props
       <SectionDivider />
       <FormSection title="How it runs">
         {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
-        <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
+        <ChoiceChips label="Bracket format" options={formatOptions(category?.bracket_format)} value={format} labels={bracketFormatLabels} onChange={setFormat} />
         <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
         {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['5', '7']} value={panel} onChange={setPanel} />}
         <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />

@@ -25,6 +25,7 @@ assert.equal(categories.items.length, 2);
 assert.equal(categories.items[0].label, 'Kumite Male 10–12y -40kg white–green', 'a label is built when none is given');
 assert.equal(categories.items[0].bracket_format, 'round_robin');
 assert.equal(categories.items[1].bracket_format, 'single_elim_repechage', 'empty means the default format');
+assert.equal(parseCategoryRows([row(2, { discipline: 'Kumite', bracketformat: 'Round-robin groups, then elimination' })]).items[0]?.bracket_format, 'groups_elimination', 'WKF group format names are understood');
 assert.deepEqual(categories.problems.map((p) => p.line), [4, 5, 6, 7], 'problems are reported by file line');
 assert.match(categories.problems[3].message, /Same category as line 3/);
 

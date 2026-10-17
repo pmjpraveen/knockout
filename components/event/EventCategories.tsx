@@ -18,7 +18,7 @@ import { ListGroup, ListRow } from '@/components/ListGroup';
 import { SkeletonList } from '@/components/Skeleton';
 import { StatusPill } from '@/components/StatusPill';
 import { Text } from '@/components/Text';
-import { humanize, isEditable } from '@/lib/events';
+import { formatName, isEditable } from '@/lib/events';
 import { pressFeedback } from '@/lib/press';
 import { theme } from '@/theme/tokens';
 
@@ -98,7 +98,7 @@ export function EventCategories({ data }: { data: EventData }) {
                   <StatusPill status={category.status} />
                 </View>
                 <Text variant="body" color="slateGray">
-                  {humanize(category.bracket_format ?? '')}{canOverride ? ` · ${people.length} ${people.length === 1 ? 'participant' : 'participants'}` : ''}
+                  {formatName(category.bracket_format)}{canOverride ? ` · ${people.length} ${people.length === 1 ? 'participant' : 'participants'}` : ''}
                 </Text>
               </View>
               <View style={{ transform: [{ rotate: expanded ? '180deg' : '0deg' }] }}>

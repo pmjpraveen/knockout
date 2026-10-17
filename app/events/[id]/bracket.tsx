@@ -22,7 +22,7 @@ import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useMyRoles } from '@/hooks/useMyRoles';
 import { useSubmit } from '@/hooks/useSubmit';
 import { buildBracketReportHtml } from '@/lib/bracketReport';
-import { humanize } from '@/lib/events';
+import { formatName, hasGroupStage } from '@/lib/events';
 import { exportPdf, openExportWindow } from '@/lib/exportPdf';
 import { supabase } from '@/lib/supabase';
 import { theme } from '@/theme/tokens';
@@ -73,7 +73,7 @@ export default function Bracket() {
       const html = buildBracketReportHtml({
         eventName: category?.events?.name ?? '',
         categoryLabel: category?.label ?? '',
-        bracketFormat: humanize(bracket!.format),
+        bracketFormat: formatName(bracket!.format),
         participants: participants ?? [],
         matches,
         podium,
@@ -112,7 +112,7 @@ export default function Bracket() {
         <Text variant="heading">{category?.label}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8] }}>
           {done && <StatusPill status="completed" />}
-          <Text color="slateGray" style={{ flexShrink: 1 }}>{humanize(bracket.format)}{done ? '' : ` · ${played} of ${playable} matches played`}</Text>
+          <Text color="slateGray" style={{ flexShrink: 1 }}>{formatName(bracket.format)}{done ? '' : ` · ${played} of ${playable} matches played`}</Text>
         </View>
       </View>
       {stale && <Text color="warning">Offline: showing the bracket as last synced.</Text>}
@@ -139,7 +139,7 @@ export default function Bracket() {
       )}
       {(!done || showTree) && <BracketTree matches={matches as BracketMatch[]} hideByes={done} />}
 
-      {bracket.format === 'round_robin' && pools.length > 0 && (
+      {hasGroupStage(bracket.format) && pools.length > 0 && (
         <FormSection title="Standings">
           {pools.map((pool) => (
             <ListGroup key={pool} title={`Pool ${pool}`}>

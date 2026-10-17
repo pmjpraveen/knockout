@@ -5,14 +5,30 @@ export type CategoryRow = Tables<'categories'>;
 
 export const disciplines = ['kumite', 'kata', 'team'] as const;
 export const genders = ['any', 'male', 'female', 'mixed'] as const;
-export const bracketFormats = ['single_elim_repechage', 'single_elim', 'round_robin', 'double_elim'] as const;
+/** The formats WKF defines (Kumite 3.4, Kata 3.3), offered for new categories. */
+export const bracketFormats = ['single_elim_repechage', 'groups_elimination', 'two_pool_round_robin'] as const;
+/** Older formats: categories that already use one keep working and still show it, but it is not offered again. */
+const legacyFormats = ['single_elim', 'round_robin', 'double_elim'] as const;
+export type BracketFormat = (typeof bracketFormats)[number] | (typeof legacyFormats)[number];
 
-export const bracketFormatLabels: Record<(typeof bracketFormats)[number], string> = {
-  single_elim_repechage: 'Single elim + repechage',
-  single_elim: 'Single elim, semis share 3rd',
+export const bracketFormatLabels: Record<BracketFormat, string> = {
+  single_elim_repechage: 'Elimination with repechage',
+  groups_elimination: 'Round-robin groups, then elimination',
+  two_pool_round_robin: 'Two-pool round-robin',
+  single_elim: 'Single elimination',
   round_robin: 'Round robin',
-  double_elim: 'Double elim',
+  double_elim: 'Double elimination',
 };
+
+/** A format's name for people; unknown ones fall back to the stored value, tidied. */
+export const formatName = (format?: string | null) => bracketFormatLabels[format as BracketFormat] ?? humanize(format ?? 'no format');
+
+/** Formats to choose from: the WKF three, plus the category's own if it uses an older one. */
+export const formatOptions = (current?: string | null): readonly BracketFormat[] =>
+  (legacyFormats as readonly string[]).includes(current ?? '') ? [...bracketFormats, current as BracketFormat] : bracketFormats;
+
+/** Formats whose matches start in groups, so the bracket page shows standings. */
+export const hasGroupStage = (format: string) => ['round_robin', 'groups_elimination', 'two_pool_round_robin'].includes(format);
 
 /** Scoring modes each discipline can use; the first is the default. */
 export const scoringModes = {

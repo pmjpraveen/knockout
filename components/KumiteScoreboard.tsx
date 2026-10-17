@@ -2,6 +2,9 @@ import type { LucideIcon } from 'lucide-react-native';
 import ArrowLeft from 'lucide-react-native/icons/arrow-left';
 import LogOut from 'lucide-react-native/icons/log-out';
 import Star from 'lucide-react-native/icons/star';
+import Ellipsis from 'lucide-react-native/icons/ellipsis';
+import StarOff from 'lucide-react-native/icons/star-off';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import Undo2 from 'lucide-react-native/icons/undo-2';
 import { StatusBar } from 'expo-status-bar';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
@@ -15,7 +18,7 @@ import { useMatchScoring } from '@/hooks/useMatchScoring';
 import { useNavigationBarStyle } from '@/hooks/useNavigationBarStyle';
 import { haptic } from '@/lib/haptics';
 import { pressFeedback } from '@/lib/press';
-import { activeEvents, clockState, kumiteOutcome, kumiteState, nextPenaltyLevel, Outcome, penaltyLevels, points } from '@/lib/scoring';
+import { activeEvents, clockState, kumiteOutcome, kumiteState, nextPenaltyLevel, Outcome, penaltyLevels, points, scoredThisPause } from '@/lib/scoring';
 import { theme } from '@/theme/tokens';
 
 const scoreTypes = [['ippon', 'Ippon +3'], ['waza_ari', 'Waza-ari +2'], ['yuko', 'Yuko +1']] as const;
@@ -82,23 +85,57 @@ function RoundButton({ label, Icon, text, onPress, filled, disabled }: { label: 
   );
 }
 
+/** A labelled control on a coloured half: icon and words, so a scorer under pressure never has to guess what a round button does. */
+function ActionPill({ label, spoken, Icon, onPress, disabled }: { label: string; spoken?: string; Icon: LucideIcon; onPress: () => void; disabled?: boolean }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={spoken ?? label}
+      accessibilityState={{ disabled: !!disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [{ height: round, paddingHorizontal: theme.spacing[16], borderRadius: round / 2, flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8], backgroundColor: glass, opacity: disabled ? 0.5 : 1 }, pressFeedback(pressed)]}
+    >
+      <Icon size={22} color={theme.colors.paperWhite} strokeWidth={2} />
+      <Text variant="body" color="paperWhite">{label}</Text>
+    </Pressable>
+  );
+}
+
+/** Five pips for the penalty ladder: three Chui, Hansoku chui, Hansoku. They fill as penalties are given. */
+function PenaltyPips({ count, level }: { count: number; level: string }) {
+  return (
+    <View accessible accessibilityLabel={count ? `Penalty: ${level}` : 'No penalties'} style={{ gap: theme.spacing[8], minHeight: count ? undefined : 0 }}>
+      <View style={{ flexDirection: 'row', gap: theme.spacing[8] }}>
+        {penaltyLevels.map((name, index) => (
+          <View key={name} style={{ width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: theme.colors.paperWhite, backgroundColor: index < count ? theme.colors.paperWhite : 'transparent', opacity: index < count ? 1 : 0.5 }} />
+        ))}
+      </View>
+      {count > 0 && <Text variant="bodyLg" color="paperWhite" maxFontSizeMultiplier={1.2}>{level}</Text>}
+    </View>
+  );
+}
+
 type Corner = {
   side: 'aka' | 'ao';
   name: string;
   club: string;
   total: string;
   senshu: boolean;
-  /** One line per category, empty when that category has no penalty. */
-  penalties: string[];
+  /** The penalty reached so far, or empty. */
+  penalty: string;
+  penaltyCount: number;
   live: boolean;
   disabled: boolean;
+  /** This athlete already has a score in the current pause; the next one waits for the clock to resume. */
+  scored: boolean;
   onScore: (type: (typeof scoreTypes)[number][0]) => void;
-  onPenalty: (category: 1 | 2) => void;
-  onWithdraw: () => void;
-  nextLevel: (category: 1 | 2) => string;
+  onPenalty: () => void;
+  onMore: () => void;
+  nextLevel: string;
 };
 
-function Half({ side, name, club, total, senshu, penalties, live, disabled, onScore, onPenalty, onWithdraw, nextLevel }: Corner) {
+function Half({ side, name, club, total, senshu, penalty, penaltyCount, live, disabled, scored, onScore, onPenalty, onMore, nextLevel }: Corner) {
   const { start, end, roomy, digit } = useContext(LayoutContext);
   const gap = roomy ? theme.spacing[8] : theme.spacing[16];
   const seam = roomy ? pad : theme.spacing[32];
@@ -106,26 +143,27 @@ function Half({ side, name, club, total, senshu, penalties, live, disabled, onSc
   const spoken = `${aka ? 'Aka' : 'Ao'} corner, ${name}`;
   const align = aka ? 'flex-start' : 'flex-end';
   const buttons = (
-    <View style={{ width: 120, justifyContent: 'center', gap: theme.spacing[12] }}>
+    <View style={{ width: 136, justifyContent: 'center', gap: theme.spacing[12] }}>
       {scoreTypes.map(([type, label]) => (
         <Pressable
           key={type}
           accessibilityRole="button"
           accessibilityLabel={`${label}, ${spoken}`}
-          accessibilityState={{ disabled }}
-          disabled={disabled}
+          accessibilityState={{ disabled: disabled || scored }}
+          accessibilityHint={scored ? 'Already scored in this pause. Resume the clock to score again.' : undefined}
+          disabled={disabled || scored}
           onPress={() => { haptic.tap(); onScore(type); }}
-          style={({ pressed }) => [{ height: 40, borderRadius: 20, backgroundColor: glass, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.5 : 1 }, pressFeedback(pressed)]}
+          style={({ pressed }) => [{ height: 48, borderRadius: 24, backgroundColor: theme.colors.paperWhite, alignItems: 'center', justifyContent: 'center', opacity: disabled || scored ? 0.4 : 1 }, pressFeedback(pressed)]}
         >
-          <Text variant="body" color="paperWhite">{label}</Text>
+          <Text variant="body" weight="medium" style={{ color: theme.colors[side] }}>{label}</Text>
         </Pressable>
       ))}
     </View>
   );
-  const corner = ([1, 2] as const).map((category) => (
-    <RoundButton key={category} label={`Category ${category} penalty, next ${nextLevel(category)}, ${spoken}`} text={`C${category}`} disabled={disabled} onPress={() => { haptic.warning(); onPenalty(category); }} />
-  ));
-  const exit = <RoundButton key="exit" label={`${name} withdraws`} Icon={LogOut} disabled={disabled} onPress={onWithdraw} />;
+  const actions = [
+    <ActionPill key="penalty" label="Penalty" Icon={TriangleAlert} disabled={disabled} onPress={() => { haptic.warning(); onPenalty(); }} />,
+    <RoundButton key="more" label={`More actions, ${spoken}`} Icon={Ellipsis} disabled={disabled} onPress={onMore} />,
+  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors[side], paddingTop: roomy ? pad + clockHeight + pad : pad, paddingBottom: pad, paddingStart: aka ? start : seam, paddingEnd: aka ? seam : end }}>
@@ -138,20 +176,19 @@ function Half({ side, name, club, total, senshu, penalties, live, disabled, onSc
       <View style={{ flex: 1, justifyContent: 'center' }}>
       <View style={{ flexDirection: aka ? 'row' : 'row-reverse', alignItems: roomy ? 'flex-end' : 'center', gap: theme.spacing[16] }}>
         <View style={{ flex: 1, alignItems: align, gap: theme.spacing[4] }}>
-          <View style={{ flexDirection: aka ? 'row' : 'row-reverse', alignItems: 'flex-start' }}>
-            <Pop trigger={total}>
-              <Text variant="scoreDisplay" color="paperWhite" style={{ fontSize: digit, lineHeight: digit }} accessibilityLabel={`${spoken}: ${total}${senshu ? ', Senshu' : ''}`}>{total}</Text>
-            </Pop>
-            {senshu && <Star size={28} color={theme.colors.paperWhite} strokeWidth={2} accessibilityLabel="Senshu" />}
+          <Pop trigger={total}>
+            <Text variant="scoreDisplay" color="paperWhite" style={{ fontSize: digit, lineHeight: Math.round(digit * 1.25), includeFontPadding: false }} accessibilityLabel={`${spoken}: ${total}${senshu ? ', Senshu' : ''}`}>{total}</Text>
+          </Pop>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[8], minHeight: 32, opacity: senshu ? 1 : 0 }} accessibilityElementsHidden={!senshu}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[4], paddingHorizontal: theme.spacing[12], paddingVertical: theme.spacing[4], borderRadius: 16, backgroundColor: theme.colors.paperWhite }}>
+              <Star size={16} color={theme.colors[side]} fill={theme.colors[side]} strokeWidth={2} />
+              <Text variant="label" weight="medium" style={{ color: theme.colors[side], textTransform: 'uppercase' }}>Senshu</Text>
+            </View>
           </View>
-          {penalties.map((line, index) =>
-            roomy ? (
-              <View key={index} style={{ minHeight: 48, justifyContent: 'center', marginTop: index ? 0 : theme.spacing[12] }}>
-                <Text variant="bodyLg" color="paperWhite" maxFontSizeMultiplier={1.2}>{line}</Text>
-              </View>
-            ) : line ? (
-              <Text key={index} variant="bodyLg" color="paperWhite" maxFontSizeMultiplier={1.2}>{line}</Text>
-            ) : null,
+          {penaltyCount > 0 && (
+            <View style={{ marginTop: theme.spacing[8] }}>
+              <PenaltyPips count={penaltyCount} level={penalty} />
+            </View>
           )}
         </View>
         {live && buttons}
@@ -159,7 +196,7 @@ function Half({ side, name, club, total, senshu, penalties, live, disabled, onSc
       </View>
 
       <View style={{ height: round, flexDirection: 'row', justifyContent: aka ? 'flex-start' : 'flex-end', gap }}>
-        {live && (aka ? [exit, ...corner] : [...corner, exit])}
+        {live && (aka ? actions : [...actions].reverse())}
       </View>
     </View>
   );
@@ -182,6 +219,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
   const scoring = useMatchScoring({ eventId, matchId: row.match_id });
   const [now, setNow] = useState(Date.now());
   const [confirming, setConfirming] = useState<Outcome | null>(null);
+  const [menu, setMenu] = useState<'a' | 'b' | null>(null);
   const { athlete_a_id: a, athlete_b_id: b } = row;
   const names = { [a]: row.athlete_a, [b]: row.athlete_b };
 
@@ -211,23 +249,25 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
 
   const corner = (side: 'a' | 'b'): Corner => {
     const id = side === 'a' ? a : b;
-    const other = side === 'a' ? b : a;
     return {
       side: side === 'a' ? 'aka' : 'ao',
       name: names[id],
       club: (side === 'a' ? row.club_a : row.club_b) ?? '',
       total: String(state.points[side]),
       senshu: state.senshu === side,
-      penalties: ([1, 2] as const).map((category) => {
-        const count = state.penalties[side][category];
-        return count ? `C${category} : ${penaltyLevels[Math.min(count, penaltyLevels.length) - 1]}` : '';
-      }),
+      penalty: state.penalties[side] ? penaltyLevels[Math.min(state.penalties[side], penaltyLevels.length) - 1] : '',
+      penaltyCount: state.penalties[side],
       live,
       disabled: !scoringOpen,
-      onScore: (type) => scoring.record(type, id, points[type]),
-      onPenalty: (category) => scoring.record('penalty', id, 0, { category }),
-      onWithdraw: () => setConfirming({ winner: other, method: 'withdrawal' }),
-      nextLevel: (category) => nextPenaltyLevel(state.penalties[side][category]),
+      scored: scoredThisPause(scoring.events, id),
+      onScore: async (type) => {
+        await scoring.record(type, id, points[type]);
+        // A score stops play: the referee calls YAME, so the clock pauses at once and the next score waits for it to resume.
+        if (clock.running) await scoring.record('clock', null, Math.round(clock.remaining), { action: 'pause' });
+      },
+      onPenalty: () => scoring.record('penalty', id, 0, { category: 1 }),
+      onMore: () => setMenu(side),
+      nextLevel: nextPenaltyLevel(state.penalties[side]),
     };
   };
 
@@ -235,6 +275,21 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
     <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15,17,21,0.55)' }}>
       <Reveal y={16} style={{ width: 420, maxWidth: '92%', gap: theme.spacing[16], padding: theme.spacing[16], backgroundColor: theme.colors.paperWhite, borderRadius: theme.radii.card }}>{content}</Reveal>
     </View>
+  );
+
+  // Withdrawal and the referee's TORIMASEN (which takes Senshu away) are rare, so they sit behind one button instead of on the half.
+  const menuSide = menu && scoringOpen ? menu : null;
+  const menuId = menuSide === 'a' ? a : b;
+  const menuOther = menuSide === 'a' ? b : a;
+  const menuOverlay = menuSide && overlay(
+    <>
+      <Text variant="subheading">{names[menuId]}</Text>
+      {state.senshu === menuSide && (
+        <Button size="large" variant="secondary" title="Cancel Senshu (referee's TORIMASEN)" icon={<StarOff size={18} color={theme.colors.inkBlack} strokeWidth={1.75} />} onPress={() => { haptic.warning(); scoring.record('penalty', menuId, 0, { category: 1, kind: 'senshu_annulled' }); setMenu(null); }} />
+      )}
+      <Button size="large" variant="danger" title={`${names[menuId]} withdraws`} icon={<LogOut size={18} color={theme.colors.danger} strokeWidth={1.75} />} onPress={() => { setMenu(null); setConfirming({ winner: menuOther, method: 'withdrawal' }); }} />
+      <Button variant="ghost" title="Close" onPress={() => setMenu(null)} />
+    </>,
   );
 
   let prompt: ReactNode = null;
@@ -261,13 +316,13 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
       <>
         <View style={{ gap: theme.spacing[4] }}>
           <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase' }}>Time is up</Text>
-          <Text variant="subheading">The score is level</Text>
-          <Text color="slateGray">There is no Senshu. Record the referee&apos;s decision.</Text>
+          <Text variant="subheading">Level on every count</Text>
+          <Text color="slateGray">Same points, no Senshu, and the same Ippon and Waza-ari. The referee panel decides by Hantei: record its vote.</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: theme.spacing[12] }}>
           {[a, b].map((id) => (
             <View key={id} style={{ flex: 1 }}>
-              <Button size="large" title={names[id]} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision' })} />
+              <Button size="large" title={names[id]} variant="secondary" onPress={() => setConfirming({ winner: id, method: 'decision', note: 'Hantei: majority of the referee panel' })} />
             </View>
           ))}
         </View>
@@ -327,7 +382,7 @@ export function KumiteScoreboard({ row, eventId, onDone }: { row: ScoreboardRow;
         )}
       </View>
 
-      {prompt}
+      {prompt ?? menuOverlay}
       {scoring.conflict && (
         <View pointerEvents="none" style={{ position: 'absolute', top: theme.spacing[8], left: 0, right: 0, alignItems: 'center' }}>
           <Text color="paperWhite" style={{ backgroundColor: theme.colors.danger, padding: theme.spacing[8], borderRadius: theme.radii.chip }}>This match conflicted with the server ({scoring.conflict}). A tournament director will review it.</Text>

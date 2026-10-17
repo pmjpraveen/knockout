@@ -26,6 +26,12 @@ const formatOf: Record<string, string> = {
   singleelimination: 'single_elim_repechage',
   singleeliminationrepechage: 'single_elim_repechage',
   repechage: 'single_elim_repechage',
+  eliminationwithrepechage: 'single_elim_repechage',
+  roundrobingroupsthenelimination: 'groups_elimination',
+  roundrobingroups: 'groups_elimination',
+  groupselimination: 'groups_elimination',
+  twopoolroundrobin: 'two_pool_round_robin',
+  twopool: 'two_pool_round_robin',
   singleelim: 'single_elim',
   singleelimnorepechage: 'single_elim',
   singleeliminationnorepechage: 'single_elim',
@@ -38,7 +44,7 @@ const formatOf: Record<string, string> = {
 /** The columns of the categories sheet, in order, with two example rows. */
 export const categoryColumns = ['Discipline', 'Gender', 'Age min', 'Age max', 'Weight min (kg)', 'Weight max (kg)', 'Belt min', 'Belt max', 'Bracket format', 'Label (optional)'];
 export const categoryExamples = (belts: readonly string[]) => [
-  ['Kumite', 'Male', '10', '12', '', '40', belts[0], belts[Math.min(2, belts.length - 1)], 'Single elimination', ''],
+  ['Kumite', 'Male', '10', '12', '', '40', belts[0], belts[Math.min(2, belts.length - 1)], 'Elimination with repechage', ''],
   ['Kata', 'Female', '18', '', '', '', '', '', '', 'Senior women kata'],
 ];
 export const categoryNotes = (belts: readonly string[]) => [
@@ -48,7 +54,7 @@ export const categoryNotes = (belts: readonly string[]) => [
   ['Age min / Age max', 'Whole years on the first day of the tournament. Leave empty for no limit'],
   ['Weight min / max (kg)', 'Numbers. Leave empty for no limit'],
   ['Belt min / max', `One of this tournament's belts, lowest first: ${belts.join(', ')}. Leave empty for any belt`],
-  ['Bracket format', 'Single elimination, Single elimination (no repechage), Round robin or Double elimination. Empty means single elimination'],
+  ['Bracket format', 'Elimination with repechage, Round-robin groups then elimination, or Two-pool round-robin. Empty means elimination with repechage'],
   ['Label (optional)', 'The name shown for the category. Empty builds one from the other columns'],
   ['Note', 'Delete the two example rows before you upload'],
 ];
@@ -82,7 +88,7 @@ function parseRow({ cells }: SheetRow, belts: readonly string[]): CategoryImport
   if (beltMin && beltMax && belts.indexOf(beltMin) > belts.indexOf(beltMax)) return 'Belt min is above belt max.';
 
   const bracket_format = formatOf[simplify(pick(cells, ['bracketformat', 'format']))];
-  if (!bracket_format) return 'Bracket format must be Single elimination, Single elimination (no repechage), Round robin or Double elimination.';
+  if (!bracket_format) return 'Bracket format must be Elimination with repechage, Round-robin groups then elimination, or Two-pool round-robin.';
 
   const criteria = { discipline, gender, age_min: ageMin, age_max: ageMax, weight_min: weightMin, weight_max: weightMax, belt_min: beltMin, belt_max: beltMax };
   const label = pick(cells, ['label', 'labeloptional', 'name']).trim() || defaultLabel(criteria);

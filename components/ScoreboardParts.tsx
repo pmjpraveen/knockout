@@ -96,7 +96,8 @@ export function ScorePanel({ clock, aka, ao, totalStyle = 'scoreDisplay' }: {
 const pad = (n: number) => String(n).padStart(2, '0');
 
 const ring = 8;
-const clockText = { fontFamily: theme.fonts.monoMedium, fontSize: 32, lineHeight: 32 };
+// A line box taller than the glyphs, so the digits are never clipped, centred in the pill both ways.
+const clockText = { fontFamily: theme.fonts.monoMedium, fontSize: 32, lineHeight: 44, textAlign: 'center', includeFontPadding: false } as const;
 export const clockHeight = 64;
 
 /** Black pill whose green ring runs down with the time and is gone at 00:00. It turns Warning Amber in the final 10 seconds. */
@@ -119,7 +120,7 @@ export function MatchClock({ remaining, total }: { remaining: number; total: num
       accessibilityRole="timer"
       accessibilityLabel={`${Math.floor(whole / 60)} minutes ${whole % 60} seconds remaining`}
       onLayout={(event) => setSize(event.nativeEvent.layout)}
-      style={{ backgroundColor: low ? theme.colors.warning : theme.colors.inkBlack, borderRadius: theme.radii.button, height: clockHeight, justifyContent: 'center', paddingHorizontal: theme.spacing[16] + ring }}
+      style={{ backgroundColor: low ? theme.colors.warning : theme.colors.inkBlack, borderRadius: theme.radii.button, height: clockHeight, alignItems: 'center', justifyContent: 'center', paddingHorizontal: theme.spacing[16] + ring }}
     >
       {width > 0 && left > 0 && (
         <Svg width={width} height={height} style={{ position: 'absolute', top: 0, left: 0 }}>
