@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { activeEvents, clockState, kataOutcome, kataState, kumiteOutcome, kumiteState, nextPenaltyLevel, trimmedTotal, winLossOutcome, type ScoreEvent } from './scoring.ts';
+import { activeEvents, clockState, kataOutcome, kataState, kumiteOutcome, kumiteState, nextPenaltyLevel, winLossOutcome, type ScoreEvent } from './scoring.ts';
 
 let n = 0;
 const ev = (type: ScoreEvent['type'], athlete: string | null, value: number | null, extra: Partial<ScoreEvent> = {}): ScoreEvent => ({
@@ -50,23 +50,24 @@ const paused = [...clock, ev('clock', null, 90, { detail: { action: 'pause' }, c
 assert.deepEqual(clockState(paused, 120, t0 + 90_000), { remaining: 90, running: false, started: true }, 'a paused clock holds');
 assert.equal(clockState([], 120, t0).remaining, 120);
 
-// kata: drop high and low, sum the rest
-assert.equal(trimmedTotal([7.0, 7.1, 7.2, 7.3, 7.4]), 21.6);
-assert.equal(trimmedTotal([7.0, 7.0, 7.0, 9.9, 5.0]), 21.0);
-assert.equal(trimmedTotal([6.1, 6.2, 6.3]), 6.2, 'a 3-judge panel keeps the middle score');
+// kata (WKF 2026): each judge votes for whoever they marked higher; the majority of judges wins
 const judge = (athlete: string, j: number, v: number) => ev('kata_score', athlete, v, { detail: { judge: j } });
-const scored = (a: number[], b: number[]) => kataState([...a.map((v, i) => judge('A', i + 1, v)), ...b.map((v, i) => judge('B', i + 1, v))], 'A', 'B', 5);
-assert.deepEqual(kataOutcome(scored([7, 7.1, 7.2, 7.3, 7.4], [7, 7, 7, 7, 7]), 'A', 'B', 'kata_scores', 5), { winner: 'A', method: 'judges' });
-assert.equal(kataOutcome(scored([7, 7, 7, 7, 7], [7, 7, 7, 7, 7]), 'A', 'B', 'kata_scores', 5), null, 'equal totals need a decision');
-assert.equal(kataOutcome(scored([7, 7, 7], [7, 7, 7, 7, 7]), 'A', 'B', 'kata_scores', 5), null, 'an incomplete panel has no result');
+const scored = (a: number[], b: number[], panel = 5) => kataState([...a.map((v, i) => judge('A', i + 1, v)), ...b.map((v, i) => judge('B', i + 1, v))], 'A', 'B', panel);
+assert.deepEqual(kataOutcome(scored([7.5, 7.5, 7.5, 7.0, 7.0], [7.0, 7.0, 7.0, 7.1, 9.5]), 'A', 'B', 'kata_scores', 5), { winner: 'A', method: 'judges', note: "Judges' votes 3-2" }, 'A wins on votes although B has the higher total');
+assert.deepEqual(kataOutcome(scored([7.6, 7.5, 7.6, 7.1, 7.1, 7.7, 7.2], [8.0, 7.3, 7.4, 7.3, 7.4, 7.3, 7.5], 7), 'A', 'B', 'kata_scores', 7), { winner: 'B', method: 'judges', note: "Judges' votes 4-3" }, "WKF's own example: AO wins 4-3 on a seven judge panel");
+assert.equal(kataOutcome(scored([7, 7, 7, 7, 7], [7, 7, 7, 7, 7]), 'A', 'B', 'kata_scores', 5), null, 'equal marks from a judge are not a vote');
+assert.equal(scored([7, 7, 7, 7, 7], [7, 7.1, 7, 7, 7]).judgeVotes[0], 'tie', 'the judge who marked both equally is flagged');
+assert.equal(kataOutcome(scored([7, 7, 7], [6, 6, 6, 6, 6]), 'A', 'B', 'kata_scores', 5), null, 'an incomplete panel has no result');
+assert.deepEqual(kataOutcome(scored([0, 0, 0, 0, 0], []), 'A', 'B', 'kata_scores', 5), { winner: 'B', method: 'disqualification', note: 'Disqualified (0.0 from every judge)' }, 'a 0.0 from every judge disqualifies, with no opponent marks needed');
+assert.equal(kataOutcome(scored([0, 0, 0, 0, 0], [0, 0, 0, 0, 0]), 'A', 'B', 'kata_scores', 5), null, 'both disqualified: no winner, an additional kata is performed');
 const corrected = kataState([judge('A', 1, 6), judge('A', 1, 8)], 'A', 'B', 3);
 assert.equal(corrected.scores.a[0], 8, 'the latest score from a judge replaces the earlier one');
 
 // kata flags: majority wins, one vote per judge
 const flag = (athlete: string, j: number) => ev('kata_score', athlete, 1, { detail: { judge: j } });
-assert.deepEqual(kataOutcome(kataState([flag('A', 1), flag('B', 2), flag('A', 3)], 'A', 'B', 3), 'A', 'B', 'kata_flags', 3), { winner: 'A', method: 'flags' });
+assert.deepEqual(kataOutcome(kataState([flag('A', 1), flag('B', 2), flag('A', 3)], 'A', 'B', 3), 'A', 'B', 'kata_flags', 3), { winner: 'A', method: 'flags', note: 'Flags 2-1' });
 assert.equal(kataOutcome(kataState([flag('A', 1), flag('B', 2)], 'A', 'B', 3), 'A', 'B', 'kata_flags', 3), null, 'flags wait for every judge');
-assert.equal(kataState([flag('A', 1), flag('B', 1)], 'A', 'B', 3).votes.b, 1, 'a judge changing their vote counts once');
+assert.equal(kataState([flag('A', 1), flag('B', 1)], 'A', 'B', 3).flagVotes.b, 1, 'a judge changing their vote counts once');
 
 // win/loss with a note
 assert.deepEqual(winLossOutcome([ev('win_loss', 'B', null, { detail: { note: 'no-show' } })]), { winner: 'B', method: 'win_loss', note: 'no-show' });

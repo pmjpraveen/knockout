@@ -174,9 +174,10 @@ create temp table r3 as select sync_scoring('devK', jsonb_build_array(
   pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000050', 'type', 'kata_score', 'value', 7.3, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":1}'::jsonb)),
   pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000051', 'type', 'kata_score', 'value', 7.35, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":2}'::jsonb)),
   pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000052', 'type', 'kata_score', 'value', 4.5, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":3}'::jsonb)),
-  pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000053', 'type', 'kata_score', 'value', 8.0, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":9}'::jsonb))
+  pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000053', 'type', 'kata_score', 'value', 8.0, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":9}'::jsonb)),
+  pg_temp.op('event', (select kata from ids), jsonb_build_object('id', '90000000-0000-0000-0000-000000000054', 'type', 'kata_score', 'value', 0.0, 'athlete_id', (select athlete_a_id from matches where id = (select kata from ids)), 'detail', '{"judge":4}'::jsonb))
 )) as res;
-select is((select array_agg(x ->> 'status') from jsonb_array_elements((select res from r3)) x), array['ok','ok','conflict','conflict','conflict'], 'kata scores must be 5.0-10.0 in 0.1 steps from a judge on the panel');
+select is((select array_agg(x ->> 'status') from jsonb_array_elements((select res from r3)) x), array['ok','ok','conflict','conflict','conflict','ok'], 'kata scores must be 5.0-10.0 in 0.1 steps, or 0.0 for a disqualification, from a judge on the panel');
 
 select * from finish();
 rollback;

@@ -132,7 +132,7 @@ export function CategoryForm({ eventId, category, initialStatus, header }: Props
         {days.length > 1 && day && <ChoiceChips label="Runs on" options={days} value={day} labels={dayLabels(days)} onChange={setPickedDay} />}
         <ChoiceChips label="Bracket format" options={bracketFormats} value={format} labels={bracketFormatLabels} onChange={setFormat} />
         <ChoiceChips label="Scoring" options={modes} value={mode as (typeof modes)[number]} onChange={setScoringMode} />
-        {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['3', '5', '7']} value={panel} onChange={setPanel} />}
+        {mode.startsWith('kata') && <ChoiceChips label="Judges" options={['5', '7']} value={panel} onChange={setPanel} />}
         <TextField label="Match time (seconds, blank = default)" value={matchSeconds} onChangeText={setMatchSeconds} keyboardType="numeric" />
       </FormSection>
       {category && <Button title="Delete category" variant="danger" confirmTitle={loses ? `Tap again: this also deletes ${loses}` : 'Tap again to delete'} disabled={busy} onPress={remove} />}

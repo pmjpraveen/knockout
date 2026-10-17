@@ -72,37 +72,46 @@ export function clockState(events: ScoreEvent[], totalSeconds: number, nowMs: nu
   return { remaining: Math.max(0, (last.value ?? totalSeconds) - elapsed), running, started: true };
 }
 
-/** Highest and lowest scores dropped, the rest summed (tenths, to avoid float drift). */
-export function trimmedTotal(scores: number[]) {
-  const tenths = scores.map((s) => Math.round(s * 10)).sort((x, y) => x - y);
-  return tenths.slice(1, -1).reduce((sum, t) => sum + t, 0) / 10;
-}
-
+/**
+ * WKF kata: every judge marks both athletes (5.0-10.0 in 0.1 steps, 0.0 for a disqualification) and votes for whoever
+ * they marked higher. `judgeVotes` holds each judge's vote once both marks are in; 'tie' means a judge gave equal marks,
+ * which the rules do not allow (no draws), so it has to be corrected. `flagVotes` is the manual flag vote.
+ */
 export function kataState(events: ScoreEvent[], a: string, b: string, panel: number) {
   const active = activeEvents(events).filter((e) => e.type === 'kata_score');
   const byJudge = (athlete: string) =>
     Array.from({ length: panel }, (_, j) => [...active].reverse().find((e) => e.athlete_id === athlete && e.detail?.judge === j + 1)?.value ?? null);
   const scores = { a: byJudge(a), b: byJudge(b) };
-  const complete = (list: (number | null)[]) => list.every((s) => s !== null);
-  const total = (list: (number | null)[]) => (complete(list) ? trimmedTotal(list as number[]) : null);
+  const judgeVotes = scores.a.map((markA, j) => {
+    const markB = scores.b[j];
+    if (markA === null || markB === null) return null;
+    return markA === markB ? 'tie' : markA > markB ? 'a' : 'b';
+  });
+  const count = (side: 'a' | 'b') => judgeVotes.filter((vote) => vote === side).length;
 
-  // Flag vote: each judge's latest vote for either athlete counts once.
-  const votes = { a: 0, b: 0 };
+  const flagVotes = { a: 0, b: 0 };
   for (let judge = 1; judge <= panel; judge++) {
     const vote = [...active].reverse().find((e) => e.detail?.judge === judge && (e.athlete_id === a || e.athlete_id === b));
-    if (vote) votes[vote.athlete_id === a ? 'a' : 'b']++;
+    if (vote) flagVotes[vote.athlete_id === a ? 'a' : 'b']++;
   }
-  return { scores, totals: { a: total(scores.a), b: total(scores.b) }, votes };
+  return { scores, judgeVotes, markVotes: { a: count('a'), b: count('b') }, flagVotes };
 }
+
+const disqualified = (marks: (number | null)[]) => marks.every((mark) => mark === 0);
 
 export function kataOutcome(state: ReturnType<typeof kataState>, a: string, b: string, mode: 'kata_scores' | 'kata_flags', panel: number): Outcome | null {
   if (mode === 'kata_flags') {
-    if (state.votes.a + state.votes.b < panel) return null;
-    return { winner: state.votes.a > state.votes.b ? a : b, method: 'flags' };
+    const { a: votesA, b: votesB } = state.flagVotes;
+    if (votesA + votesB < panel) return null;
+    return { winner: votesA > votesB ? a : b, method: 'flags', note: `Flags ${Math.max(votesA, votesB)}-${Math.min(votesA, votesB)}` };
   }
-  const { a: ta, b: tb } = state.totals;
-  if (ta === null || tb === null || ta === tb) return null;
-  return { winner: ta > tb ? a : b, method: 'judges' };
+  // A disqualified athlete has 0.0 from every judge, and the opponent wins without needing marks. Both disqualified: no winner, they perform an additional kata (WKF 3.7.10).
+  if (disqualified(state.scores.a) && disqualified(state.scores.b)) return null;
+  if (disqualified(state.scores.a)) return { winner: b, method: 'disqualification', note: 'Disqualified (0.0 from every judge)' };
+  if (disqualified(state.scores.b)) return { winner: a, method: 'disqualification', note: 'Disqualified (0.0 from every judge)' };
+  if (state.judgeVotes.some((vote) => vote === null || vote === 'tie')) return null;
+  const { a: votesA, b: votesB } = state.markVotes;
+  return { winner: votesA > votesB ? a : b, method: 'judges', note: `Judges' votes ${Math.max(votesA, votesB)}-${Math.min(votesA, votesB)}` };
 }
 
 export function winLossOutcome(events: ScoreEvent[]): (Outcome & { note: string | null }) | null {
