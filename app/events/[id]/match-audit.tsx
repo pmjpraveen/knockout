@@ -1,8 +1,12 @@
 import { useLocalSearchParams } from 'expo-router';
+import ScrollText from 'lucide-react-native/icons/scroll-text';
 import { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { ActionRow } from '@/components/ActionRow';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
+import { FormSection, SectionDivider } from '@/components/FormSection';
+import { ListGroup } from '@/components/ListGroup';
 import { ChoiceChips } from '@/components/ChoiceChips';
 import { Screen } from '@/components/Screen';
 import { SkeletonScreen } from '@/components/Skeleton';
@@ -11,6 +15,7 @@ import { TextField } from '@/components/TextField';
 import { useSubmit } from '@/hooks/useSubmit';
 import { humanize } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/theme/tokens';
 
 type Audit = {
   match: {
@@ -55,27 +60,33 @@ export default function MatchAudit() {
       {match.result_note && <Text>Note: {match.result_note}</Text>}
       {match.scoring_device_id && <Text variant="body" color="slateGray">Scoreboard device {match.scoring_device_id.slice(0, 8)}</Text>}
 
-      <Text variant="subheading">Logged events</Text>
-      {audit.events.length === 0 && <Text color="slateGray">Nothing logged yet.</Text>}
-      {audit.events.map((event) => (
-        <Card key={event.sequence}>
-          <Text>
-            #{event.sequence} {humanize(event.type)}
-            {event.athlete ? ` · ${event.athlete}` : ''}
-            {event.value !== null ? ` · ${event.value}` : ''}
-          </Text>
-          <Text variant="body" color="slateGray">
-            {event.actor} · {new Date(event.client_timestamp).toLocaleTimeString()}
-            {event.detail ? ` · ${JSON.stringify(event.detail)}` : ''}
-            {event.voids ? ` · cancels #${event.voids}` : ''}
-          </Text>
-        </Card>
-      ))}
+      <FormSection title={`Logged events · ${audit.events.length}`}>
+        {audit.events.length === 0 ? (
+          <EmptyState Icon={ScrollText} title="Nothing logged yet" text="Scores and clock actions appear here as the scoreboard sends them." />
+        ) : (
+          <ListGroup>
+            {audit.events.map((event) => (
+              <View key={event.sequence} style={{ padding: theme.spacing[16], gap: theme.spacing[4] }}>
+                <Text variant="bodyLg">
+                  #{event.sequence} {humanize(event.type)}
+                  {event.athlete ? ` · ${event.athlete}` : ''}
+                  {event.value !== null ? ` · ${event.value}` : ''}
+                </Text>
+                <Text variant="body" color="slateGray">
+                  {event.actor} · {new Date(event.client_timestamp).toLocaleTimeString()}
+                  {event.detail ? ` · ${JSON.stringify(event.detail)}` : ''}
+                  {event.voids ? ` · cancels #${event.voids}` : ''}
+                </Text>
+              </View>
+            ))}
+          </ListGroup>
+        )}
+      </FormSection>
 
       {open && (
         <>
-          <Text variant="subheading">Override</Text>
-          <Text color="slateGray">Finish this match by hand, or free it from a scoreboard device that has died. A note is required and logged.</Text>
+          <SectionDivider />
+          <FormSection title="Override" hint="Finish this match by hand, or free it from a scoreboard device that has died. A note is required and logged.">
           <TextField label="Note" value={note} onChangeText={setNote} autoCapitalize="sentences" placeholder="e.g. Tablet died, result confirmed by referee" />
           {match.athlete_a && match.athlete_b && (
             <ChoiceChips label="Winner" options={['a', 'b']} value={winner} labels={names} onChange={setWinner} />
@@ -96,6 +107,7 @@ export default function MatchAudit() {
               <Button title="Release scoreboard device" variant="warning" disabled={busy || !note.trim()} onPress={() => act(() => supabase.rpc('release_match_claim', { p_match_id: matchId, p_note: note }))} />
             )}
           </ActionRow>
+          </FormSection>
         </>
       )}
     </Screen>

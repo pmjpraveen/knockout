@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { AthleteFields } from '@/components/AthleteFields';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { FormSection } from '@/components/FormSection';
 import { RosterUpload } from '@/components/RosterUpload';
 import { Screen } from '@/components/Screen';
 import { SkeletonList } from '@/components/Skeleton';
@@ -225,15 +226,15 @@ export default function Register() {
         <>
           {step === 0 ? (
             <>
-              <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase', marginTop: theme.spacing[8], marginBottom: theme.spacing[8] }}>Step 1 of 2 · Your club</Text>
+              <FormSection title="Step 1 of 2 · Your club" hint="10 digits, without the country code (+91 or 0). We use the mobile number to find your entry if you come back to edit it.">
               <TextField label="Club name" value={clubName} onChangeText={setClubName} autoCapitalize="words" />
               <TextField label="Mobile number" value={contact} onChangeText={(value) => setContact(mobileDigits(value))} keyboardType="number-pad" placeholder="9876543210" />
-              <Text variant="body" color="slateGray" style={{ marginTop: -theme.spacing[8] }}>10 digits, without the country code (+91 or 0). We use it to find your entry if you come back to edit it.</Text>
+              </FormSection>
             </>
           ) : (
             <>
               {notice && <Text color="success">{notice}</Text>}
-              <Text variant="label" color="slateGray" style={{ textTransform: 'uppercase', marginTop: theme.spacing[8], marginBottom: theme.spacing[8] }}>Step 2 of 2 · Participants</Text>
+              <FormSection title="Step 2 of 2 · Participants">
             <RosterUpload existing={athletes.filter((athlete) => !isBlank(athlete))} max={maxParticipants} belts={info.event.belts} onAdd={addFromSheet} />
             {rows.map((row, index) =>
               row.compact ? (
@@ -265,6 +266,7 @@ export default function Register() {
               ),
             )}
             <Button title="Add participant" variant="secondary" disabled={rows.length >= maxParticipants} onPress={() => setRows((list) => [...list, newRow(newAthlete(info.event.belts))])} />
+              </FormSection>
             </>
           )}
         </>

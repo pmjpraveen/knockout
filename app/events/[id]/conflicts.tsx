@@ -1,8 +1,13 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import CircleCheck from 'lucide-react-native/icons/circle-check';
+import TriangleAlert from 'lucide-react-native/icons/triangle-alert';
 import { useState } from 'react';
-import { ActionRow } from '@/components/ActionRow';
+import { View } from 'react-native';
+import { BottomSheet } from '@/components/BottomSheet';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { EmptyState } from '@/components/EmptyState';
+import { FormSection } from '@/components/FormSection';
+import { ListGroup, ListRow } from '@/components/ListGroup';
 import { Screen } from '@/components/Screen';
 import { SkeletonList } from '@/components/Skeleton';
 import { Text } from '@/components/Text';
@@ -11,6 +16,7 @@ import { useFocusQuery } from '@/hooks/useFocusQuery';
 import { useSubmit } from '@/hooks/useSubmit';
 import { formatDateTime, humanize } from '@/lib/events';
 import { supabase } from '@/lib/supabase';
+import { theme } from '@/theme/tokens';
 
 const explanations: Record<string, string> = {
   match_not_found: 'The bracket was redrawn while a device was offline, so this match no longer exists.',
@@ -39,39 +45,50 @@ export default function Conflicts() {
     }
   };
 
+  const selected = rows.find((conflict) => conflict.id === open);
+  const closeSheet = () => {
+    setOpen(null);
+    setNote('');
+  };
+
   return (
     <Screen>
-      <Text color="slateGray">
-        Operations a scoreboard device sent that the server could not apply. Nothing is applied automatically: review the match, set the result if needed, then resolve.
-      </Text>
-      {loading && <SkeletonList count={2} />}
-      {!loading && rows.length === 0 && <Text color="slateGray">No unresolved conflicts.</Text>}
       {error && <Text color="danger">{error}</Text>}
-      {rows.map((conflict) => (
-        <Card key={conflict.id}>
-          <Text color="warning">{humanize(conflict.reason)}</Text>
-          <Text>{explanations[conflict.reason] ?? 'The server rejected this operation.'}</Text>
-          <Text variant="body" color="slateGray">
-            {formatDateTime(conflict.created_at)} · device {conflict.device_id.slice(0, 8)} · {(conflict.op as { kind?: string }).kind}
-          </Text>
-          {open === conflict.id ? (
-            <>
-              {conflict.match_id && conflict.reason !== 'match_not_found' && (
-                <Button title="Open match audit" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: conflict.match_id! } })} />
-              )}
-              <TextField label="How was this resolved?" value={note} onChangeText={setNote} autoCapitalize="sentences" />
-              <Button title="Mark resolved" disabled={busy || !note.trim()} onPress={() => resolve(conflict.id)} />
-            </>
-          ) : (
-            <ActionRow>
-              {conflict.match_id && conflict.reason !== 'match_not_found' && (
-                <Button title="Open match audit" variant="secondary" onPress={() => router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: conflict.match_id! } })} />
-              )}
-              <Button title="Resolve…" variant="secondary" onPress={() => setOpen(conflict.id)} />
-            </ActionRow>
-          )}
-        </Card>
-      ))}
+      {loading && <SkeletonList count={2} />}
+      {!loading && rows.length === 0 && (
+        <EmptyState Icon={CircleCheck} title="No unresolved conflicts" text="Operations a scoreboard device sent that the server could not apply show up here for review." />
+      )}
+      {rows.length > 0 && (
+        <FormSection title={`Needs review · ${rows.length}`} hint="Nothing is applied automatically. Review the match, set the result if needed, then resolve.">
+          <ListGroup>
+            {rows.map((conflict) => (
+              <ListRow
+                key={conflict.id}
+                Icon={TriangleAlert}
+                title={humanize(conflict.reason)}
+                subtitle={formatDateTime(conflict.created_at)}
+                onPress={() => setOpen(conflict.id)}
+              />
+            ))}
+          </ListGroup>
+        </FormSection>
+      )}
+
+      <BottomSheet visible={!!selected} title={selected ? humanize(selected.reason) : ''} onClose={closeSheet}>
+        {selected && (
+          <View style={{ gap: theme.spacing[16] }}>
+            <Text>{explanations[selected.reason] ?? 'The server rejected this operation.'}</Text>
+            <Text variant="body" color="slateGray">
+              {formatDateTime(selected.created_at)} · device {selected.device_id.slice(0, 8)} · {(selected.op as { kind?: string }).kind}
+            </Text>
+            {selected.match_id && selected.reason !== 'match_not_found' && (
+              <Button title="Open match audit" variant="secondary" onPress={() => { closeSheet(); router.push({ pathname: '/events/[id]/match-audit', params: { id, matchId: selected.match_id! } }); }} />
+            )}
+            <TextField label="How was this resolved?" value={note} onChangeText={setNote} autoCapitalize="sentences" />
+            <Button size="large" title="Mark resolved" disabled={busy || !note.trim()} onPress={() => resolve(selected.id)} />
+          </View>
+        )}
+      </BottomSheet>
     </Screen>
   );
 }
